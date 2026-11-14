@@ -57,9 +57,9 @@ const {chromium}=require('playwright'),assert=require('assert');
  const complianceId=await p.evaluate(()=>{const x=active.company.management.compliance[0];x.dueDate='2026-11-13';x.penaltyAmount=250;return x.id;});
 
  await p.evaluate(()=>Phase4Company.stepDay('2026-11-14'));
- const contractRun=await p.evaluate(()=>Phase4Company.contractFinance('2026-11-14'));
- assert.equal(contractRun.paid,1,'Due contract milestone is paid once');
- const penaltyResult=await p.evaluate(()=>Phase4Company.stepDay('2026-11-15'));
+ const paymentStatus=await p.evaluate(id=>active.company.management.contracts.find(x=>x.id===id).payments[0].status,financeContract);
+ assert.equal(paymentStatus,'Paid','Due contract milestone is paid by simulation day advancement');
+ await p.evaluate(()=>Phase4Company.stepDay('2026-11-15'));
  assert.equal(await p.evaluate(id=>active.company.management.compliance.find(x=>x.id===id).penaltyPosted,complianceId),true,'Overdue compliance penalty is posted once');
  const report=await p.evaluate(()=>Phase4Company.managementReport('2026-11-15'));
  assert.equal(report.consolidation.subsidiaryCount,1,'Management report consolidates subsidiary count');
