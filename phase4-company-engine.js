@@ -65,11 +65,13 @@ function stepDay(date){
  m.contracts.forEach(c=>{if(c.status==='Active'&&c.endDate&&c.endDate<date){c.status='Expired';log('Contract expired',c.title);}});
  m.lastProcessedDate=date;
 }
-function init(){
- if(!active)return;ensure();render();
- const prior=window.simulateLifeDay;
- if(typeof prior==='function'&&!prior.__phase4Wrapped){const wrapped=function(...args){const out=prior.apply(this,args);stepDay(today());return out;};wrapped.__phase4Wrapped=true;window.simulateLifeDay=wrapped;}
+function installHooks(){
+ const priorRender=window.render;
+ if(typeof priorRender==='function'&&!priorRender.__phase4Wrapped){const wrapped=function(...args){const out=priorRender.apply(this,args);if(active){ensure();render();}return out;};wrapped.__phase4Wrapped=true;window.render=wrapped;}
+ const priorDay=window.simulateLifeDay;
+ if(typeof priorDay==='function'&&!priorDay.__phase4Wrapped){const wrapped=function(...args){const out=priorDay.apply(this,args);stepDay(today());return out;};wrapped.__phase4Wrapped=true;window.simulateLifeDay=wrapped;}
 }
+function init(){installHooks();if(active){ensure();render();}}
 window.Phase4Company={version:'4.0.0',ensure,render,runAudit,stepDay,addDepartment,addExecutive,addBranch,addSubsidiary,addBoardDecision,addContract,addCompliance,restructure};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
