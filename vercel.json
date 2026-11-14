@@ -1,0 +1,6 @@
+{
+  "buildCommand": "mkdir -p dist && cp index.html engine-primitives.js phase0-architecture.js phase0-registry.js phase1-world-engine.js phase2-population-engine.js phase3-founder-engine.js manifest.webmanifest icon.svg sw.js dist/",
+  "outputDirectory": "dist",
+  "framework": null,
+  "cleanUrls": false
+}
