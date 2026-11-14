@@ -3,7 +3,7 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
  const b=await chromium.launch({headless:true,args:['--no-sandbox']});
  const p=await b.newPage({viewport:{width:1440,height:900},acceptDownloads:true});const errors=[];
  p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
- await p.goto('http://127.0.0.1:4173/live-index.html',{waitUntil:'networkidle'});
+ await p.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
  await p.getByRole('button',{name:/New campaign/}).click();await p.getByRole('button',{name:/Create campaign/}).click();
  for(const [id,v] of [['nfounder','End-to-End Founder'],['ncompany','E2E Pictures'],['ncountry','India'],['ncity','Kochi']])await p.locator('#'+id).fill(v);
  await p.getByRole('button',{name:/Create and save campaign/}).click();
