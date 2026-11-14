@@ -68,7 +68,7 @@ function addUI(){
  '<section class="p3card"><div class="p3head"><b>Public reputation</b><span class="p3muted">PERSONAL PROFILE</span></div><div id="p3reputation"></div><div class="p3actions"><button class="btn" onclick="Phase3Founder.openReputation()">Manage public profile</button></div></section>'+
  '<section class="p3card"><div class="p3head"><b>Family & relationships</b><span class="p3muted">PERSONAL NETWORK</span></div><div id="p3relationships"></div><div class="p3actions"><button class="btn" onclick="Phase3Founder.openRelationship()">＋ Add relationship</button></div></section>'+
  '<section class="p3card p3wide"><div class="p3head"><b>Legacy & succession</b><span class="p3muted">LONG-TERM PLANNING</span></div><div id="p3succession"></div><div class="p3actions"><button class="btn" onclick="Phase3Founder.openSuccession()">Manage succession plan</button></div></section>'+
- '<section class="p3card p3wide"><div class="p3head"><b>Personal transaction history</b><span class="p3muted">AUDITABLE LEDGER</span></div><div id="p3ledger"></div></section></div>';
+ '<section class="p3card p3wide"><div class="p3head"><b>Personal transaction history</b><span class="p3muted">AUDITABLE LEDGER</span></div><div id="p3ledger"></div></section>'+'<section class="p3card p3wide"><div class="p3head"><b>Phase 3 integrity audit</b><span class="p3muted">FOUNDER SYSTEM VALIDATION</span></div><div id="p3audit"><div class="p3empty">Run the audit to validate founder finances, wellbeing, assets, relationships, calendar and succession records.</div></div><div class="p3actions"><button class="btn primary" onclick="Phase3Founder.runAudit()">Run Phase 3 audit</button></div></section></div>';
  page.appendChild(root);
 }
 function render(){
@@ -209,6 +209,7 @@ function runAudit(){
  add('Succession plan structure',f.succession&&Array.isArray(f.succession.heirs)&&finite(f.succession.retirementAge)&&f.succession.retirementAge>=40&&f.succession.retirementAge<=100,'Succession plan has a valid retirement target and heir list.');
  add('Phase 3 save serialization',(()=>{try{JSON.stringify(active);return true}catch(e){return false}})(),'The active campaign, founder profile and personal records serialize to JSON.');
  f.phase3.audit={date:dateNow(),passed:tests.filter(t=>t.ok).length,failed:tests.filter(t=>!t.ok).length,tests};
+ const auditHost=q('p3audit');if(auditHost)auditHost.innerHTML='<div class="p3row"><b>'+f.phase3.audit.passed+' passed · '+f.phase3.audit.failed+' failed</b><span class="p3muted">'+safe(f.phase3.audit.date)+'</span></div>'+tests.map(t=>'<div class="p3row"><span>'+safe(t.name)+'</span><b style="color:'+(t.ok?'var(--green)':'var(--red)')+'">'+(t.ok?'PASS':'FAIL')+'</b></div>').join('');
  return f.phase3.audit;
 }
 
