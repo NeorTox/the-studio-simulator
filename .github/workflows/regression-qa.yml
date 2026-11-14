@@ -1,0 +1,39 @@
+name: THE STUDIO regression QA
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phase3-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Run Phase 3 engine and finance tests
+        run: |
+          node --check phase3-founder-engine.js
+          node test-phase3.js
+          node test-phase3-interactions.js
+          node test-phase3-hardening.js
+      - name: Start app server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/studio-http.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:4173/index.html >/dev/null && break
+            sleep 1
+          done
+      - name: Run actual application form regression
+        run: node actual-phase3-submit-qa.js
+      - name: Run simulation and save round-trip regression
+        run: node phase3-end-to-end.js
