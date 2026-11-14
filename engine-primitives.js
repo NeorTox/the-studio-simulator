@@ -7,4 +7,9 @@ function dadd(a,b){return dec(a)+dec(b)}function dsub(a,b){return dec(a)-dec(b)}
 function ddiv(a,b){let x=dec(a),y=dec(b);if(y===0n)throw new Error('Decimal division by zero');let p=x*DEC_SCALE,q=p/y,r=p%y;if((r<0n?-r:r)*2n>=(y<0n?-y:y))q+=(p<0n)!==(y<0n)?-1n:1n;return q}
 function dclamp(v,lo,hi){let x=dec(v);return x<dec(lo)?dec(lo):x>dec(hi)?dec(hi):x}function dnum(v){return Number(dstr(v))}
 function hashSeed(s){let h=2166136261;for(let i=0;i<String(s).length;i++){h^=String(s).charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
-function stableUnit(seed,key){leֻǱ˞
+function stableUnit(seed,key){let h=hashSeed(String(seed)+'|'+String(key));h^=h>>>16;h=Math.imul(h,0x7feb352d);h^=h>>>15;h=Math.imul(h,0x846ca68b);h^=h>>>16;return dstr(BigInt(h>>>0)*DEC_SCALE/4294967296n)}
+function stableRange(seed,key,min,max){return dstr(dadd(min,dmul(dsub(max,min),stableUnit(seed,key))))}
+
+
+function iso(d){return d.toISOString().slice(0,10)}function addDays(d,n){let x=new Date(d+'T12:00:00Z');x.setUTCDate(x.getUTCDate()+n);return iso(x)}
+
