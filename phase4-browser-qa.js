@@ -18,6 +18,7 @@ const {chromium}=require('playwright'),assert=require('assert');
  const ceoId=await p.evaluate(()=>active.company.management.executives[0].id);
  await p.evaluate(()=>Phase4Company.addExecutive());
  await p.locator('#p4name').fill('Mira Shah');await p.locator('#p4role').selectOption('Chief Technology Officer');await p.locator('#p4reports').selectOption(ceoId);await p.locator('#p4dept').fill('Research & Development');await p.locator('#p4pay').fill('180000');await p.locator('#p4form button').click();
+ await p.evaluate(()=>Phase4Company.addExecutive());await p.locator('#p4name').fill('Arjun Rao');await p.locator('#p4role').selectOption('Chief Financial Officer');await p.locator('#p4dept').fill('Finance');await p.locator('#p4reports').selectOption({label:'Mira Shah — Chief Technology Officer'});await p.locator('#p4form button').click();
  await p.evaluate(()=>Phase4Company.addBranch());
  await p.locator('#p4name').fill('Kochi Studio');await p.locator('#p4loc').fill('Kochi');await p.locator('#p4country').fill('India');await p.locator('#p4manager').fill('R. Menon');await p.locator('#p4form button').click();
  await p.evaluate(()=>Phase4Company.addSubsidiary());
