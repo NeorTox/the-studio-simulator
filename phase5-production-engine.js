@@ -20,3 +20,188 @@ const oldAdvance=window.advanceProject;if(typeof oldAdvance==='function'&&!oldAd
 window.Phase5Production={version:'5.0.0',ensure,saveDevelopment,reviseScript,reviewScript,greenlight,setChecklist,readiness,audit,render};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
 })();
+
+
+/* Phase 5 production completion systems: continuity, safety, insurance,
+   post-production deliverables, final delivery and budget controls. */
+(function(){
+'use strict';
+const $=id=>document.getElementById(id), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=(p)=>p+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);
+const get=id=>window.Phase5Production;
+function ensure(p){
+ if(!active)return null;
+ active.productionOps=active.productionOps||{callSheets:[],history:[]};
+ active.productionOps.callSheets=active.productionOps.callSheets||[];
+ active.productionOps.history=active.productionOps.history||[];
+ active.productionSafety=active.productionSafety||{incidents:[],policies:[],history:[]};
+ for(const k of ['incidents','policies','history'])active.productionSafety[k]=Array.isArray(active.productionSafety[k])?active.productionSafety[k]:[];
+ active.projects=active.projects||[];
+ active.projects.forEach(x=>{
+  x.productionQA=x.productionQA||{continuity:{scriptSupervisor:false,footageBackup:false,dailyReports:false},postProduction:{edit:false,sound:false,vfx:false,colour:false,mix:false,master:false},delivery:null,variance:{alerts:[],cap:10}};
+  const q=x.productionQA;
+  q.continuity=Object.assign({scriptSupervisor:false,footageBackup:false,dailyReports:false},q.continuity||{});
+  q.postProduction=Object.assign({edit:false,sound:false,vfx:false,colour:false,mix:false,master:false},q.postProduction||{});
+  q.variance=Object.assign({alerts:[],cap:10},q.variance||{});
+ });
+ return p?active.projects.find(x=>x.id===p):active.productionSafety;
+}
+function record(p,action,detail){const s=ensure();s.history.unshift({id:uid('P5LOG'),date:active.date,projectId:p?.id||null,action,detail:String(detail||'')});s.history=s.history.slice(0,500);if(typeof addLog==='function')addLog((p?p.title+' — ':'')+action+': '+detail);if(typeof persist==='function')persist();}
+function addPolicy(data){
+ ensure();const premium=Number(data.premium),limit=Number(data.coverageLimit),start=String(data.startDate||active.date),end=String(data.endDate||'');
+ if(!String(data.provider||'').trim()||!Number.isFinite(premium)||premium<0||!Number.isFinite(limit)||limit<=0||!end||end<start)throw Error('Enter a provider, valid premium, positive coverage limit and valid coverage dates.');
+ const policy={id:uid('INS'),provider:String(data.provider).trim(),type:String(data.type||'Production package'),premium,coverageLimit:limit,startDate:start,endDate:end,status:'Active',notes:String(data.notes||'')};
+ active.productionSafety.policies.push(policy);record(null,'Production insurance policy added',policy.provider+' · '+policy.type);return policy;
+}
+function activePolicy(date=active.date){ensure();return active.productionSafety.policies.find(x=>x.status==='Active'&&x.startDate<=date&&x.endDate>=date)||null;}
+function reportIncident(projectId,data){
+ const p=ensure(projectId);if(!p)throw Error('Project not found.');
+ const severity=String(data.severity||'Low');if(!['Low','Moderate','High','Critical'].includes(severity))throw Error('Invalid incident severity.');
+ const item={id:uid('INC'),projectId:p.id,projectTitle:p.title,date:active.date,type:String(data.type||'General safety'),severity,description:String(data.description||'').trim(),status:'Open',resolution:'',resolvedDate:null,claimStatus:'Not filed'};
+ if(!item.description)throw Error('Incident description is required.');
+ active.productionSafety.incidents.unshift(item);record(p,'Safety incident reported',severity+' · '+item.type);
+ return item;
+}
+function resolveIncident(id,resolution){
+ ensure();const i=active.productionSafety.incidents.find(x=>x.id===id);if(!i)throw Error('Incident not found.');
+ if(!String(resolution||'').trim())throw Error('Resolution notes are required.');
+ i.status='Resolved';i.resolution=String(resolution).trim();i.resolvedDate=active.date;record(null,'Safety incident resolved',i.id+' · '+i.resolution);return i;
+}
+function fileClaim(id,amount,notes){
+ ensure();const i=active.productionSafety.incidents.find(x=>x.id===id);if(!i)throw Error('Incident not found.');
+ const n=Number(amount);if(!Number.isFinite(n)||n<0)throw Error('Claim amount must be zero or greater.');
+ const policy=active.productionSafety.policies.find(x=>x.status==='Active'&&x.startDate<=i.date&&x.endDate>=i.date);
+ if(!policy)throw Error('No active insurance policy covered the incident date.');
+ if(n>policy.coverageLimit)throw Error('Claim exceeds the policy coverage limit.');
+ i.claimStatus='Filed';i.claim={policyId:policy.id,amount:n,notes:String(notes||''),filedDate:active.date,status:'Pending'};
+ record(null,'Insurance claim filed',i.id+' · '+n);return i.claim;
+}
+function setContinuity(id,key,value){
+ const p=ensure(id);if(!p)throw Error('Project not found.');
+ if(!['scriptSupervisor','footageBackup','dailyReports'].includes(key))throw Error('Unknown continuity control.');
+ p.productionQA.continuity[key]=!!value;record(p,'Continuity control updated',key+' = '+!!value);return p.productionQA.continuity;
+}
+function continuity(id){
+ const p=ensure(id);if(!p)return {ready:false,missing:['Project missing']};
+ const c=p.productionQA.continuity,missing=[];
+ for(const [k,l] of [['scriptSupervisor','Script supervisor / continuity logs'],['footageBackup','Footage backup verified'],['dailyReports','Daily production reports complete']])if(!c[k])missing.push(l);
+ return {ready:missing.length===0,missing};
+}
+function setDeliverable(id,key,value){
+ const p=ensure(id);if(!p)throw Error('Project not found.');
+ if(!['edit','sound','vfx','colour','mix','master'].includes(key))throw Error('Unknown post-production deliverable.');
+ p.productionQA.postProduction[key]=!!value;record(p,'Post-production deliverable updated',key+' = '+!!value);return p.productionQA.postProduction;
+}
+function postProduction(id){
+ const p=ensure(id);if(!p)return {ready:false,missing:['Project missing']};
+ const c=p.productionQA.postProduction,missing=[];
+ for(const [k,l] of [['edit','Picture edit locked'],['sound','Sound design complete'],['vfx','Visual effects approved'],['colour','Colour grade approved'],['mix','Final audio mix approved'],['master','Master file and QC passed']])if(!c[k])missing.push(l);
+ return {ready:missing.length===0,missing};
+}
+function budgetStatus(id){
+ const p=ensure(id);if(!p)return {valid:false};
+ const budget=Number(p.greenlightBudget||p.budget)||0,spent=Number(p.spent)||0,committed=Number(p.committed)||0;
+ const projected=spent+committed,variance=budget>0?(projected-budget)/budget*100:0;
+ const alerts=p.productionQA.variance.alerts;
+ if(variance>Number(p.productionQA.variance.cap||10)&&!alerts.some(x=>x.projected===projected&&x.date===active.date)){
+  alerts.push({date:active.date,projected,budget,variance});alerts.splice(0,100);
+ }
+ return {valid:budget>0&&projected<=budget, budget,spent,committed,projected,remaining:budget-projected,variance,overrun:projected>budget,warning:variance>0&&variance<=Number(p.productionQA.variance.cap||10),alerts};
+}
+function approveDelivery(id,data){
+ const p=ensure(id);if(!p)throw Error('Project not found.');
+ if(p.stage<4)throw Error('Project must reach Post-production before delivery approval.');
+ const q=postProduction(id);if(!q.ready)throw Error('Delivery blocked: '+q.missing.join(', '));
+ const b=budgetStatus(id);if(b.overrun)throw Error('Delivery blocked: project is over its approved budget.');
+ const open=active.productionSafety.incidents.filter(x=>x.projectId===id&&['High','Critical'].includes(x.severity)&&x.status!=='Resolved');
+ if(open.length)throw Error('Delivery blocked by unresolved high/critical safety incidents.');
+ const score=Number(data.qualityScore);if(!Number.isFinite(score)||score<0||score>100)throw Error('Delivery quality score must be 0–100.');
+ p.productionQA.delivery={date:active.date,qualityScore:score,approvedBy:String(data.approvedBy||'Studio quality control'),notes:String(data.notes||''),status:'Approved'};
+ record(p,'Final delivery approved','Quality score '+score+'/100');return p.productionQA.delivery;
+}
+function audit(){
+ ensure();const tests=[];
+ const add=(name,ok)=>tests.push({name,ok:!!ok});
+ add('Safety records are arrays',Array.isArray(active.productionSafety.incidents)&&Array.isArray(active.productionSafety.policies));
+ add('Safety incident states are valid',active.productionSafety.incidents.every(x=>['Open','Resolved'].includes(x.status)&&['Low','Moderate','High','Critical'].includes(x.severity)));
+ add('Insurance coverage dates are valid',active.productionSafety.policies.every(x=>x.endDate>=x.startDate&&x.coverageLimit>0));
+ add('Continuity controls are boolean',active.projects.every(p=>Object.values(p.productionQA.continuity).every(v=>typeof v==='boolean')));
+ add('Post-production controls are boolean',active.projects.every(p=>Object.values(p.productionQA.postProduction).every(v=>typeof v==='boolean')));
+ add('Delivery approvals have valid scores',active.projects.every(p=>!p.productionQA.delivery||(p.productionQA.delivery.qualityScore>=0&&p.productionQA.delivery.qualityScore<=100)));
+ add('Project budget variance is finite',active.projects.every(p=>Number.isFinite(budgetStatus(p.id).variance)));
+ return {passed:tests.filter(x=>x.ok).length,failed:tests.filter(x=>!x.ok).length,tests};
+}
+function renderExtended(){
+ const host=$('phase5-completion');if(!host)return;
+ if(!active){host.innerHTML='<div class="empty">Create a campaign to manage production assurance and delivery.</div>';return;}
+ ensure();
+ host.innerHTML='<div class="cardhead"><b class="cardtitle">Production assurance & final delivery</b><span class="tag gold">PHASE 5 COMPLETION</span></div>'+
+ active.projects.map(p=>{
+  const c=continuity(p.id),q=postProduction(p.id),b=budgetStatus(p.id),open=active.productionSafety.incidents.filter(x=>x.projectId===p.id&&x.status==='Open').length;
+  const checks=(o)=>o.ready?'<span class="tag green">READY</span>':'<span class="tag gold">'+o.missing.length+' outstanding</span>';
+  return '<article style="padding:13px 0;border-bottom:1px solid var(--line)"><div class="rowitem"><b>'+esc(p.title)+'</b><span class="tag '+(p.productionQA.delivery?'green':'gold')+'">'+(p.productionQA.delivery?'DELIVERY APPROVED':'IN PROGRESS')+'</span></div>'+
+  '<div class="rowitem"><span>Continuity & footage assurance</span>'+checks(c)+'</div><div class="rowitem"><span>Post-production deliverables</span>'+checks(q)+'</div>'+
+  '<div class="rowitem"><span>Budget forecast</span><b class="'+(b.overrun?'danger':'')+'">'+esc((b.variance||0).toFixed(2))+'% variance · '+esc(String(b.remaining))+' remaining</b></div>'+
+  '<div class="rowitem"><span>Open safety incidents</span><b>'+open+'</b></div><div class="actions" style="margin-top:9px">'+
+  '<button class="btn" data-p5-cont="'+esc(p.id)+'">Continuity</button><button class="btn" data-p5-post="'+esc(p.id)+'">Post-production</button><button class="btn" data-p5-incident="'+esc(p.id)+'">Report incident</button><button class="btn" data-p5-delivery="'+esc(p.id)+'">Approve delivery</button></div>'+
+  (p.productionQA.delivery?'<div class="tiny">Approved '+esc(p.productionQA.delivery.date)+' · Quality '+p.productionQA.delivery.qualityScore+'/100</div>':'')+'</article>';
+ }).join('')+
+ '<div class="card" style="margin-top:12px"><div class="cardhead"><b class="cardtitle">Production insurance & incidents</b><span class="tiny">'+active.productionSafety.policies.length+' policies · '+active.productionSafety.incidents.length+' incidents</span></div>'+
+ '<div class="actions"><button class="btn" id="p5-policy">＋ Add insurance policy</button></div>'+
+ active.productionSafety.policies.map(x=>'<div class="rowitem"><span>'+esc(x.provider)+' · '+esc(x.type)+' · '+esc(x.startDate)+' to '+esc(x.endDate)+'</span><b>'+esc(String(x.coverageLimit))+' cover</b></div>').join('')+
+ active.productionSafety.incidents.slice(0,20).map(x=>'<div class="rowitem"><span>'+esc(x.projectTitle)+' · '+esc(x.type)+' · '+esc(x.severity)+' · '+esc(x.status)+'</span><span class="tiny">'+esc(x.date)+'</span>'+(x.status==='Open'?'<button class="btn small" data-p5-resolve="'+esc(x.id)+'">Resolve</button>':'')+(x.claimStatus==='Not filed'?'<button class="btn small" data-p5-claim="'+esc(x.id)+'">File claim</button>':'')+'</div>').join('')+'</div>';
+ host.querySelectorAll('[data-p5-cont]').forEach(b=>b.onclick=()=>formContinuity(b.dataset.p5Cont));
+ host.querySelectorAll('[data-p5-post]').forEach(b=>b.onclick=()=>formPost(b.dataset.p5Post));
+ host.querySelectorAll('[data-p5-incident]').forEach(b=>b.onclick=()=>{const p=ensure(b.dataset.p5Incident),type=prompt('Incident type','Set safety'),severity=prompt('Severity: Low, Moderate, High or Critical','Low');if(type===null||severity===null)return;const description=prompt('Describe the incident');if(description===null)return;try{reportIncident(p.id,{type,severity,description});renderExtended();}catch(e){toast(e.message);}});
+ host.querySelectorAll('[data-p5-resolve]').forEach(b=>b.onclick=()=>{const note=prompt('Resolution / corrective action');if(note===null)return;try{resolveIncident(b.dataset.p5Resolve,note);renderExtended();}catch(e){toast(e.message);}});
+ host.querySelectorAll('[data-p5-claim]').forEach(b=>b.onclick=()=>{const amount=prompt('Claim amount');if(amount===null)return;try{fileClaim(b.dataset.p5Claim,amount,prompt('Claim notes','')||'');renderExtended();}catch(e){toast(e.message);}});
+ $('p5-policy').onclick=()=>{const provider=prompt('Insurer / provider');if(provider===null)return;const premium=prompt('Premium amount','0'),coverageLimit=prompt('Coverage limit','1000000'),endDate=prompt('Coverage end date (YYYY-MM-DD)',active.date.slice(0,4)+'-12-31');try{addPolicy({provider,premium,coverageLimit,endDate,startDate:active.date});renderExtended();}catch(e){toast(e.message);}};
+}
+function formContinuity(id){
+ const p=ensure(id),keys=[['scriptSupervisor','Script supervisor / continuity logs'],['footageBackup','Footage backup verified'],['dailyReports','Daily production reports complete']];
+ show('Production continuity — '+p.title,'<form id="p5continuity">'+keys.map(([k,l])=>'<label style="display:flex;gap:10px;padding:10px 0"><input type="checkbox" id="p5c_'+k+'" '+(p.productionQA.continuity[k]?'checked':'')+'>'+l+'</label>').join('')+'<button class="btn primary">Save continuity controls</button></form>');
+ $('p5continuity').onsubmit=e=>{e.preventDefault();keys.forEach(([k])=>setContinuity(id,k,$('p5c_'+k).checked));close();renderExtended();};
+}
+function formPost(id){
+ const p=ensure(id),keys=[['edit','Picture edit locked'],['sound','Sound design complete'],['vfx','Visual effects approved'],['colour','Colour grade approved'],['mix','Final audio mix approved'],['master','Master file and QC passed']];
+ show('Post-production — '+p.title,'<form id="p5post">'+keys.map(([k,l])=>'<label style="display:flex;gap:10px;padding:10px 0"><input type="checkbox" id="p5p_'+k+'" '+(p.productionQA.postProduction[k]?'checked':'')+'>'+l+'</label>').join('')+'<button class="btn primary">Save post-production status</button></form>');
+ $('p5post').onsubmit=e=>{e.preventDefault();keys.forEach(([k])=>setDeliverable(id,k,$('p5p_'+k).checked));close();renderExtended();};
+}
+function deliveryForm(id){
+ const p=ensure(id);if(p.stage<4){toast('Advance to Post-production before final delivery.');return;}
+ const score=prompt('Final delivery quality score (0–100)','85');if(score===null)return;
+ try{approveDelivery(id,{qualityScore:score,approvedBy:prompt('Approved by','Studio quality control')||'Studio quality control',notes:prompt('Delivery notes','')||''});renderExtended();toast('Final delivery approved.');}catch(e){toast(e.message);}
+}
+function install(){
+ const page=$('page-projects');if(!page)return;
+ let host=$('phase5-completion');if(!host){host=document.createElement('section');host.id='phase5-completion';host.className='card';host.style.marginTop='14px';($('productioncontracts')?.parentElement||$('projectlist')?.parentElement||page).after(host);}
+ const prev=window.Phase5Production.render;
+ if(typeof prev==='function'&&!prev.__completionWrapped){const wrapped=function(){prev();renderExtended();};wrapped.__completionWrapped=true;window.Phase5Production.render=wrapped;}
+ renderExtended();
+}
+const base=window.Phase5Production;
+Object.assign(base,{addPolicy,activePolicy,reportIncident,resolveIncident,fileClaim,setContinuity,continuity,setDeliverable,postProduction,budgetStatus,approveDelivery,auditExtended:audit,renderExtended});
+const previousAdvance=window.advanceProject;
+if(typeof previousAdvance==='function'&&!previousAdvance.__completionWrapped){
+ const wrapped=function(id){
+  const p=ensure(id);
+  if(p){
+   if(p.stage===3){
+    const calls=active.productionOps.callSheets.filter(x=>x.projectId===id);
+    if(!calls.length||calls.some(x=>x.status!=='Completed')){toast('Production wrap blocked: all scheduled shoot days must be completed or cancelled.');return;}
+    const c=continuity(id);if(!c.ready){toast('Production continuity incomplete: '+c.missing.join(', '));return;}
+    const serious=active.productionSafety.incidents.filter(x=>x.projectId===id&&['High','Critical'].includes(x.severity)&&x.status!=='Resolved');
+    if(serious.length){toast('Production wrap blocked by unresolved high/critical safety incidents.');return;}
+   }
+   if(p.stage===4){
+    const q=postProduction(id);if(!q.ready){toast('Post-production incomplete: '+q.missing.join(', '));return;}
+    const b=budgetStatus(id);if(b.overrun){toast('Post-production wrap blocked: approved budget exceeded.');return;}
+   }
+   if(p.stage===5&&!p.productionQA.delivery){toast('Distribution gate: final delivery approval is required before marketing and distribution.');return;}
+  }
+  return previousAdvance(id);
+ };
+ wrapped.__completionWrapped=true;window.advanceProject=wrapped;
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+})();
