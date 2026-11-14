@@ -8,7 +8,7 @@ const active={date:'2026-11-14',founder:{name:'Founder',age:70,personalCash:1000
 const ctx={document,window:{},active,persist(){saved++},toast(){},show,close(){},fmt:v=>'₹'+v,addLog(){},console,Date,Math};
 vm.createContext(ctx);vm.runInContext(fs.readFileSync('phase3-founder-engine.js','utf8'),ctx);
 const api=ctx.window.Phase3Founder;
-assert.equal(api.version,'3.0.2');
+assert.equal(api.version,'3.0.3');
 api.ensure();
 assert.equal(active.founder.personalFinance.accounts[0].id,'brokerage','non-cash account order preserved');
 assert.equal(active.founder.personalFinance.accounts[1].balance,10000,'cash account reconciled on migration');
