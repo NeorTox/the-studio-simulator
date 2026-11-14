@@ -24,7 +24,7 @@ jobs:
       - name: Validate JavaScript engines
         run: |
           set -e
-          for file in engine-primitives.js phase0-architecture.js phase0-registry.js phase1-world-engine.js phase2-population-engine.js phase3-founder-engine.js; do
+          for file in engine-primitives.js phase0-architecture.js phase0-registry.js phase1-world-engine.js phase2-population-engine.js phase3-founder-engine.js phase4-company-engine.js; do
             test -s "$file"
             node --check "$file"
           done
@@ -33,7 +33,7 @@ jobs:
         run: |
           set -e
           mkdir -p dist
-          cp index.html engine-primitives.js phase0-architecture.js phase0-registry.js phase1-world-engine.js phase2-population-engine.js phase3-founder-engine.js manifest.webmanifest icon.svg sw.js dist/
+          cp index.html engine-primitives.js phase0-architecture.js phase0-registry.js phase1-world-engine.js phase2-population-engine.js phase3-founder-engine.js phase4-company-engine.js manifest.webmanifest icon.svg sw.js dist/
           test -s dist/index.html
           test -s dist/manifest.webmanifest
           test -s dist/icon.svg
