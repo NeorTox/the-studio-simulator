@@ -42,7 +42,27 @@ const {chromium}=require('playwright'),assert=require('assert');
  await p.locator('#p4title').fill('Studio lease');await p.locator('#p4party').fill('Kochi Properties');await p.locator('#p4value').fill('50000');await p.locator('#p4start').fill('2026-11-13');await p.locator('#p4end').fill('2026-11-13');await p.locator('#p4form button').click();
  await p.evaluate(()=>Phase4Company.addCompliance());
  await p.locator('#p4name').fill('Annual corporate filing');await p.locator('#p4owner').fill('Legal & Compliance');await p.locator('#p4status').selectOption('In progress');await p.locator('#p4form button').click();
+
+ const branchId=await p.evaluate(()=>active.company.management.branches[0].id);
+ await p.evaluate(id=>Phase4Company.branchEconomics(id,{monthlyRevenue:10000,monthlyRent:1000,monthlyPayroll:500,monthlyOperatingCost:500}),branchId);
+ const branchRun=await p.evaluate(()=>Phase4Company.branchMonthly('2026-11-14'));
+ assert.equal(branchRun.failed,0,'Branch monthly accounts post without failure');
+ const branchLedger=await p.evaluate(id=>active.ledger.filter(x=>x.phase4&&x.branchId===id).length,branchId);
+ assert.equal(branchLedger,2,'Branch revenue and costs are posted to company ledger');
+ const financeContract=await p.evaluate(()=>{const c={id:'QA-CONTRACT',title:'QA milestone contract',counterparty:'QA Partner',type:'Supplier',value:3000,startDate:'2026-11-14',endDate:'2026-12-31',status:'Active'};active.company.management.contracts.push(c);return c.id;});
+ await p.evaluate(id=>Phase4Company.addContractPayment(id,{dueDate:'2026-11-14',amount:1200,direction:'out',milestone:'Prototype delivery'}),financeContract);
+ const vote=await p.evaluate(()=>Phase4Company.approveCapitalRequest({title:'QA capital authorization',description:'Fund lab prototype.',amount:500,boardSize:3,votes:[{choice:'yes'},{choice:'yes'},{choice:'no'}]}));
+ assert.equal(vote.outcome,'Approved','Board vote applies quorum and majority');
+ await p.evaluate(id=>Phase4Company.postApprovedCapital(id,'QA approved prototype',active.company.management.departments.find(x=>x.name==='Research & Development').id),vote.id);
+ const complianceId=await p.evaluate(()=>{const x=active.company.management.compliance[0];x.dueDate='2026-11-13';x.penaltyAmount=250;return x.id;});
+
  await p.evaluate(()=>Phase4Company.stepDay('2026-11-14'));
+ const contractRun=await p.evaluate(()=>Phase4Company.contractFinance('2026-11-14'));
+ assert.equal(contractRun.paid,1,'Due contract milestone is paid once');
+ const penaltyResult=await p.evaluate(()=>Phase4Company.stepDay('2026-11-15'));
+ assert.equal(await p.evaluate(id=>active.company.management.compliance.find(x=>x.id===id).penaltyPosted,complianceId),true,'Overdue compliance penalty is posted once');
+ const report=await p.evaluate(()=>Phase4Company.managementReport('2026-11-15'));
+ assert.equal(report.consolidation.subsidiaryCount,1,'Management report consolidates subsidiary count');
  const payrollDue=await p.evaluate(()=>Phase4Company.monthlyPayroll('2026-11-30'));
  assert.equal(payrollDue,8500,'Executive compensation is prorated from appointment date');
  const payrollResult=await p.evaluate(()=>{const before=active.company.cash,result=Phase4Company.postMonthly('2026-11-30');return {before,after:active.company.cash,result,ledger:active.ledger.filter(x=>x.executiveId&&x.phase4===true).length,paidMonth:active.company.management.executives.find(x=>x.name==='Mira Shah').lastPaidMonth}});
