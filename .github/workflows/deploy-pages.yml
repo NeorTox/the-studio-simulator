@@ -38,7 +38,7 @@ jobs:
           test -s dist/manifest.webmanifest
           test -s dist/icon.svg
           test -s dist/sw.js
-          for file in engine-primitives.js phase0-architecture.js phase0-registry.js phase1-world-engine.js phase2-population-engine.js phase3-founder-engine.js phase4-company-engine.js; do
+          for file in engine-primitives.js phase0-architecture.js phase0-registry.js phase1-world-engine.js phase2-population-engine.js phase3-founder-engine.js phase4-company-engine.js phase5-production-engine.js; do
             test -s "dist/$file"
           done
 
