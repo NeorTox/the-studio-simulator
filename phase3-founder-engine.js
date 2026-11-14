@@ -195,7 +195,7 @@ function runAudit(){
  const bounded=(v)=>finite(v)&&Number(v)>=0&&Number(v)<=100;
  const fin=f.personalFinance,ids=new Set(fin.ledger.map(x=>x.id));
  add('Unique personal transaction IDs',ids.size===fin.ledger.length,'Every ledger transaction has a unique ID.');
- add('Ledger record integrity',fin.ledger.every(x=>x&&x.id&&/^\\d{4}-\\d{2}-\\d{2}$/.test(String(x.date))&&finite(x.amount)&&Number(x.amount)>0&&['Income','Expense','Debt repayment','Transfer'].includes(x.type)),'Transactions have dates, positive finite amounts and supported types.');
+ add('Ledger record integrity',fin.ledger.every(x=>x&&x.id&&/^\d{4}-\d{2}-\d{2}$/.test(String(x.date))&&finite(x.amount)&&Number(x.amount)>0&&['Income','Expense','Debt repayment','Transfer'].includes(x.type)),'Transactions have dates, positive finite amounts and supported types.');
  add('Personal cash account reconciliation',Math.abs(Number(fin.accounts.find(a=>a.id==='cash'||String(a.type).toLowerCase()==='cash')?.balance||0)-Number(f.personalCash||0))<0.005,'The personal cash account matches founder personal cash.');
  add('Personal debt is finite and non-negative',finite(f.personalDebt)&&Number(f.personalDebt)>=0,'Debt cannot be negative or non-finite.');
  add('Wellbeing metrics are bounded',Object.values(f.wellbeing).filter(v=>typeof v==='number').every(bounded),'Numeric wellbeing values remain within 0–100.');
@@ -204,7 +204,7 @@ function runAudit(){
  add('Investment portfolio values are valid',fin.investments.every(x=>x&&x.id&&finite(x.principal)&&Number(x.principal)>=0&&finite(x.value)&&Number(x.value)>=0&&finite(x.monthlyReturn)),'Investment principal, valuation and estimated return are finite.');
  add('Personal assets are valid',f.personalAssets.every(x=>x&&x.id&&String(x.name||'').trim()&&finite(x.purchasePrice)&&Number(x.purchasePrice)>=0&&finite(x.currentValue)&&Number(x.currentValue)>=0&&finite(x.monthlyMaintenance)&&Number(x.monthlyMaintenance)>=0),'Founder assets have valid names, values and maintenance costs.');
  add('Relationship records are valid',f.relationships.every(x=>x&&x.id&&String(x.name||'').trim()&&bounded(x.quality)),'Relationships have names and quality scores within 0–100.');
- add('Calendar records are valid',f.personalCalendar.every(x=>x&&x.id&&String(x.title||'').trim()&&/^\\d{4}-\\d{2}-\\d{2}$/.test(String(x.date))),'Personal calendar entries have unique identifiers, titles and ISO dates.');
+ add('Calendar records are valid',f.personalCalendar.every(x=>x&&x.id&&String(x.title||'').trim()&&/^\d{4}-\d{2}-\d{2}$/.test(String(x.date))),'Personal calendar entries have unique identifiers, titles and ISO dates.');
  add('Succession plan structure',f.succession&&Array.isArray(f.succession.heirs)&&finite(f.succession.retirementAge)&&f.succession.retirementAge>=40&&f.succession.retirementAge<=100,'Succession plan has a valid retirement target and heir list.');
  add('Phase 3 save serialization',(()=>{try{JSON.stringify(active);return true}catch(e){return false}})(),'The active campaign, founder profile and personal records serialize to JSON.');
  f.phase3.audit={date:dateNow(),passed:tests.filter(t=>t.ok).length,failed:tests.filter(t=>!t.ok).length,tests};
