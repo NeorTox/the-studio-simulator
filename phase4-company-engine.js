@@ -53,7 +53,7 @@ function runAudit(){
  add('Department identifiers are unique',new Set(m.departments.map(x=>x.id)).size===m.departments.length&&m.departments.every(x=>x.id&&x.name));
  add('Department budgets and headcounts are valid',m.departments.every(x=>Number.isFinite(Number(x.budget))&&Number(x.budget)>=0&&Number.isInteger(Number(x.headcount))&&Number(x.headcount)>=0));
  add('Executive appointments and reporting lines are valid',m.executives.every(x=>x.id&&x.name&&x.role&&Number(x.annualCompensation)>=0&&(!x.reportsTo||m.executives.some(p=>p.id===x.reportsTo&&p.id!==x.id))));
- add('Department hierarchy has valid parent links',m.departments.every(x=>!x.parentId||m.departments.some(p=>p.id===x.parentId&&p.id!==x.id)));
+ add('Department hierarchy has valid parent links and no cycles',m.departments.every(x=>{const seen=new Set([x.id]);let p=x;while(p.parentId){if(seen.has(p.parentId))return false;seen.add(p.parentId);p=m.departments.find(d=>d.id===p.parentId);if(!p)return false;}return true;}));
  add('Branch and subsidiary records are valid',m.branches.every(x=>x.id&&x.name&&x.location)&&m.subsidiaries.every(x=>x.id&&x.name&&x.jurisdiction&&x.ownership>0&&x.ownership<=100));
  add('Board decisions have outcomes',m.boardDecisions.every(x=>x.id&&x.title&&x.resolution&&['Approved','Rejected','Deferred'].includes(x.outcome)));
  add('Contract dates and values are valid',m.contracts.every(x=>x.id&&x.title&&x.counterparty&&Number(x.value)>=0&&(!x.endDate||x.endDate>=x.startDate)));
