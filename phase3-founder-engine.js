@@ -97,7 +97,8 @@ function openTransaction(){
  const cur=active.company.currency||'USD';
  form('Record personal transaction','<form id="p3form"><div class="field"><label>Type</label><select id="p3type"><option>Income</option><option>Expense</option><option>Debt repayment</option></select></div><div class="formgrid"><div class="field"><label>Amount ('+safe(cur)+')</label><input id="p3amount" type="number" min=".01" step=".01" required></div><div class="field"><label>Category</label><select id="p3category"><option>Salary</option><option>Dividend</option><option>Investment</option><option>Housing</option><option>Food</option><option>Transport</option><option>Healthcare</option><option>Education</option><option>Entertainment</option><option>Travel</option><option>Tax</option><option>Insurance</option><option>Other</option></select></div></div><div class="field"><label>Description</label><input id="p3description" required></div><button class="btn primary">Save transaction</button></form>',function(){
  const type=q('p3type').value,amount=Number(q('p3amount').value);if(!(amount>0))throw Error('Enter a positive amount.');
- if(type==='Debt repayment'&&amount>active.founder.personalCash)throw Error('Insufficient personal cash.');\n if(type==='Debt repayment'&&amount>active.founder.personalDebt)throw Error('Repayment cannot exceed outstanding personal debt.');
+ if(type==='Debt repayment'&&amount>active.founder.personalCash)throw Error('Insufficient personal cash.');
+ if(type==='Debt repayment'&&amount>active.founder.personalDebt)throw Error('Repayment cannot exceed outstanding personal debt.');
  record(type,amount,q('p3category').value,q('p3description').value);if(typeof addLog==='function')addLog('Founder recorded personal '+type.toLowerCase()+': '+q('p3description').value+'.');close();persistView('Personal transaction recorded.');
  });
 }
@@ -210,7 +211,8 @@ function runAudit(){
  f.phase3.audit={date:dateNow(),passed:tests.filter(t=>t.ok).length,failed:tests.filter(t=>!t.ok).length,tests};
  return f.phase3.audit;
 }
-\nfunction init(){const f=ensure();addUI();if(f){render();if(typeof persist==='function')persist();}}
+
+function init(){const f=ensure();addUI();if(f){render();if(typeof persist==='function')persist();}}
 window.Phase3Founder={version:'3.0.3',ensure:ensure,render:render,stepDay:stepDay,record:record,runAudit:runAudit,openTransaction:openTransaction,openRecurring:openRecurring,openEvent:openEvent,openRoutine:openRoutine,openWellbeing:openWellbeing,openReputation:openReputation,openSuccession:openSuccession,openAsset:openAsset,openRelationship:openRelationship,openInvestment:openInvestment};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
