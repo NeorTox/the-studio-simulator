@@ -1,0 +1,29 @@
+name: Reconstruct and verify THE STUDIO source
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  reconstruct:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Reconstruct verified source bundle
+        run: node scripts/reconstruct-transfer.mjs
+      - name: Verify JavaScript syntax
+        run: |
+          for f in engine-primitives.js phase0-architecture.js phase0-registry.js phase1-world-engine.js phase2-population-engine.js phase3-founder-engine.js; do node --check "$f"; done
+      - name: Commit reconstructed application
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "build: reconstruct complete THE STUDIO v4.19.0 source" || echo "No generated changes"
+          git push
