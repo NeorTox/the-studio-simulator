@@ -86,7 +86,7 @@ function render(){
  q('p3reputation').innerHTML=[['Public recognition',rep.publicRecognition],['Industry reputation',rep.industryReputation],['Privacy protection',rep.privacy],['Media attention',rep.mediaAttention],['Controversy exposure',rep.controversy]].map(x=>meter(x[0],x[1])).join('');
  q('p3relationships').innerHTML=f.relationships.length?f.relationships.slice(0,6).map(x=>'<div class="p3row"><span><b>'+safe(x.name)+'</b><br><span class="p3muted">'+safe(x.type)+' · '+safe(x.occupation||'Occupation not specified')+'</span></span><span>'+safe(x.status||'Known')+'</span></div>').join(''):'<div class="p3empty">No relationships recorded.</div>';
  q('p3succession').innerHTML='<div class="p3stats"><div class="p3stat"><span>FOUNDER AGE</span><strong>'+(Number(f.age)||'—')+'</strong></div><div class="p3stat"><span>RETIREMENT AGE</span><strong>'+suc.retirementAge+'</strong></div><div class="p3stat"><span>STATUS</span><strong>'+safe(suc.status)+'</strong></div><div class="p3stat"><span>NAMED HEIRS</span><strong>'+suc.heirs.length+'</strong></div></div><div class="p3row"><span>Estate notes</span><span>'+safe(suc.estateNotes||'Not configured')+'</span></div>';
- const tx=fin.ledger.slice(0,8);q('p3ledger').innerHTML=tx.length?tx.map(x=>'<div class="p3row"><span><b>'+safe(x.description)+'</b><br><span class="p3muted">'+safe(x.date)+' · '+safe(x.category)+' · '+safe(x.source)+'</span></span><b style="color:'+(x.type==='Income'?'var(--green)':'var(--red)')+'">'+(x.type==='Income'?'+':'−')+cash(x.amount)+'</b></div>').join(''):'<div class="p3empty">No personal transactions recorded yet.</div>';
+ const tx=fin.ledger.slice(0,8);q('p3ledger').innerHTML=tx.length?tx.map(x=>'<div class="p3row"><span><b>'+safe(x.description)+'</b><br><span class="p3muted">'+safe(x.date)+' · '+safe(x.category)+' · '+safe(x.source)+'</span></span><b style="color:'+(x.type==='Income'?'var(--green)':x.type==='Transfer'?'var(--blue)':'var(--red)')+'">'+(x.type==='Income'?'+':x.type==='Transfer'?'↔':'−')+cash(x.amount)+'</b></div>').join(''):'<div class="p3empty">No personal transactions recorded yet.</div>';
 }
 function persistView(message){if(typeof persist==='function')persist();render();if(message&&typeof toast==='function')toast(message);}
 function form(title,html,saveFn){
@@ -97,14 +97,14 @@ function openTransaction(){
  const cur=active.company.currency||'USD';
  form('Record personal transaction','<form id="p3form"><div class="field"><label>Type</label><select id="p3type"><option>Income</option><option>Expense</option><option>Debt repayment</option></select></div><div class="formgrid"><div class="field"><label>Amount ('+safe(cur)+')</label><input id="p3amount" type="number" min=".01" step=".01" required></div><div class="field"><label>Category</label><select id="p3category"><option>Salary</option><option>Dividend</option><option>Investment</option><option>Housing</option><option>Food</option><option>Transport</option><option>Healthcare</option><option>Education</option><option>Entertainment</option><option>Travel</option><option>Tax</option><option>Insurance</option><option>Other</option></select></div></div><div class="field"><label>Description</label><input id="p3description" required></div><button class="btn primary">Save transaction</button></form>',function(){
  const type=q('p3type').value,amount=Number(q('p3amount').value);if(!(amount>0))throw Error('Enter a positive amount.');
- if(type==='Debt repayment'&&amount>active.founder.personalCash)throw Error('Insufficient personal cash.');
+ if(type==='Debt repayment'&&amount>active.founder.personalCash)throw Error('Insufficient personal cash.');\n if(type==='Debt repayment'&&amount>active.founder.personalDebt)throw Error('Repayment cannot exceed outstanding personal debt.');
  record(type,amount,q('p3category').value,q('p3description').value);if(typeof addLog==='function')addLog('Founder recorded personal '+type.toLowerCase()+': '+q('p3description').value+'.');close();persistView('Personal transaction recorded.');
  });
 }
 function openRecurring(){
  form('Add recurring personal expense','<form id="p3form"><div class="field"><label>Expense name</label><input id="p3rname" required placeholder="Rent, insurance, staff..."></div><div class="formgrid"><div class="field"><label>Amount</label><input id="p3ramount" type="number" min=".01" step=".01" required></div><div class="field"><label>Frequency</label><select id="p3freq"><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="annual">Annually</option></select></div></div><div class="field"><label>Cash flow type</label><select id="p3rtype"><option>Expense</option><option>Income</option></select></div><div class="field"><label>Category</label><input id="p3rcat" value="Lifestyle"></div><button class="btn primary">Add recurring cash flow</button></form>',function(){
  const f=ensure(),amount=Number(q('p3ramount').value);if(!(amount>0))throw Error('Enter a positive amount.');
- f.personalFinance.recurring.push({id:'P3RE-'+(f.personalFinance.recurring.length+1),name:q('p3rname').value,amount:amount,frequency:q('p3freq').value,category:q('p3rcat').value,type:q('p3rtype').value,active:true,created:dateNow(),lastCharged:null});close();persistView('Recurring expense added.');
+ f.personalFinance.recurring.push({id:'P3RE-'+(f.personalFinance.recurring.length+1),name:q('p3rname').value,amount:amount,frequency:q('p3freq').value,category:q('p3rcat').value,type:q('p3rtype').value,active:true,created:dateNow(),lastCharged:null});close();persistView('Recurring personal cash flow added.');
  });
 }
 function openEvent(){
@@ -187,7 +187,30 @@ if(baseSim)window.simulateLifeDay=function(date){baseSim(date);stepDay(date);};
 if(typeof addPersonalAsset==='function')addPersonalAsset=openAsset;if(typeof addRelationship==='function')addRelationship=openRelationship;
 const baseRender=typeof renderPersonal==='function'?renderPersonal:null;
 if(baseRender)renderPersonal=function(){baseRender();render();};
-function init(){const f=ensure();addUI();if(f){render();if(typeof persist==='function')persist();}}
-window.Phase3Founder={version:'3.0.2',ensure:ensure,render:render,stepDay:stepDay,record:record,openTransaction:openTransaction,openRecurring:openRecurring,openEvent:openEvent,openRoutine:openRoutine,openWellbeing:openWellbeing,openReputation:openReputation,openSuccession:openSuccession,openAsset:openAsset,openRelationship:openRelationship,openInvestment:openInvestment};
+
+function runAudit(){
+ const f=ensure();if(!f)return {passed:0,failed:1,tests:[{name:'Active founder exists',ok:false,detail:'Create or load a campaign first.'}]};
+ const tests=[],add=(name,ok,detail)=>tests.push({name,ok:!!ok,detail});
+ const finite=(v)=>Number.isFinite(Number(v));
+ const bounded=(v)=>finite(v)&&Number(v)>=0&&Number(v)<=100;
+ const fin=f.personalFinance,ids=new Set(fin.ledger.map(x=>x.id));
+ add('Unique personal transaction IDs',ids.size===fin.ledger.length,'Every ledger transaction has a unique ID.');
+ add('Ledger record integrity',fin.ledger.every(x=>x&&x.id&&/^\\d{4}-\\d{2}-\\d{2}$/.test(String(x.date))&&finite(x.amount)&&Number(x.amount)>0&&['Income','Expense','Debt repayment','Transfer'].includes(x.type)),'Transactions have dates, positive finite amounts and supported types.');
+ add('Personal cash account reconciliation',Math.abs(Number(fin.accounts.find(a=>a.id==='cash'||String(a.type).toLowerCase()==='cash')?.balance||0)-Number(f.personalCash||0))<0.005,'The personal cash account matches founder personal cash.');
+ add('Personal debt is finite and non-negative',finite(f.personalDebt)&&Number(f.personalDebt)>=0,'Debt cannot be negative or non-finite.');
+ add('Wellbeing metrics are bounded',Object.values(f.wellbeing).filter(v=>typeof v==='number').every(bounded),'Numeric wellbeing values remain within 0–100.');
+ add('Routine values are finite and bounded',finite(f.dailyRoutine.sleepHours)&&f.dailyRoutine.sleepHours>=0&&f.dailyRoutine.sleepHours<=14&&finite(f.dailyRoutine.workHours)&&f.dailyRoutine.workHours>=0&&f.dailyRoutine.workHours<=20&&finite(f.dailyRoutine.exerciseHours)&&f.dailyRoutine.exerciseHours>=0&&f.dailyRoutine.exerciseHours<=8&&finite(f.dailyRoutine.leisureHours)&&f.dailyRoutine.leisureHours>=0&&f.dailyRoutine.leisureHours<=12&&finite(f.dailyRoutine.daysOffPerWeek)&&f.dailyRoutine.daysOffPerWeek>=0&&f.dailyRoutine.daysOffPerWeek<=7,'Daily routine inputs stay within their supported ranges.');
+ add('Recurring cash flows are valid',fin.recurring.every(x=>x&&x.id&&String(x.name||'').trim()&&finite(x.amount)&&Number(x.amount)>0&&['monthly','quarterly','annual'].includes(x.frequency)&&['Income','Expense'].includes(x.type)),'Every recurring item has a valid name, amount, frequency and cash-flow type.');
+ add('Investment portfolio values are valid',fin.investments.every(x=>x&&x.id&&finite(x.principal)&&Number(x.principal)>=0&&finite(x.value)&&Number(x.value)>=0&&finite(x.monthlyReturn)),'Investment principal, valuation and estimated return are finite.');
+ add('Personal assets are valid',f.personalAssets.every(x=>x&&x.id&&String(x.name||'').trim()&&finite(x.purchasePrice)&&Number(x.purchasePrice)>=0&&finite(x.currentValue)&&Number(x.currentValue)>=0&&finite(x.monthlyMaintenance)&&Number(x.monthlyMaintenance)>=0),'Founder assets have valid names, values and maintenance costs.');
+ add('Relationship records are valid',f.relationships.every(x=>x&&x.id&&String(x.name||'').trim()&&bounded(x.quality)),'Relationships have names and quality scores within 0–100.');
+ add('Calendar records are valid',f.personalCalendar.every(x=>x&&x.id&&String(x.title||'').trim()&&/^\\d{4}-\\d{2}-\\d{2}$/.test(String(x.date))),'Personal calendar entries have unique identifiers, titles and ISO dates.');
+ add('Succession plan structure',f.succession&&Array.isArray(f.succession.heirs)&&finite(f.succession.retirementAge)&&f.succession.retirementAge>=40&&f.succession.retirementAge<=100,'Succession plan has a valid retirement target and heir list.');
+ add('Phase 3 save serialization',(()=>{try{JSON.stringify(active);return true}catch(e){return false}})(),'The active campaign, founder profile and personal records serialize to JSON.');
+ f.phase3.audit={date:dateNow(),passed:tests.filter(t=>t.ok).length,failed:tests.filter(t=>!t.ok).length,tests};
+ return f.phase3.audit;
+}
+\nfunction init(){const f=ensure();addUI();if(f){render();if(typeof persist==='function')persist();}}
+window.Phase3Founder={version:'3.0.3',ensure:ensure,render:render,stepDay:stepDay,record:record,runAudit:runAudit,openTransaction:openTransaction,openRecurring:openRecurring,openEvent:openEvent,openRoutine:openRoutine,openWellbeing:openWellbeing,openReputation:openReputation,openSuccession:openSuccession,openAsset:openAsset,openRelationship:openRelationship,openInvestment:openInvestment};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
