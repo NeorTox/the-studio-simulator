@@ -37,3 +37,5 @@ jobs:
         run: node actual-phase3-submit-qa.js
       - name: Run simulation and save round-trip regression
         run: node phase3-end-to-end.js
+      - name: Run Phase 4 company management browser QA
+        run: node phase4-browser-qa.js
