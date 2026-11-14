@@ -64,6 +64,78 @@ function render(){
  $('p4compliance').innerHTML=m.compliance.map(x=>'<div class="p4row"><span><b>'+esc(x.name)+'</b><br><span class="p4muted">'+esc(x.owner)+' · '+esc(x.dueDate||'No due date')+'</span></span><select data-compliance="'+esc(x.id)+'" aria-label="Status for '+esc(x.name)+'">'+['Pending review','In progress','Compliant','At risk','Non-compliant'].map(s=>'<option '+(x.status===s?'selected':'')+'>'+s+'</option>').join('')+'</select></div>').join('');
  root.querySelectorAll('[data-compliance]').forEach(e=>e.onchange=()=>updateCompliance(e.dataset.compliance,e.value));
 }
+
+function money(v){return Math.round((Number(v)||0)*100)/100;}
+function postCompanyEntry(description,category,amount,date,meta){
+ if(!Number.isFinite(Number(amount))||!Number(amount))return false;
+ if(Number(amount)<0&&Number(active.company.cash)<Math.abs(Number(amount)))return false;
+ return typeof window.post==='function'&&!!window.post(description,category,money(amount),date,'transaction',{phase4:true,...(meta||{})});
+}
+function branchEconomics(id,values){
+ const m=ensure(),b=m.branches.find(x=>x.id===id);if(!b)throw Error('Branch not found.');
+ const v=values||{};
+ for(const k of ['monthlyRevenue','monthlyRent','monthlyPayroll','monthlyOperatingCost'])if(v[k]!==undefined&&(!Number.isFinite(Number(v[k]))||Number(v[k])<0))throw Error('Branch financial values must be non-negative numbers.');
+ Object.assign(b,{monthlyRevenue:money(v.monthlyRevenue??b.monthlyRevenue),monthlyRent:money(v.monthlyRent??b.monthlyRent),monthlyPayroll:money(v.monthlyPayroll??b.monthlyPayroll),monthlyOperatingCost:money(v.monthlyOperatingCost??b.monthlyOperatingCost),economicsUpdated:today()});
+ log('Branch economics updated',b.name);persistView('Branch economics updated.');return b;
+}
+function branchMonthly(date){
+ const m=ensure(),month=String(date).slice(0,7);let posted=0,failed=0;
+ m.branches.filter(b=>b.status==='Active'&&b.economicsMonth!==month).forEach(b=>{
+  const revenue=money(b.monthlyRevenue),cost=money((Number(b.monthlyRent)||0)+(Number(b.monthlyPayroll)||0)+(Number(b.monthlyOperatingCost)||0));
+  if(revenue&&!postCompanyEntry('Branch revenue — '+b.name,'Branch revenue',revenue,date,{branchId:b.id,financialMonth:month})) {failed++;return;}
+  if(cost&&!postCompanyEntry('Branch operating costs — '+b.name,'Branch operating expense',-cost,date,{branchId:b.id,financialMonth:month})) {failed++;return;}
+  b.economicsMonth=month;b.lastFinancials={month,revenue,cost,operatingProfit:money(revenue-cost)};posted++;
+ });
+ return {posted,failed};
+}
+function addContractPayment(id,payment){
+ const m=ensure(),c=m.contracts.find(x=>x.id===id);if(!c||c.status!=='Active')throw Error('Choose an active contract.');
+ const amount=money(payment.amount);if(!(amount>0)||!/^\d{4}-\d{2}-\d{2}$/.test(payment.dueDate))throw Error('A positive amount and valid due date are required.');
+ c.payments=Array.isArray(c.payments)?c.payments:[];c.payments.push({id:uid('PAY'),dueDate:payment.dueDate,amount,direction:payment.direction==='in'?'in':'out',milestone:String(payment.milestone||'Contract payment'),status:'Scheduled'});
+ log('Contract payment scheduled',c.title+' · '+payment.dueDate+' · '+amount);persistView('Contract payment scheduled.');return c.payments[c.payments.length-1];
+}
+function contractFinance(date){
+ const m=ensure();let paid=0,failed=0;
+ m.contracts.forEach(c=>(c.payments||[]).filter(p=>p.status==='Scheduled'&&p.dueDate<=date).forEach(p=>{
+  const sign=p.direction==='in'?1:-1,amount=money(p.amount)*sign;
+  if(!postCompanyEntry(p.milestone+' — '+c.title,'Contract settlement',amount,date,{contractId:c.id,paymentId:p.id,direction:p.direction})){failed++;return;}
+  p.status='Paid';p.paidDate=date;paid++;
+ }));
+ return {paid,failed};
+}
+function setBoardThreshold(amount){const n=money(amount);if(n<0)throw Error('Threshold cannot be negative.');ensure().approvalThreshold=n;log('Board approval threshold changed',n);persistView('Board threshold updated.');return n;}
+function approveCapitalRequest(request){
+ const m=ensure(),amount=money(request.amount);if(!(amount>0))throw Error('Enter a positive capital request.');
+ const votes=Array.isArray(request.votes)?request.votes:[];
+ const yes=votes.filter(v=>v.choice==='yes').length,no=votes.filter(v=>v.choice==='no').length;
+ const quorum=Math.max(1,Math.ceil((Number(request.boardSize)||3)/2));
+ const outcome=yes>=quorum&&yes>no?'Approved':(no>=quorum&&no>=yes?'Rejected':'Deferred');
+ const d={id:uid('BRD'),title:String(request.title||'Capital authorization'),category:'Capital allocation',resolution:String(request.description||''),amount,yesVotes:yes,noVotes:no,quorum,outcome,date:today()};
+ m.boardDecisions.unshift(d);log('Capital authorization vote',d.title+' — '+outcome);persistView('Board vote recorded: '+outcome+'.');return d;
+}
+function postApprovedCapital(decisionId,description,departmentId){
+ const m=ensure(),d=m.boardDecisions.find(x=>x.id===decisionId);if(!d||d.outcome!=='Approved'||!(d.amount>0))throw Error('An approved capital resolution is required.');
+ if(d.posted)throw Error('This authorization has already been spent.');
+ const dept=m.departments.find(x=>x.id===departmentId);if(!dept||dept.status!=='Active')throw Error('Choose an active department.');
+ const year=today().slice(0,4);dept.budgetSpent=dept.budgetSpent||{};const spent=money(dept.budgetSpent[year]);
+ if(money(dept.budget)-spent<d.amount)throw Error('Department budget is insufficient.');
+ if(!postCompanyEntry(description||d.title,'Board-authorized capital',-d.amount,today(),{departmentId:dept.id,boardDecisionId:d.id} ))throw Error('Company cash is insufficient or payment failed.');
+ dept.budgetSpent[year]=money(spent+d.amount);d.posted=true;d.postedDate=today();log('Board capital released',d.title+' · '+d.amount);persistView('Board-authorized capital expenditure paid.');return d;
+}
+function compliancePenalty(item,date){
+ const amount=money(item.penaltyAmount||0);if(!amount||item.penaltyPosted)return true;
+ if(!postCompanyEntry('Regulatory penalty — '+item.name,'Compliance penalty',-amount,date,{complianceId:item.id}))return false;
+ item.penaltyPosted=true;item.penaltyDate=date;item.status='Non-compliant';return true;
+}
+function managementReport(date){
+ const m=ensure(),year=String(date||today()).slice(0,4),month=String(date||today()).slice(0,7);
+ const departments=m.departments.map(d=>{const spend=money(d.budgetSpent?.[year]);return {id:d.id,name:d.name,budget:money(d.budget),spent:spend,remaining:money(Math.max(0,Number(d.budget)-spend)),variance:money(Number(d.budget)-spend)};});
+ const branches=m.branches.map(b=>({...b,month: b.lastFinancials?.month===month?b.lastFinancials:null}));
+ const contracts=m.contracts.map(c=>({id:c.id,title:c.title,value:money(c.value),paid:money((c.payments||[]).filter(p=>p.status==='Paid').reduce((a,p)=>a+(p.direction==='in'?1:-1)*Number(p.amount),0)),outstanding:(c.payments||[]).filter(p=>p.status==='Scheduled').length}));
+ const subsidiaryOwnership=m.subsidiaries.reduce((a,s)=>a+money(s.ownership),0);
+ return {date:date||today(),year,month,departments,branches,contracts,subsidiaries:m.subsidiaries.map(s=>({name:s.name,ownership:s.ownership,jurisdiction:s.jurisdiction})),consolidation:{subsidiaryCount:m.subsidiaries.filter(s=>s.status==='Active').length,ownershipWeightedPercent:money(subsidiaryOwnership)},compliance:{total:m.compliance.length,overdue:m.compliance.filter(x=>x.dueDate&&x.dueDate<=(date||today())&&x.status!=='Compliant').length,nonCompliant:m.compliance.filter(x=>x.status==='Non-compliant').length}};
+}
+
 function runAudit(){
  const m=ensure(),tests=[],add=(name,ok)=>tests.push({name,ok:!!ok});
  add('Department identifiers are unique',new Set(m.departments.map(x=>x.id)).size===m.departments.length&&m.departments.every(x=>x.id&&x.name));
@@ -73,7 +145,10 @@ function runAudit(){
  add('Branch and subsidiary records are valid',m.branches.every(x=>x.id&&x.name&&x.location)&&m.subsidiaries.every(x=>x.id&&x.name&&x.jurisdiction&&x.ownership>0&&x.ownership<=100));
  add('Board decisions have outcomes',m.boardDecisions.every(x=>x.id&&x.title&&x.resolution&&['Approved','Rejected','Deferred'].includes(x.outcome)));
  add('Contract dates and values are valid',m.contracts.every(x=>x.id&&x.title&&x.counterparty&&Number(x.value)>=0&&(!x.endDate||x.endDate>=x.startDate)));
- add('Compliance register is valid',m.compliance.every(x=>x.id&&x.name&&x.owner&&['Pending review','In progress','Compliant','At risk','Non-compliant'].includes(x.status)));
+ add('Compliance register is valid',m.compliance.every(x=>x.id&&x.name&&x.owner&&['Pending review','In progress','Compliant','At risk','Non-compliant'].includes(x.status)&&Number(x.penaltyAmount||0)>=0));
+ add('Branch economics are non-negative and monthly records are valid',m.branches.every(x=>['monthlyRevenue','monthlyRent','monthlyPayroll','monthlyOperatingCost'].every(k=>Number(x[k]||0)>=0)));
+ add('Contract payment schedules are valid',m.contracts.every(x=>(x.payments||[]).every(p=>p.id&&p.dueDate&&Number(p.amount)>0&&['in','out'].includes(p.direction)&&['Scheduled','Paid'].includes(p.status))));
+ add('Board capital authorizations have valid vote outcomes',m.boardDecisions.every(x=>!x.amount||(Number(x.amount)>0&&['Approved','Rejected','Deferred'].includes(x.outcome))));
  add('Company management save serialization',(()=>{try{JSON.stringify(active);return true}catch(e){return false}})());
  const result={date:today(),passed:tests.filter(x=>x.ok).length,failed:tests.filter(x=>!x.ok).length,tests};m.audit=result;return result;
 }
@@ -105,9 +180,14 @@ function postMonthly(date){
  return {paid:Math.round(paid*100)/100,failed};
 }
 function stepDay(date){
- const m=ensure();if(!m||m.lastProcessedDate===date)return;
+ const m=ensure();if(!m||m.lastProcessedDate===date)return {skipped:true};
  m.contracts.forEach(c=>{if(c.status==='Active'&&c.endDate&&c.endDate<date){c.status='Expired';log('Contract expired',c.title);}});
- m.lastProcessedDate=date;
+ const month=String(date).slice(0,7),monthStart=month+'-01';
+ let branchResult={posted:0,failed:0},contractResult={paid:0,failed:0},penalties=0;
+ if(date.slice(8,10)==='01'||!m.lastBranchMonth){branchResult=branchMonthly(date);m.lastBranchMonth=month;}
+ contractResult=contractFinance(date);
+ m.compliance.forEach(x=>{if(x.dueDate&&x.dueDate<date&&x.status!=='Compliant'&&!x.penaltyPosted&&Number(x.penaltyAmount)>0){if(compliancePenalty(x,date))penalties++;}});
+ m.lastProcessedDate=date;return {branchResult,contractResult,penalties};
 }
 function installHooks(){
  const priorRender=window.render;
@@ -116,6 +196,6 @@ function installHooks(){
  if(typeof priorDay==='function'&&!priorDay.__phase4Wrapped){const wrapped=function(...args){const out=priorDay.apply(this,args);stepDay(today());return out;};wrapped.__phase4Wrapped=true;window.simulateLifeDay=wrapped;}
 }
 function init(){installHooks();if(active){ensure();render();}}
-window.Phase4Company={version:'4.0.0',ensure,render,runAudit,stepDay,monthlyPayroll,postMonthly,spendDepartmentBudget,addDepartment,addExecutive,addBranch,addSubsidiary,addBoardDecision,addContract,addCompliance,restructure};
+window.Phase4Company={version:'4.1.0',ensure,render,runAudit,stepDay,monthlyPayroll,postMonthly,spendDepartmentBudget,addDepartment,addExecutive,addBranch,addSubsidiary,addBoardDecision,addContract,addCompliance,restructure,branchEconomics,branchMonthly,addContractPayment,contractFinance,setBoardThreshold,approveCapitalRequest,postApprovedCapital,managementReport};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
