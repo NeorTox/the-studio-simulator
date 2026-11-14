@@ -9,6 +9,14 @@ A film and entertainment company simulation game.
 - Next roadmap phase: Phase 4 — Company Management
 - Production: https://the-studio-simulator.vercel.app/
 
+## Deployment
+
+- Source branch: `main`
+- Hosting: Vercel Git integration
+- Build output: `dist/`
+- Static build copies the application entry point, engines, manifest, icon, and service worker into the deployment output.
+- Production must not be promoted until the candidate deployment passes asset, route, and application smoke checks.
+
 ## Source of truth
 
 This repository is intended to hold the complete application source, engines, static assets, tests, and roadmap documentation. Do not treat this bootstrap README as a complete game import or as a production release.
