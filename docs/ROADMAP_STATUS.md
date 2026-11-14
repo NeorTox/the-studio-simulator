@@ -9,7 +9,7 @@ One complete phase is delivered and signed off before starting the next. Phases 
 | 2 | Population & NPC intelligence | COMPLETE — population audit and active-campaign regression passed |
 | 3 | Founder & personal life | COMPLETE — browser forms, finance integrity, one-year simulation, export/import/reload and legacy migration passed in CI |
 | 4 | Company management | COMPLETE — branch economics, contract settlements, board capital approvals, compliance penalties, management accounts, audit and mobile browser regression passed |
-| 5 | Entertainment production | NOT STARTED |
+| 5 | Entertainment production | IN PROGRESS — script development, revision history, script review, studio greenlight, pre-production readiness gates and browser QA added; final CI verification pending |
 | 6 | Entertainment ecosystem | NOT STARTED |
 | 7 | Smartphone & media | NOT STARTED |
 | 8 | Financial empire | NOT STARTED |
@@ -29,7 +29,7 @@ One complete phase is delivered and signed off before starting the next. Phases 
 - Department restructuring and closure controls
 - Persistent company-management state, audit and simulation integration
 
-Current phase: Phase 5 — Entertainment production.
+Current phase: Phase 5 — Entertainment production.\n\n## Phase 5 implementation in progress\n- Script room with logline, synopsis and screenplay draft persistence.\n- Revision snapshots with dated notes and word counts.\n- Script review decisions and quality scoring.\n- Studio greenlight with approved budget, originality and feasibility scoring.\n- Pre-production readiness checklist covering director, producer, budget, cast, locations and schedule.\n- Stage progression gates prevent advancing without the required creative and production approvals.\n- Phase 5 engine, deployment inclusion and browser regression suite added; final CI sign-off pending.
 
 ## Phase 4 completion evidence
 - Department budgets and actual expenditure post to the company cash ledger; spending is constrained by available cash, annual budget and board approval threshold.
