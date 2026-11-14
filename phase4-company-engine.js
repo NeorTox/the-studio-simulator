@@ -7,7 +7,7 @@ function ensure(){
  if(!active)return null;
  active.company=active.company||{};
  const c=active.company;
- c.management=Object.assign({version:'4.0.0',departments:[],executives:[],branches:[],subsidiaries:[],boardDecisions:[],contracts:[],compliance:[],history:[],lastProcessedDate:null},c.management||{});
+ c.management=Object.assign({version:'4.1.0',approvalThreshold:25000,departments:[],executives:[],branches:[],subsidiaries:[],boardDecisions:[],contracts:[],compliance:[],history:[],lastProcessedDate:null},c.management||{});
  const m=c.management;
  for(const k of ['departments','executives','branches','subsidiaries','boardDecisions','contracts','compliance','history'])if(!Array.isArray(m[k]))m[k]=[];
  if(!m.departments.length){
@@ -29,16 +29,18 @@ function modal(title,html,save){
 function field(label,id,type='text',required=true,extra=''){return '<div class="field"><label>'+label+'</label><input id="'+id+'" type="'+type+'" '+(required?'required':'')+' '+extra+'></div>';}
 function addDepartment(){const m=ensure();modal('Create department','<form id="p4form">'+field('Department name','p4name')+field('Department head / manager','p4head')+'<div class="field"><label>Reports to department</label><select id="p4parent"><option value="">Top-level department</option>'+m.departments.filter(x=>x.status!=='Closed').map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('')+'</select></div>'+field('Annual budget','p4budget','number',false,'min="0" step=".01" value="0"')+field('Initial headcount','p4staff','number',false,'min="0" step="1" value="0"')+'<button class="btn primary">Create department</button></form>',()=>{const m=ensure(),name=$('p4name').value.trim();if(m.departments.some(x=>x.name.toLowerCase()===name.toLowerCase()))throw Error('A department with that name already exists.');m.departments.push({id:uid('DEP'),name,head:$('p4head').value.trim()||'Unassigned',parentId:$('p4parent').value||null,budget:Math.max(0,Number($('p4budget').value)||0),headcount:Math.max(0,Math.floor(Number($('p4staff').value)||0)),status:'Active',created:today()});log('Department created',name);close();persistView('Department created.');});}
 function spendDepartmentBudget(){
- const m=ensure(),activeDepts=m.departments.filter(d=>d.status==='Active');
- modal('Authorize departmental expenditure','<form id="p4form"><div class="field"><label>Department</label><select id="p4spenddept">'+activeDepts.map(d=>'<option value="'+esc(d.id)+'">'+esc(d.name)+'</option>').join('')+'</select></div>'+field('Expense description','p4spenddesc')+'<div class="field"><label>Expense category</label><select id="p4spendcat"><option>Department operating expense</option><option>Payroll & staffing</option><option>Technology & equipment</option><option>Research & development</option><option>Travel & administration</option><option>Professional services</option><option>Marketing & publicity</option><option>Facilities & maintenance</option></select></div>'+field('Amount','p4spendamount','number',true,'min="0.01" step=".01"')+'<p class="p4muted">Approved spending is immediately charged to company cash and the department\'s annual budget. The company must have sufficient cash and the department must have sufficient remaining budget.</p><button class="btn primary">Authorize and pay</button></form>',()=>{
+ const m=ensure(),activeDepts=m.departments.filter(d=>d.status==='Active'),approved=m.boardDecisions.filter(x=>x.outcome==='Approved'&&x.amount>0&&!x.posted);
+ modal('Authorize departmental expenditure','<form id="p4form"><div class="field"><label>Department</label><select id="p4spenddept">'+activeDepts.map(d=>'<option value="'+esc(d.id)+'">'+esc(d.name)+'</option>').join('')+'</select></div><div class="field"><label>Board authorization (required at / above '+money(m.approvalThreshold).toFixed(2)+')</label><select id="p4spendboard"><option value="">No board authorization</option>'+approved.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.title)+' · '+money(x.amount).toFixed(2)+'</option>').join('')+'</select></div>'+field('Expense description','p4spenddesc')+'<div class="field"><label>Expense category</label><select id="p4spendcat"><option>Department operating expense</option><option>Payroll & staffing</option><option>Technology & equipment</option><option>Research & development</option><option>Travel & administration</option><option>Professional services</option><option>Marketing & publicity</option><option>Facilities & maintenance</option></select></div>'+field('Amount','p4spendamount','number',true,'min="0.01" step=".01"')+'<p class="p4muted">Approved spending is immediately charged to company cash and the department\'s annual budget. The company must have sufficient cash and the department must have sufficient remaining budget.</p><button class="btn primary">Authorize and pay</button></form>',()=>{
  const dept=m.departments.find(d=>d.id===$('p4spenddept').value),amount=Math.round(Number($('p4spendamount').value)*100)/100,desc=$('p4spenddesc').value.trim(),year=today().slice(0,4);
  if(!dept||dept.status!=='Active')throw Error('Choose an active department.');
  if(!desc||!Number.isFinite(amount)||amount<=0)throw Error('Enter a description and a positive amount.');
  dept.budgetSpent=dept.budgetSpent||{};const used=Number(dept.budgetSpent[year]||0),budget=Math.max(0,Number(dept.budget)||0),remaining=Math.max(0,budget-used);
  if(amount>remaining+0.000001)throw Error('Insufficient department budget. Remaining this year: '+remaining.toFixed(2));
+ const threshold=money(m.approvalThreshold??25000),decisionId=$('p4spendboard').value,decision=m.boardDecisions.find(x=>x.id===decisionId);
+ if(amount>=threshold&&(!decision||decision.outcome!=='Approved'||decision.posted||money(decision.amount)<amount))throw Error('An unspent approved board resolution covering this amount is required.');
  if(Number(active.company.cash)<amount)throw Error('Insufficient company cash.');
  if(typeof window.post!=='function'||!window.post(desc+' — '+dept.name,'Department operating expense',-amount,today(),'transaction',{phase4:true,departmentId:dept.id,department:dept.name,expenseCategory:$('p4spendcat').value,financialYear:year}))throw Error('The company payment could not be posted.');
- dept.budgetSpent[year]=Math.round((used+amount)*100)/100;
+ dept.budgetSpent[year]=Math.round((used+amount)*100)/100;if(amount>=threshold&&decision){decision.posted=true;decision.postedDate=today();}
  log('Department expenditure paid',dept.name+' · '+desc+' · '+amount+' · FY '+year);
  close();persistView('Department expenditure authorized and paid.');
  });
@@ -91,8 +93,8 @@ function branchMonthly(date){
  const m=ensure(),month=String(date).slice(0,7);let posted=0,failed=0;
  m.branches.filter(b=>b.status==='Active'&&b.economicsMonth!==month).forEach(b=>{
   const revenue=money(b.monthlyRevenue),cost=money((Number(b.monthlyRent)||0)+(Number(b.monthlyPayroll)||0)+(Number(b.monthlyOperatingCost)||0));
-  if(revenue&&!postCompanyEntry('Branch revenue — '+b.name,'Branch revenue',revenue,date,{branchId:b.id,financialMonth:month})) {failed++;return;}
-  if(cost&&!postCompanyEntry('Branch operating costs — '+b.name,'Branch operating expense',-cost,date,{branchId:b.id,financialMonth:month})) {failed++;return;}
+  if(revenue&&b.revenuePostedMonth!==month){if(!postCompanyEntry('Branch revenue — '+b.name,'Branch revenue',revenue,date,{branchId:b.id,financialMonth:month})){failed++;return;}b.revenuePostedMonth=month;}
+  if(cost&&b.costPostedMonth!==month){if(!postCompanyEntry('Branch operating costs — '+b.name,'Branch operating expense',-cost,date,{branchId:b.id,financialMonth:month})){failed++;return;}b.costPostedMonth=month;}
   b.economicsMonth=month;b.lastFinancials={month,revenue,cost,operatingProfit:money(revenue-cost)};posted++;
  });
  return {posted,failed};
