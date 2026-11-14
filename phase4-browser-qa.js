@@ -45,7 +45,7 @@ const {chromium}=require('playwright'),assert=require('assert');
  await p.evaluate(()=>Phase4Company.stepDay('2026-11-14'));
  const payrollDue=await p.evaluate(()=>Phase4Company.monthlyPayroll('2026-11-30'));
  assert.equal(payrollDue,8500,'Executive compensation is prorated from appointment date');
- const payrollResult=await p.evaluate(()=>{const before=active.company.cash,result=Phase4Company.postMonthly('2026-11-30');return {before,after:active.company.cash,result,ledger:active.ledger.filter(x=>x.phase4===true).length,paidMonth:active.company.management.executives.find(x=>x.name==='Mira Shah').lastPaidMonth}});
+ const payrollResult=await p.evaluate(()=>{const before=active.company.cash,result=Phase4Company.postMonthly('2026-11-30');return {before,after:active.company.cash,result,ledger:active.ledger.filter(x=>x.executiveId&&x.phase4===true).length,paidMonth:active.company.management.executives.find(x=>x.name==='Mira Shah').lastPaidMonth}});
  assert.equal(payrollResult.result.paid,8500);assert.equal(payrollResult.result.failed,0);assert.equal(payrollResult.ledger,1);assert.equal(payrollResult.paidMonth,'2026-11');
  const duplicatePayroll=await p.evaluate(()=>Phase4Company.postMonthly('2026-11-30'));
  assert.equal(duplicatePayroll.paid,0,'Executive payroll cannot be charged twice in one month');
