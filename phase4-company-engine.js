@@ -61,6 +61,33 @@ function runAudit(){
  add('Company management save serialization',(()=>{try{JSON.stringify(active);return true}catch(e){return false}})());
  const result={date:today(),passed:tests.filter(x=>x.ok).length,failed:tests.filter(x=>!x.ok).length,tests};m.audit=result;return result;
 }
+
+function monthlyPayroll(date){
+ const m=ensure();if(!m)return 0;
+ const month=String(date).slice(0,7),days=new Date(Date.UTC(Number(date.slice(0,4)),Number(date.slice(5,7)),0)).getUTCDate();
+ return Math.round(m.executives.filter(e=>e.status==='Active'&&e.lastPaidMonth!==month).reduce((sum,e)=>{
+  const annual=Math.max(0,Number(e.annualCompensation)||0),appointed=e.appointed||active.startDate||date;
+  if(appointed>date)return sum;
+  const start=appointed.slice(0,7)===month?Number(appointed.slice(8,10)):1;
+  const payable=Math.max(0,days-start+1);
+  return sum+annual/12*payable/days;
+ },0)*100)/100;
+}
+function postMonthly(date){
+ const m=ensure();if(!m)return {paid:0,failed:0};
+ const month=String(date).slice(0,7);let paid=0,failed=0;
+ m.executives.filter(e=>e.status==='Active'&&e.lastPaidMonth!==month).forEach(e=>{
+  const annual=Math.max(0,Number(e.annualCompensation)||0),appointed=e.appointed||active.startDate||date;
+  if(appointed>date)return;
+  const days=new Date(Date.UTC(Number(date.slice(0,4)),Number(date.slice(5,7)),0)).getUTCDate();
+  const start=appointed.slice(0,7)===month?Number(appointed.slice(8,10)):1;
+  const amount=Math.round(annual/12*Math.max(0,days-start+1)/days*100)/100;
+  if(amount<=0){e.lastPaidMonth=month;return;}
+  if(typeof window.post!=='function'||!window.post('Executive compensation — '+e.name,'Executive payroll',-amount,date,'payroll',{executiveId:e.id,department:e.department,phase4:true})){failed++;return;}
+  e.lastPaidMonth=month;paid+=amount;log('Executive compensation paid',e.name+' · '+amount);
+ });
+ return {paid:Math.round(paid*100)/100,failed};
+}
 function stepDay(date){
  const m=ensure();if(!m||m.lastProcessedDate===date)return;
  m.contracts.forEach(c=>{if(c.status==='Active'&&c.endDate&&c.endDate<date){c.status='Expired';log('Contract expired',c.title);}});
@@ -73,6 +100,6 @@ function installHooks(){
  if(typeof priorDay==='function'&&!priorDay.__phase4Wrapped){const wrapped=function(...args){const out=priorDay.apply(this,args);stepDay(today());return out;};wrapped.__phase4Wrapped=true;window.simulateLifeDay=wrapped;}
 }
 function init(){installHooks();if(active){ensure();render();}}
-window.Phase4Company={version:'4.0.0',ensure,render,runAudit,stepDay,addDepartment,addExecutive,addBranch,addSubsidiary,addBoardDecision,addContract,addCompliance,restructure};
+window.Phase4Company={version:'4.0.0',ensure,render,runAudit,stepDay,monthlyPayroll,postMonthly,addDepartment,addExecutive,addBranch,addSubsidiary,addBoardDecision,addContract,addCompliance,restructure};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
