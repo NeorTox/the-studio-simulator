@@ -499,7 +499,7 @@ function createProject(){if(!active){toast('Create a campaign first.');return}sh
 function advanceProject(id){
  let p=active.projects.find(x=>x.id===id);if(!p||p.stage>=stages.length-1)return;
  const labor=active.market&&active.market.labor;if(p.stage===3&&labor&&labor.disruptionUntil&&active.date<=labor.disruptionUntil){toast('Principal photography is disrupted by an industry labour stoppage through '+labor.disruptionUntil+'.');return;}
- const weights=['0.10','0.15','0.45','0.30','0','0'],remainingWeight=weights.slice(p.stage).reduce((a,b)=>dadd(a,b),dec('0')),available=dsub(dsub(String(p.budget),String(p.spent||0)),String(p.committed||0));
+ const approvedBudget=String(p.greenlightBudget||p.budget),weights=['0.10','0.15','0.45','0.30','0','0'],remainingWeight=weights.slice(p.stage).reduce((a,b)=>dadd(a,b),dec('0')),available=dsub(dsub(approvedBudget,String(p.spent||0)),String(p.committed||0));
  const cost=remainingWeight>0n&&available>0n?roundCurrency(ddiv(dmul(available,weights[p.stage]),remainingWeight)):dec('0');
  const minimumDays=[14,60,30,45,90,30],elapsed=Math.max(0,Math.floor((Date.parse(active.date+'T00:00:00Z')-Date.parse((p.stageStarted||active.date)+'T00:00:00Z'))/86400000)),required=minimumDays[p.stage]||0;
  let breakdown=[];
