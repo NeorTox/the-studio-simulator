@@ -20,13 +20,13 @@ function ensure(){
  if(active.distribution&&Array.isArray(active.distribution.deals)&&!e.legacyDistributionMigrated){
   let migrated=0;
   active.distribution.deals.forEach(old=>{
-   if(e.deals.some(d=>d.legacyId===old.id))return;
+   if(old.id&&e.deals.some(d=>d.legacyId===old.id))return;
    const channelMap={'Theatrical':'Theatrical','Streaming':'Streaming SVOD','Broadcast television':'Broadcast TV','Home entertainment':'TVOD / PVOD','Airline & non-theatrical':'International sales','Educational':'Broadcast TV','Merchandising':'Theatrical','Multi-platform':'International sales'};
    const rightsMap={'Theatrical':'Theatrical exhibition','Streaming':'Streaming','Broadcast television':'Broadcast','Home entertainment':'Home video','Airline & non-theatrical':'All media','Educational':'Broadcast','Merchandising':'Merchandising','Multi-platform':'All media'};
    const oldChannel=String(old.channel||'Streaming'),start=isoDate(old.startDate)?old.startDate:active.date,end=isoDate(old.endDate)?old.endDate:null;
    const advance=Math.max(0,money(old.advance)),settled=Math.max(0,money(old.totalSettled));
    const status=old.status==='Active'&&(!end||end>=active.date)?'Active':'Completed';
-   e.deals.push({id:'MIG-'+String(old.id||uid('LEGACY')),legacyId:old.id,projectId:old.projectId||'',projectTitle:old.title||old.projectTitle||'Legacy catalogue title',channel:channelMap[oldChannel]||'Streaming SVOD',licensee:String(old.partner||'Legacy distribution partner'),territory:String(old.territory||'Worldwide'),rights:rightsMap[oldChannel]||'Streaming',exclusive:true,startDate:start,endDate:end,upfrontFee:advance,revenueShare:clampPercent(old.royaltyRate),distributorFee:0,minimumGuarantee:advance,status,signedDate:start,paidToDate:advance+settled,reportedRevenue:0,legacySettled: settled,notes:'Migrated from the previous distribution ledger; prior settlements preserved.'});
+   e.deals.push({id:'MIG-'+String(old.id||uid('LEGACY')),legacyId:old.id,projectId:old.projectId||'LEGACY-CATALOGUE',projectTitle:old.title||old.projectTitle||'Legacy catalogue title',channel:channelMap[oldChannel]||'Streaming SVOD',licensee:String(old.partner||'Legacy distribution partner'),territory:String(old.territory||'Worldwide'),rights:rightsMap[oldChannel]||'Streaming',exclusive:true,startDate:start,endDate:end,upfrontFee:advance,revenueShare:clampPercent(old.royaltyRate),distributorFee:0,minimumGuarantee:advance,status,signedDate:start,paidToDate:advance+settled,reportedRevenue:0,legacySettled: settled,notes:'Migrated from the previous distribution ledger; prior settlements preserved.'});
    if(old.status==='Active')old.status='Migrated';
    old.migratedToEcosystemId=e.deals[e.deals.length-1].id;migrated++;
   });
