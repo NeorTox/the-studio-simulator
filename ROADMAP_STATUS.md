@@ -13,7 +13,7 @@ One complete phase is delivered and signed off before starting the next. Phases 
 | 6 | Entertainment ecosystem | COMPLETE — finance retries, browser QA, media/awards and three-year integration passed |
 | 7 | Smartphone & media | COMPLETE — phone, telecom, newsrooms, games, regional NPC simulation and three-year integration passed |
 | 8 | Financial empire | COMPLETE — institutional funds, private assets, portfolio valuation, treasury policy, credit metrics, browser QA and three-year integration passed |
-| 9 | Global economy | IN PROGRESS — regional macroeconomies, FX strength, commodities, trade corridors, policy and daily integration |
+| 9 | Global economy | COMPLETE — 8 regional economies, 15 trade corridors, 10 commodity markets, policy controls, browser QA and 1,095-day integration passed |
 | 10 | Autonomous competitors | NOT STARTED |
 | 11 | Technology & sustainability | NOT STARTED |
 | 12 | Generations & world evolution | NOT STARTED |
@@ -29,7 +29,7 @@ One complete phase is delivered and signed off before starting the next. Phases 
 - Department restructuring and closure controls
 - Persistent company-management state, audit and simulation integration
 
-Current phase: Phase 9 — Global economy.\n\n## Phase 5 completion\n- Script room with logline, synopsis and screenplay draft persistence.\n- Revision snapshots with dated notes and word counts.\n- Script review decisions and quality scoring.\n- Studio greenlight with approved budget, originality and feasibility scoring.\n- Pre-production readiness checklist covering director, producer, budget, cast, locations and schedule.\n- Stage progression gates prevent advancing without the required creative and production approvals.\n- Production continuity: script supervisor, footage backup and daily production reporting are mandatory before production wrap.\n- Safety incident reporting, severity classification and resolution records; unresolved high/critical incidents block wrap and delivery.\n- Production insurance policies with coverage dates, premiums, limits and claim validation, including exact-limit and invalid-amount tests.\n- Post-production gates for picture edit, sound, VFX, colour, mix and master/QC.\n- Final delivery approval with quality score, approver and notes before release.\n- Budget forecasting and alerts; stage allocations now use the approved greenlight budget rather than the larger initial project budget.\n- Browser regression validates a $1,000,000 greenlight against a $4,000,000 project budget, insurance boundaries, serious-incident blocks, full stage progression to Released, audit and save/reload.\n- Regression QA passed on commit `831ea18fc9972fbced0a6dbe45d0b82566aba2c6`; GitHub Pages deployment workflow build passed for the same commit.
+Current phase: Phase 10 — Autonomous competitors.\n\n## Phase 5 completion\n- Script room with logline, synopsis and screenplay draft persistence.\n- Revision snapshots with dated notes and word counts.\n- Script review decisions and quality scoring.\n- Studio greenlight with approved budget, originality and feasibility scoring.\n- Pre-production readiness checklist covering director, producer, budget, cast, locations and schedule.\n- Stage progression gates prevent advancing without the required creative and production approvals.\n- Production continuity: script supervisor, footage backup and daily production reporting are mandatory before production wrap.\n- Safety incident reporting, severity classification and resolution records; unresolved high/critical incidents block wrap and delivery.\n- Production insurance policies with coverage dates, premiums, limits and claim validation, including exact-limit and invalid-amount tests.\n- Post-production gates for picture edit, sound, VFX, colour, mix and master/QC.\n- Final delivery approval with quality score, approver and notes before release.\n- Budget forecasting and alerts; stage allocations now use the approved greenlight budget rather than the larger initial project budget.\n- Browser regression validates a $1,000,000 greenlight against a $4,000,000 project budget, insurance boundaries, serious-incident blocks, full stage progression to Released, audit and save/reload.\n- Regression QA passed on commit `831ea18fc9972fbced0a6dbe45d0b82566aba2c6`; GitHub Pages deployment workflow build passed for the same commit.
 
 ## Phase 4 completion evidence
 - Department budgets and actual expenditure post to the company cash ledger; spending is constrained by available cash, annual budget and board approval threshold.
@@ -78,10 +78,18 @@ Current phase: Phase 9 — Global economy.\n\n## Phase 5 completion\n- Script ro
 - Phase 8 browser QA, full regression and a fresh 1,095-day cross-phase stress test passed on the integrated candidate.
 
 
-## Phase 9 — Global economy (active work)
+## Phase 9 — Global economy (complete)
 - Eight linked simulation regions with GDP/output indices, real growth, inflation, unemployment, household confidence, central-bank policy rates, fiscal balance, public debt and currency-strength indices.
 - Fifteen bilateral trade corridors with evolving trade-flow indices, import tariffs and trade-friction calculations.
 - Ten commodity markets covering energy, utilities, industrial materials, critical minerals, agriculture, timber and shipping capacity; price, supply, demand and inventory indices evolve daily.
 - Regional monetary/fiscal policy controls and time-limited trade agreements; policy changes persist in campaign saves and influence later simulation ticks.
 - Deterministic daily processing, idempotency, monthly macro snapshots, bounded histories, macro event wire, save/reload support and integration with existing market/financial-empire risk calculations.
-- Phase 9 sign-off requires browser QA, full regression, integration audit and a fresh 1,095-day cross-phase stress test on one commit.
+- Phase 9 browser QA, full regression, integration audit and a fresh 1,095-day cross-phase stress test passed on commit 4a252cba879c87877d793b2a5dc4320f30f3a2cd.
+- Phase 9 integrity audit: 11/11 checks passed; global integration audit: 42/42 checks passed; Phases 0–9 connected; 1,095/1,095 daily pipelines included Phase 9 processing.
+- The three-year stress test ended on 2029-11-13 with synchronized world, company, ecosystem, smartphone, financial-empire, global-economy and travel dates; zero pipeline errors.
+
+
+## Phase 9 final verification
+- Browser QA verified regional policy updates, trade agreement creation, daily idempotency, 45-day simulation, campaign save/reload, landscape PWA metadata and zero browser errors.
+- Full regression passed on commit 4a252cba879c87877d793b2a5dc4320f30f3a2cd; GitHub Pages deployment and Pages build/deployment workflows succeeded.
+- Fresh three-year cross-phase stress test: 1,095/1,095 daily pipelines complete, 1,095 Phase 9 processing markers, 8 regional economies, 36 monthly macro snapshots, 11/11 Phase 9 integrity checks, 42/42 integration checks, zero failed checks and zero browser errors.
