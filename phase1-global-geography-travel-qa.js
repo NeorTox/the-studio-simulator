@@ -41,7 +41,7 @@ const assert=require('assert');const {chromium}=require('playwright');
   if(!restored.world.travel||restored.world.travel.player.countryId!=='JP')throw Error('Travel state did not survive save serialization');
   return {countries:G.countries.length,divisions:G.divisions.length,cities:G.cities.length,geographyAudit:ga.passed,domesticArrival:G.getCity(T.ensure().player.cityId).name,internationalArrival:G.getCity(restored.world.travel.player.cityId).name,bookings:T.ensure().bookings.length,travelAudit:audit.passed,worldRegion:worldWeather.region};
  });
- assert(result.countries>=240);assert(result.divisions>=150);assert.equal(result.domesticArrival,'Tokyo');assert.equal(result.internationalArrival,'Tokyo');assert(result.bookings>=2);assert.deepEqual(errors,[]);
+ assert(result.countries>=240);assert(result.divisions>=5000);assert.equal(result.domesticArrival,'Tokyo');assert.equal(result.internationalArrival,'Tokyo');assert(result.bookings>=2);assert.deepEqual(errors,[]);
  await page.locator('[data-page="globaltravel"]').click();await page.locator('#globaltravel-content').waitFor();await page.getByText('Travel the world').waitFor();
  await browser.close();console.log('PASS Global geography hierarchy, country/territory assignment, city links, domestic rail, international flight, entry permits, accommodation, arrival, climate integration, UI and save serialization',JSON.stringify(result));
 })().catch(e=>{console.error(e);process.exit(1)});
