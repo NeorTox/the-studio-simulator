@@ -31,7 +31,7 @@ function ensure(){
  if(p?.phase2){
   p.phase2.families.forEach(f=>{f.generationCount=Number(f.generationCount||1);f.lineageId=f.lineageId||f.id;f.legacyScore=Number(f.legacyScore||0);f.headId=f.headId||null;});
   p.npcs.forEach(n=>{n.family=n.family||{parentIds:[],childIds:[]};n.family.parentIds=Array.isArray(n.family.parentIds)?n.family.parentIds:[];n.family.childIds=Array.isArray(n.family.childIds)?n.family.childIds:[];});
-  refreshLineages(s);
+  if(p.npcs.some(n=>!Number.isInteger(Number(n.generationIndex))||Number(n.generationIndex)<1))refreshLineages(s);
  }
  return s;
 }
@@ -132,7 +132,7 @@ function processDay(date){
  const s=ensure();if(!s)return{processed:false};
  if(s.lastProcessedDate===date)return{processed:false,idempotent:true,date};
  if(s.lastProcessedDate&&date<s.lastProcessedDate)return{processed:false,stale:true,date};
- settleEstates(s);refreshLineages(s);
+ settleEstates(s);
  if(date.slice(8,10)==='01'){
   autonomousBirths(s,date);s.monthlyTicks++;
   updateLeadership(s,date);
