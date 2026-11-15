@@ -2,7 +2,7 @@ name: THE STUDIO regression QA
 
 on:
   push:
-    branches: [main, 'algorithms/**']
+    branches: [main, 'algorithms/**', 'refinement/**']
   workflow_dispatch:
 
 permissions:
@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: 22
       - name: Fast autonomous controller and NPC autonomy checks
-        run: node --check autonomous-simulation-engine.js && node --check autonomous-simulation-qa.js && node autonomous-simulation-qa.js && node --check npc-autonomy-engine.js && node --check npc-autonomy-qa.js && node npc-autonomy-qa.js
+        run: node --check household-consumer-economics-engine.js && node --check household-consumer-economics-qa.js && node household-consumer-economics-qa.js && node --check autonomous-simulation-engine.js && node --check autonomous-simulation-qa.js && node autonomous-simulation-qa.js && node --check npc-autonomy-engine.js && node --check npc-autonomy-qa.js && node npc-autonomy-qa.js
       - name: Install browser test runtime
         run: |
           npm install --no-save playwright
