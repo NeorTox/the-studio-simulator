@@ -51,6 +51,8 @@ jobs:
       - name: Run actual application form regression
         run: node actual-phase3-submit-qa.js
       - name: Run simulation and save round-trip regression
+        id: phase3_save_roundtrip
+        continue-on-error: true
         run: node phase3-end-to-end.js
       - name: Run Phase 4 company management browser QA
         run: node phase4-browser-qa.js
@@ -99,3 +101,10 @@ jobs:
         run: node --check autonomous-simulation-engine.js && node --check autonomous-simulation-qa.js && node autonomous-simulation-qa.js && node --check npc-autonomy-engine.js && node --check npc-autonomy-qa.js && node npc-autonomy-qa.js
       - name: Run three-year cross-phase integration stress test
         run: node integration-multiyear-qa.js
+      - name: Enforce one-year save round-trip result after full suite
+        if: always()
+        run: |
+          if [ "${{ steps.phase3_save_roundtrip.outcome }}" != "success" ]; then
+            echo "One-year simulation/save regression failed; see its earlier log. All remaining phase checks were still executed."
+            exit 1
+          fi
