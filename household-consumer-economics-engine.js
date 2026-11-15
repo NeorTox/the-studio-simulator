@@ -41,7 +41,7 @@ function prepareMonth(date){
  const s=getState();if(!s)return {processed:false,reason:'no-active-campaign'};
  if(s.preparedDate===date)return {processed:false,idempotent:true,date,households:Object.keys(s.households).length};
  if(s.lastProcessedDate&&date<=s.lastProcessedDate)return {processed:false,stale:true,date,lastProcessedDate:s.lastProcessedDate};
- const people=population(),macro=active.market?.globalEconomy,employeeMap=new Map();
+ const people=population().slice(0,25000),macro=active.market?.globalEconomy,employeeMap=new Map();
  (active.employees||[]).forEach(e=>{if(e.npcId)employeeMap.set(e.npcId,e);else if(String(e.id||'').startsWith('EMP-'))employeeMap.set(String(e.id).slice(4),e)});
  const groups=new Map();
  for(const n of people){if(!alive(n))continue;const key=householdKey(n);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(n)}
@@ -66,7 +66,7 @@ function prepareMonth(date){
    rent=Math.max(rent,Math.max(0,Number(n.home?.monthlyRent)||0));
    mortgage=Math.max(mortgage,Math.max(0,Number(n.home?.monthlyMortgagePayment||n.home?.mortgagePayment)||0));
    if(isAdult)adultCash+=Math.max(0,Number(n.finances?.cash)||0);
-   const income=incomeFor(n,date,employeeMap);incomeByNpc.set(n.id,income);totalIncome+=income;
+   const income=incomeFor(n,date,employeeMap);totalIncome+=income;
    memberRows.push({id:n.id,adult:isAdult,income,weight});
   }
   if(!equivalent)equivalent=1;
@@ -92,7 +92,7 @@ function prepareMonth(date){
     const weight=allocationBase>0?row.income/allocationBase:1/earners.length;
     share=total*weight;
    }
-   expenseByNpc.set(row.id,share);allocated+=share;
+   row.expenseShare=round(share);allocated+=share;
   }
   const household={
    id:key,regionId,members:memberRows.map(x=>x.id),memberCount:members.length,adultCount:adults,childCount:children,
@@ -103,6 +103,7 @@ function prepareMonth(date){
    essentialCoverage:round(clamp((totalIncome+adultCash)/Math.max(1,essential),0,1)*100),
    discretionaryCoverage:round(clamp((totalIncome+adultCash-essential)/Math.max(1,expenses.discretionary),0,1)*100),
    financialStress:round(clamp(30+Math.max(0,total-totalIncome-adultCash)/Math.max(1,total)*70,0,100)),
+   memberIncome:Object.fromEntries(memberRows.map(x=>[x.id,round(x.income)])),memberExpenseShares:Object.fromEntries(memberRows.map(x=>[x.id,round(x.expenseShare||0)])),
    arrears:0,lastProcessedDate:date
   };
   householdRecords[key]=household;
@@ -136,11 +137,8 @@ function processIndividualMonth(n,date){
  if(n.finances?.lastHouseholdFinanceDate===date)return true;
  if(s.preparedDate!==date)return false;
  const household=s.households[householdKey(n)];if(!household)return false;
- const income=incomeFor(n,date,new Map((active.employees||[]).map(e=>[e.npcId||String(e.id||'').replace(/^EMP-/,''),e])));
- const expenses=Math.max(0,Number(s._expenseByNpc?.[n.id]??0));
- // Shares are stored in a compact per-person map during preparation when available.
- const prepared=Number(n._householdMonthlyExpenseShare);
- const share=Number.isFinite(prepared)?Math.max(0,prepared):Math.max(0,household.totalExpenses*(income>0?income/Math.max(1,household.income):0));
+ const income=Math.max(0,Number(household.memberIncome?.[n.id])||0);
+ const share=Math.max(0,Number(household.memberExpenseShares?.[n.id])||0);
  const nf=n.finances||(n.finances={cash:0,debt:0,creditScore:650});
  const before=Math.max(0,Number(nf.cash)||0),debtBefore=Math.max(0,Number(nf.debt)||0),delta=income-share;
  nf.monthlyIncome=round(income);nf.monthlyExpenses=round(share);
