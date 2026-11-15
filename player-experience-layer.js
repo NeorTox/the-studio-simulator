@@ -93,8 +93,31 @@ function installWorldRisk(){
  function register(){try{A.registerTask({id:TASK,name:'Regional environmental hazards and recovery',cadenceDays:1,priority:24,deps:[],run:tick})}catch(e){if(!/already registered/.test(String(e.message)))throw e}}
  window.StudioWorldRisk={version:VERSION_R,forecast,metrics,audit,tick,mitigate,render:renderRisk};register();attachPage();const oldRender=render; if(typeof oldRender==='function'&&!oldRender.__worldRiskWrapped){const wrapped=function(){const x=oldRender.apply(this,arguments);attachPage();renderRisk();return x};wrapped.__worldRiskWrapped=true;window.render=wrapped}
  }
+
+function syncAlgorithmRegister(){
+ if(typeof algorithms==='undefined'||!Array.isArray(algorithms))return;
+ const updates={
+ 'Weather and climate simulation':['PARTIAL','Deterministic regional seasons and daily weather are implemented; regional hazard events, seven-day outlooks and funded emergency response are now integrated. Hourly meteorology and city microclimates remain future work.'],
+ 'Transport and commuting':['PARTIAL','Global geography, flights, rail, travel bookings, permits and accommodation are implemented. NPC commuting, traffic and freight logistics remain future work.'],
+ 'Advertising auction and ad delivery':['PARTIAL','Ad delivery, targeting and campaign performance exist; competitive real-time bidding, fraud markets and auction clearing remain future work.'],
+ 'Social network and creator economy':['PARTIAL','NPC relationship graphs, rumours, group action, posts, reactions and moderation exist; full creator careers and platform-level competition remain future work.'],
+ 'Autonomous personal relationships':['PARTIAL','Relationship graphs and family generations exist; autonomous romance, marriage, household formation and breakups need deeper integration.'],
+ 'Corporate succession and inheritance':['PARTIAL','Generation, family lineage, inheritance and executive succession foundations are implemented; wills, probate, estate disputes and complex ownership transfer remain future work.'],
+ 'Risk, crisis and insurance engine':['PARTIAL','Regional hazard events, emergency response, legal and insurance foundations exist; correlated catastrophe models and full claims/recovery workflows remain future work.'],
+ 'Research, technology and innovation':['PARTIAL','Technology catalogue, R&D projects, patents, licenses and sustainability programmes exist; adoption curves, research networks and innovation spillovers remain future work.'],
+ 'Global trade, commodities and energy':['PARTIAL','Regional macroeconomics, trade corridors and commodity indices exist; detailed supply chains, tariffs, energy dispatch and resource shortages remain future work.']
+ };
+ algorithms.forEach(a=>{const x=updates[a[0]];if(x){a[2]=x[0];a[3]=x[1]}});
+ const extras=[
+ ['Universal player decision inbox','Player experience','IMPLEMENTED','Visible optional situations, 12 response strategies, no-forced-quest observation and persistent decision history.'],
+ ['Regional environmental hazards','World simulation','PARTIAL','Deterministic regional hazard alerts, seven-day weather outlooks, emergency response funding and recovery tracking; no live meteorological feed.'],
+ ['Interactive first-time tutorial','Player experience','IMPLEMENTED','Guided onboarding with navigation highlights, contextual tips, skip/replay controls and local completion state.'],
+ ['Landscape-first interface system','User interface','IMPLEMENTED','Responsive desktop/landscape rail navigation, refreshed design tokens, compact landscape layouts and accessible guided overlays.']
+ ];
+ extras.forEach(x=>{if(!algorithms.some(a=>a[0]===x[0]))algorithms.push(x)});
+}
 function boot(){
- installHelp();installExperiencePages();installWorldRisk();
+ syncAlgorithmRegister();installHelp();installExperiencePages();installWorldRisk();
  const oldRender=window.render;if(typeof oldRender==='function'&&!oldRender.__experienceWrapped){const wrapped=function(){const out=oldRender.apply(this,arguments);renderSituations();installHelp();return out};wrapped.__experienceWrapped=true;window.render=wrapped}
  if(!$('studio-tutorial-overlay')){let done=false;try{done=localStorage.getItem(STORE_KEY)==='completed'||localStorage.getItem(STORE_KEY)==='skipped'}catch(e){}if(!done)setTimeout(()=>{if(!$('studio-tutorial-overlay')){tour.open=true;tour.index=0;renderTutorial()}},900)}
 }
