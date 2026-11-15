@@ -1,0 +1,22 @@
+const {chromium}=require('playwright'),assert=require('assert');
+(async()=>{
+ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});const page=await browser.newPage({viewport:{width:844,height:390}});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+ await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
+ await page.getByRole('button',{name:/New campaign/}).click();await page.getByRole('button',{name:/Create campaign/}).click();
+ for(const [id,value] of [['nfounder','Phase 11 QA Founder'],['ncompany','Innovation Test Studios'],['ncountry','India'],['ncity','Mumbai']])await page.locator('#'+id).fill(value);
+ await page.getByRole('button',{name:/Create and save campaign/}).click();
+ const initial=await page.evaluate(()=>{const a=window.Phase11Technology;if(!a)throw Error('Phase 11 engine did not load');const s=a.ensure();return{version:a.version,technologies:s.technologies.length,lab:s.lab,audit:a.audit()}});
+ assert.equal(initial.version,'11.0.0');assert.equal(initial.technologies,12);assert.equal(initial.audit.failed,0,JSON.stringify(initial.audit.tests.filter(x=>!x.ok)));
+ await page.getByRole('button',{name:/Technology/}).click();await page.locator('#page-technology').waitFor();
+ await page.locator('#tech-research-id').selectOption('ai-production');await page.locator('#tech-research-budget').fill('6500000');await page.locator('#tech-research-form button').click();
+ await page.locator('#tech-green-id').selectOption('solar-campus');await page.locator('#tech-green-form button').click();
+ await page.locator('#tech-renewable').fill('65');await page.locator('#tech-recycling').fill('70');await page.locator('#tech-water').fill('55');await page.locator('#tech-offset').fill('15');await page.locator('#tech-policy-form button').click();
+ await page.evaluate(()=>window.advance(45));
+ const result=await page.evaluate(()=>{const s=window.Phase11Technology.ensure(),audit=window.Phase11Technology.audit(),integration=window.StudioPhaseIntegration.audit();return{date:active.date,lastDate:s.lastProcessedDate,projects:s.researchProjects.length,researchProgress:s.researchProjects[0]?.progress,initiatives:s.initiatives.length,initiativeProgress:s.initiatives[0]?.progress,policy:s.sustainability,metrics:s.metrics,audit,integration,days:Object.values(active.integration.days).filter(d=>d.status==='completed'&&d.steps.some(x=>x.name==='phase11-technology-sustainability')).length,serialized:JSON.stringify(active).length}});
+ assert.equal(result.lastDate,result.date);assert.equal(result.projects,1);assert(result.researchProgress>0);assert.equal(result.initiatives,1);assert(result.initiativeProgress>0);assert.equal(result.policy.renewableTargetPct,65);assert.equal(result.days,45);assert.equal(result.audit.failed,0,JSON.stringify(result.audit.tests.filter(x=>!x.ok)));assert.equal(result.integration.failed,0,JSON.stringify(result.integration.tests.filter(x=>!x.ok)));assert(result.serialized>10000);
+ await page.reload({waitUntil:'networkidle'});const reload=await page.evaluate(()=>({date:active.date,lastDate:window.Phase11Technology.ensure().lastProcessedDate,audit:window.Phase11Technology.audit(),projects:window.Phase11Technology.ensure().researchProjects.length,policy:window.Phase11Technology.ensure().sustainability.renewableTargetPct}));
+ assert.equal(reload.lastDate,reload.date);assert.equal(reload.projects,1);assert.equal(reload.policy,65);assert.equal(reload.audit.failed,0);assert.deepEqual(errors,[]);
+ const manifest=await page.evaluate(async()=>await(await fetch('./manifest.webmanifest')).json());assert.equal(manifest.orientation,'landscape');
+ await browser.close();console.log('PASS Phase 11 browser QA',JSON.stringify({projects:result.projects,days:result.days,audit:result.audit.passed,integration:result.integration.passed,renewableTarget:result.policy.renewableTargetPct}));
+})();
