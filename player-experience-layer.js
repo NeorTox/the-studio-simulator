@@ -125,7 +125,8 @@ function syncAlgorithmRegister(){
  ['Universal player decision inbox','Player experience','IMPLEMENTED','Visible optional situations, 12 response strategies, no-forced-quest observation and persistent decision history.'],
  ['Regional environmental hazards','World simulation','PARTIAL','Deterministic regional hazard alerts, seven-day weather outlooks, emergency response funding and recovery tracking; no live meteorological feed.'],
  ['Interactive first-time tutorial','Player experience','IMPLEMENTED','Guided onboarding with navigation highlights, contextual tips, skip/replay controls and local completion state.'],
- ['Landscape-first interface system','User interface','IMPLEMENTED','Responsive desktop/landscape rail navigation, refreshed design tokens, compact landscape layouts and accessible guided overlays.'],\n ['World systems operations console','World simulation','IMPLEMENTED','Unified console for public safety, cyber resilience, NPC relationship dynamics, household macro indicators, commodity buffers and regional energy grids.']
+ ['Landscape-first interface system','User interface','IMPLEMENTED','Responsive desktop/landscape rail navigation, refreshed design tokens, compact landscape layouts and accessible guided overlays.'],
+ ['World systems operations console','World simulation','IMPLEMENTED','Unified console for public safety, cyber resilience, NPC relationship dynamics, household macro indicators, commodity buffers and regional energy grids.']
  ];
  extras.forEach(x=>{if(!algorithms.some(a=>a[0]===x[0]))algorithms.push(x)});
 }
