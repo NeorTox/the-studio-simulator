@@ -22,5 +22,5 @@ assert.doesNotMatch(html,/world-risk-qa\.js/);
 assert.match(sw,/studio-overhaul\.css/);
 assert.match(sw,/player-experience-layer\.js/);
 assert.match(sw,/simulation-depth-engine\.js/);
-assert.match(sw,/v4\.41\.0-world-systems-market/);
+assert.match(sw,/v4\.42\.0-world-systems-market/);
 console.log('PLAYER EXPERIENCE QA PASSED: landscape UI assets, optional situation inbox, 12-response intervention interface, deterministic regional risk/forecast/mitigation, onboarding tutorial and asset wiring.');
