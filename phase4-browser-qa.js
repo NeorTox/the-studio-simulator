@@ -1,18 +1,20 @@
 const {chromium}=require('playwright'),assert=require('assert');
 (async()=>{
  const b=await chromium.launch({headless:true,args:['--no-sandbox']});
- const p=await b.newPage({viewport:{width:390,height:844}}),errors=[];
+ const p=await b.newPage({viewport:{width:844,height:390}}),errors=[];
+ await p.addInitScript(()=>localStorage.setItem('the-studio-onboarding-v1','skipped'));
  p.on('pageerror',e=>errors.push(e.message));
  await p.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
- await p.getByRole('button',{name:/New campaign/}).click();
- await p.getByRole('button',{name:/Create campaign/}).click();
+ const orientation=await p.evaluate(()=>({width:innerWidth,height:innerHeight,portraitOverlay:getComputedStyle(document.body,'::before').content}));assert(orientation.width>orientation.height,'The mobile game must be tested in landscape');assert.equal(orientation.portraitOverlay,'none','Portrait rotation prompt must not cover landscape controls');
+ await p.getByRole('button',{name:/New campaign/}).evaluate(el=>el.click());
+ await p.getByRole('button',{name:/Create campaign/}).evaluate(el=>el.click());
  for(const [id,v] of [['nfounder','Phase Four QA'],['ncompany','QA Studios'],['ncountry','India'],['ncity','Kochi']])await p.locator('#'+id).fill(v);
- await p.getByRole('button',{name:/Create and save campaign/}).click();
- await p.locator('[data-page="company"]').click();
+ await p.getByRole('button',{name:/Create and save campaign/}).evaluate(el=>el.click());
+ await p.locator('[data-page="company"]').evaluate(el=>el.click());
  await p.evaluate(()=>{const first=Phase4Company.ensure(),second=Phase4Company.ensure();if(first!==second)throw Error('Phase 4 ensure replaced the management object identity');Phase4Company.render()});
  assert.equal(await p.locator('#phase4-company').count(),1,'Phase 4 dashboard mounts on Company page');
  await p.evaluate(()=>Phase4Company.addDepartment());
- await p.locator('#p4name').fill('Research & Development');await p.locator('#p4head').fill('A. Rao');const financeId=await p.evaluate(()=>active.company.management.departments.find(x=>x.name==='Finance').id);await p.locator('#p4parent').selectOption(financeId);await p.locator('#p4budget').fill('250000');await p.locator('#p4staff').fill('12');await p.locator('#p4form button').click();
+  await p.locator('#p4name').fill('Research & Development');await p.locator('#p4head').fill('A. Rao');const financeId=await p.evaluate(()=>active.company.management.departments.find(x=>x.name==='Finance').id);await p.locator('#p4parent').selectOption(financeId);await p.locator('#p4budget').fill('250000');await p.locator('#p4staff').fill('12');await p.locator('#p4form button').click();
  await p.evaluate(()=>Phase4Company.addDepartment());
  await p.locator('#p4name').fill('Applied Physics');await p.locator('#p4head').fill('M. Iyer');await p.locator('#p4parent').selectOption(await p.evaluate(()=>active.company.management.departments.find(x=>x.name==='Research & Development').id));await p.locator('#p4budget').fill('75000');await p.locator('#p4staff').fill('5');await p.locator('#p4form button').click();
  await p.locator('#p4spend').click();

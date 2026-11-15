@@ -18,6 +18,8 @@ jobs:
           node-version: 22
       - name: Fast autonomous controller and NPC autonomy checks
         run: node --check household-consumer-economics-engine.js && node --check household-consumer-economics-qa.js && node household-consumer-economics-qa.js && node --check autonomous-simulation-engine.js && node --check autonomous-simulation-qa.js && node autonomous-simulation-qa.js && node --check npc-autonomy-engine.js && node --check npc-autonomy-qa.js && node npc-autonomy-qa.js && node --check npc-decision-consequence-engine.js && node --check npc-decision-consequence-qa.js && node npc-decision-consequence-qa.js && node --check npc-social-network-engine.js && node --check npc-social-network-qa.js && node npc-social-network-qa.js && node --check npc-memory-reputation-engine.js && node --check npc-memory-reputation-qa.js && node npc-memory-reputation-qa.js && node --check media-ecosystem-engine.js && node --check media-ecosystem-qa.js && node media-ecosystem-qa.js && node --check npc-digital-society-engine.js && node --check npc-digital-society-qa.js && node npc-digital-society-qa.js
+      - name: Validate player experience, onboarding and world risk
+        run: node --check player-experience-layer.js && node --check phase1-world-engine.js && node --check simulation-depth-engine.js && node --check simulation-depth-qa.js && node simulation-depth-qa.js && node --check world-risk-qa.js && node world-risk-qa.js
       - name: Install browser test runtime
         run: |
           npm install --no-save playwright
@@ -35,6 +37,10 @@ jobs:
             curl -fsS http://127.0.0.1:4173/index.html >/dev/null && break
             sleep 1
           done
+      - name: Run player experience browser smoke test
+        run: node player-experience-browser-qa.js
+      - name: Verify all seven world systems execute on real simulation days
+        run: node simulation-depth-runtime-qa.js
       - name: Validate global geography and travel engines
         run: |
           node --check phase1-global-geography-engine.js
@@ -57,7 +63,7 @@ jobs:
           node --check phase6-ecosystem-engine.js
           node --check phase6-audience-engine.js
           node --check phase-integration-engine.js
-          node --check integration-multiyear-qa.js
+          node --check integration-multiyear-qa.js && node --check simulation-depth-engine.js && node --check simulation-depth-qa.js
           node --check phase6-browser-qa.js
           node test-phase6.js
           node test-phase6-audience.js
