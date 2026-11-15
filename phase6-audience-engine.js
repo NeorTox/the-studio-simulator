@@ -66,8 +66,8 @@ function processAudienceDay(date=active?.date){
   const segmentLift=segment?num(segment.engagement)/100:0.4;
   const signal=clamp((audience-50)/10000,-.004,.006);
   const noise=(deterministic(seed,f.id+'|'+date)-.5)*.003;
-  const growth=Math.max(0,Math.round(num(f.members)*(signal+noise+segmentLift*.0008)+campaignDelta*.08));
-  f.members+=growth;f.peakMembers=Math.max(f.peakMembers,f.members);
+  const growth=Math.round(num(f.members)*(signal+noise+segmentLift*.0008)+campaignDelta*.08);
+  f.members=Math.max(0,num(f.members)+growth);f.peakMembers=Math.max(f.peakMembers,f.members);
   f.growthRate=f.members?Math.round(growth/Math.max(1,f.members-growth)*100000)/1000:0;
   f.engagement=clamp(num(f.engagement)+(segmentLift-.45)*.5+noise*100,0,100);
   f.sentiment=clamp(num(f.sentiment)*.9+(audience-50)*.08+(segment?.sentiment||0)*.04,-100,100);
