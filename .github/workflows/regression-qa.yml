@@ -85,5 +85,7 @@ jobs:
         run: node --check phase12-generations-engine.js && node --check phase12-generations-qa.js && node phase12-generations-qa.js
       - name: Run Phase 12 generations browser QA
         run: node phase12-browser-qa.js
+      - name: Run Phase 13 release-quality browser QA
+        run: node --check phase13-release-quality-engine.js && node --check phase13-release-quality-qa.js && node phase13-release-quality-qa.js
       - name: Run three-year cross-phase integration stress test
         run: node integration-multiyear-qa.js
