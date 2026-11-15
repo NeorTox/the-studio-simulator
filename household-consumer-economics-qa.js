@@ -13,7 +13,7 @@ const campaign={id:'household-qa',worldSeed:12345,date:'2026-02-01',company:{cur
 const registered=[];
 const context={active:campaign,window:{StudioPhase0:{registerModule:m=>registered.push(m)}},Math,Date,Number,String,Object,Array,Map,Set,JSON};
 vm.createContext(context);vm.runInContext(source,context);
-const api=context.window.StudioHouseholdEconomics;assert.ok(api);assert.equal(api.version,'1.0.0');
+const api=context.window.StudioHouseholdEconomics;assert.ok(api);assert.equal(api.version,'1.1.0');
 const prepared=api.prepareMonth(campaign.date);assert.equal(prepared.processed,true);assert.equal(prepared.households,4);
 assert.equal(api.prepareMonth(campaign.date).idempotent,true);
 for(const n of people)assert.equal(api.processIndividualMonth(n,campaign.date),true);
@@ -40,7 +40,7 @@ assert.ok(campaign.market.economy.householdDemandIndex>=25&&campaign.market.econ
 assert.ok(campaign.market.economy.consumerCategoryDemand.food>=20&&campaign.market.economy.consumerCategoryDemand.food<=160);
 assert.ok(Object.values(family.purchases).reduce((a,b)=>a+b,0)-family.totalExpenses<.15,'purchase categories must reconcile to the household budget');
 assert.equal(registered.length,1);
-const roundTrip=JSON.parse(JSON.stringify(campaign));assert.equal(roundTrip.world.householdEconomics.version,'1.0.0');
+const roundTrip=JSON.parse(JSON.stringify(campaign));assert.equal(roundTrip.world.householdEconomics.version,'1.1.0');
 const largePeople=[];for(let i=0;i<25000;i++)largePeople.push(npc('L'+i,30,'Independent',null,1000,1200,500,i%2?'north-america':'south-asia'));
 campaign.world.population.npcs=largePeople;campaign.world.householdEconomics=null;
 const large=api.prepareMonth('2026-03-01');assert.equal(large.households,25000);assert.equal(large.namedResidents,25000);
