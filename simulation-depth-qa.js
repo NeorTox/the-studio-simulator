@@ -15,8 +15,7 @@ assert.match(depth,/function processEquityLiquidity\(/,'Daily equity liquidity m
 assert.match(depth,/function liquidityAudit\(/,'Equity liquidity audit must exist');
 assert.match(depth,/City-level neighbourhood coverage/,'Neighbourhood safety coverage must be audited');
 assert.match(depth,/Court workflow states valid/,'Court workflow must be audited');
-assert.match(depth,/function processEquityLiquidity\(/,'Daily equity liquidity must exist');
-assert.match(depth,/function liquidityAudit\(/,'Equity liquidity audit must exist');
+
 assert.match(depth,/householdDebtIndex/,'Household debt must feed macro indicators');
 assert.match(depth,/purchasingPowerIndex/,'Purchasing power must be modelled');
 assert.match(depth,/retentionRiskIndex/,'NPC employment quality must be modelled');
@@ -29,6 +28,7 @@ assert.match(world,/function cityWeatherFor\(/,'City microclimate function must 
 assert.match(world,/currentHourlyByRegion/,'Hourly regional weather must persist');
 assert.match(experience,/Hourly city microclimate/,'World dashboard must expose hourly city weather');
 assert.match(index,/\.\/simulation-depth-engine\.js/,'Application must load the depth engine');
+assert.match(index,/StudioMarketLiquidity\.processDay\(next\)/,'Daily stock liquidity must run before order execution');
 assert.match(sw,/\.\/simulation-depth-engine\.js/,'Offline shell must cache the depth engine');
 assert.match(sw,/v4\.36\.0-world-systems-market/,'Offline cache version must rotate for new assets');
 assert.doesNotMatch(index,/'Crime, safety and law enforcement','World','MISSING'/,'Crime and safety may no longer be marked completely missing');
