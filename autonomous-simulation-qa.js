@@ -45,7 +45,7 @@ assert.equal(api.audit().failed,0);
 assert.ok(persisted>=1);
 api.registerTask({id:'qa.failure',name:'QA isolated failure',cadenceDays:1,priority:90,run(){throw new Error('expected QA failure')}});
 const second=integration.endDay('2026-01-02').autonomy;
-assert.equal(second.failed,1);
+assert.equal(second.failed.length,1);
 assert.equal(campaign.autonomy.deadLetters.length,1);
 assert.equal(second.tasksRun,2);
 for(let i=0;i<1005;i++)api.emit('qa.unhandled',{n:i},{id:'overflow-'+i,date:'2026-01-03'});
