@@ -31,6 +31,7 @@ function ensure(){
  if(p?.phase2){
   p.phase2.families.forEach(f=>{f.generationCount=Number(f.generationCount||1);f.lineageId=f.lineageId||f.id;f.legacyScore=Number(f.legacyScore||0);f.headId=f.headId||null;});
   p.npcs.forEach(n=>{n.family=n.family||{parentIds:[],childIds:[]};n.family.parentIds=Array.isArray(n.family.parentIds)?n.family.parentIds:[];n.family.childIds=Array.isArray(n.family.childIds)?n.family.childIds:[];});
+  refreshLineages(s);
  }
  return s;
 }
