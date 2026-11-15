@@ -43,5 +43,11 @@ jobs:
         run: node --check phase5-production-engine.js
       - name: Run Phase 5 production browser QA
         run: node phase5-browser-qa.js
+      - name: Validate Phase 6 ecosystem engine and finance tests
+        run: |
+          node --check phase6-ecosystem-engine.js
+          node test-phase6.js
+      - name: Run Phase 6 mobile browser regression
+        run: node phase6-browser-qa.js
       - name: Run three-year cross-phase integration stress test
         run: node integration-multiyear-qa.js
