@@ -146,3 +146,14 @@ Current phase: Phase 13 — Integration & release quality.\n\n## Phase 5 complet
 ## Post-roadmap milestones
 - Complete the agreed landscape-first UI and interaction overhaul.
 - After the fourteen numbered phases, begin the separate advanced algorithms and autonomous-systems package.
+
+
+## Advanced algorithms package — corporate risk & resilience
+- Corporate cyber-risk exposure and control-posture scoring, weighted across eight security controls.
+- Deterministic daily incident generation across phishing, credential compromise, ransomware, data breaches, IP theft, supplier compromise, service outages and insider misuse.
+- Player-directed containment, notification, restoration and forensic response; unresolved incidents escalate over time.
+- Existing company cash ledger and insurance policies are reused for security investment, response costs and eligible insurance recoveries.
+- Significant incident events are published into the existing world/media event pipeline; no separate news or finance ledger is created.
+- Campaign-persistent state, bounded incident/history retention, deterministic idempotency, Phase 0 registration, autonomous task scheduling and dedicated QA.
+- This is a fictional risk simulation, not a real-world cybersecurity assessment or security tool.
+- Status: implemented on the candidate branch; full browser and three-year integration regression required before merge.
