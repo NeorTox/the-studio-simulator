@@ -30,9 +30,9 @@ const assert=require('assert');const {chromium}=require('playwright');
   const tokyo=G.cities.find(x=>x.countryId==='JP'&&x.name==='Tokyo');
   let blocked=false;try{T.planTrip(tokyo.id,'flight',active.date,2,'standard')}catch(e){blocked=/entry permit/i.test(e.message)}
   if(!blocked)throw Error('International travel should require an in-game entry permit');
-  const visa=T.applyForEntryPermit('JP');if(visa.status!=='valid')throw Error('Entry permit was not issued');
+  const visa=T.applyForEntryPermit('JP');if(visa.status!=='valid')throw Error('Entry permit was not issued');T.passportNationality('GB');let nationalityBlocked=false;try{T.planTrip(tokyo.id,'flight',active.date,2,'standard')}catch(e){nationalityBlocked=/entry permit/i.test(e.message)}if(!nationalityBlocked)throw Error('Entry permit must be tied to passport nationality');T.passportNationality('IN');
   const international=T.planTrip(tokyo.id,'flight',active.date,3,'standard');
-  if(international.status!=='In transit'||international.mode!=='flight')throw Error('International flight did not enter transit');
+  if(international.status!=='In transit'||international.mode!=='flight')throw Error('International flight did not enter transit');let overlapBlocked=false;try{T.planTrip(G.cities.find(x=>x.countryId==='JP'&&x.name==='Osaka').id,'flight',active.date,1,'budget')}catch(e){overlapBlocked=/overlaps/i.test(e.message)}if(!overlapBlocked)throw Error('Overlapping travel bookings were not prevented');
   advance(2);
   if(G.getCity(T.ensure().player.cityId)?.name!=='Tokyo')throw Error('International arrival did not update player location');const internationalArrival=G.getCity(T.ensure().player.cityId).name;
   const audit=T.audit();if(audit.failed)throw Error('Travel audit failed: '+JSON.stringify(audit.tests.filter(x=>!x.ok)));
