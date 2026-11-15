@@ -1,5 +1,9 @@
 name: THE STUDIO regression QA
 
+concurrency:
+  group: regression-qa-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main, 'algorithms/**', 'refinement/**', 'systems/**']
