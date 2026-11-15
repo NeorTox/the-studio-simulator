@@ -17,7 +17,7 @@ One complete phase is delivered and signed off before starting the next. Phases 
 | 10 | Autonomous competitors | COMPLETE — ten rival studios, autonomous monthly operations, browser QA and 1,095-day integration passed |
 | 11 | Technology & sustainability | COMPLETE — 12-node technology tree, R&D, patents/licensing, sustainability systems, browser QA and 1,095-day integration passed |
 | 12 | Generations & world evolution | COMPLETE — family lineage, inheritance, succession, annual world evolution, browser QA and 1,095-day integration passed |
-| 13 | Integration & release quality | NOT STARTED |
+| 13 | Integration & release quality | COMPLETE — 14/14 phase contracts connected, 36 release checks, 1,095-day stress test, full asset build and production deployment passed |
 
 ## Phase 4 scope
 - Corporate structure and department hierarchy
@@ -131,3 +131,18 @@ Current phase: Phase 13 — Integration & release quality.\n\n## Phase 5 complet
 - Dedicated Phase 12 audit passed 14/14; browser QA passed for dashboard, successor planning/appointment, 45-day simulation, integration and save/reload.
 - Three-year cross-phase stress test: 1,095/1,095 Phase 12 daily markers, three annual evolution ticks, 13/13 implemented phases connected, global integration audit 53/53, synchronized dates and zero errors.
 - Full regression passed on commit `5674497a4104a7caa1fe98142669726854983a43` (run [43701468068](https://github.com/NeorTox/the-studio-simulator/actions/runs/43701468068)); GitHub Pages build/deploy succeeded (run [43701468113](https://github.com/NeorTox/the-studio-simulator/actions/runs/43701468113)).
+
+
+## Phase 13 — Integration & release quality (complete)
+- Release-quality control plane validates prior phase APIs, all fourteen registered contracts, campaign schema, JSON save round-trip, local save identity uniqueness, finite ledger values, browser storage read/write/remove, landscape PWA manifest, service-worker reachability and every local engine asset.
+- Integration dashboard now reports all fourteen phases connected; Phase 13's contract and audit status are explicitly reflected in the dashboard.
+- GitHub Pages build discovers every local JavaScript engine referenced by `index.html`, runs `node --check`, copies all referenced engines into the deployment artifact and rejects missing files.
+- Service-worker cache version advanced to `the-studio-shell-v4.25.0-phase13`; offline shell includes Phase 10–13 and global geography/mobility engines.
+- Dedicated Playwright release QA: 21 local engine assets reachable, landscape manifest verified, 36 checks passed, 14/14 phases connected, audit persistence verified after reload and zero browser errors.
+- Phase 13 release-quality integrity audit: 12/12 checks passed.
+- Full regression and three-year stress test passed on commit `d54b5c34c1f9cc69a07f481d35f7ebc36eeed33b` (run [43703851798](https://github.com/NeorTox/the-studio-simulator/actions/runs/43703851798)): 1,095/1,095 daily pipelines, 14/14 connected phases, 54/54 global integration checks, synchronized campaign/world/population/company/market/travel/generation dates and zero browser/simulation errors.
+- GitHub Pages build and deployment succeeded (build [43703851833](https://github.com/NeorTox/the-studio-simulator/actions/runs/43703851833); deployment [43703851810](https://github.com/NeorTox/the-studio-simulator/actions/runs/43703851810)).
+
+## Post-roadmap milestones
+- Complete the agreed landscape-first UI and interaction overhaul.
+- After the fourteen numbered phases, begin the separate advanced algorithms and autonomous-systems package.
