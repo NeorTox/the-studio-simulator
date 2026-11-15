@@ -11,8 +11,8 @@ One complete phase is delivered and signed off before starting the next. Phases 
 | 4 | Company management | COMPLETE — branch economics, contract settlements, board capital approvals, compliance penalties, management accounts, audit and mobile browser regression passed |
 | 5 | Entertainment production | COMPLETE — full production lifecycle, approved-budget enforcement, continuity, safety, insurance, post-production, delivery approval, audit and save/reload browser QA passed in CI |
 | 6 | Entertainment ecosystem | COMPLETE — finance retries, browser QA, media/awards and three-year integration passed |
-| 7 | Smartphone & media | IN PROGRESS — original social-media scope signed off; expanded phone, telecom, newsrooms, games and regional NPC simulation undergoing regression |
-| 8 | Financial empire | NOT STARTED |
+| 7 | Smartphone & media | COMPLETE — expanded phone, telecom, newsrooms, games, regional NPC simulation and three-year integration passed on commit `2ee7ee3` |
+| 8 | Financial empire | IN PROGRESS — institutional funds, private assets, portfolio valuation, treasury policy, credit metrics and daily integration under regression |
 | 9 | Global economy | NOT STARTED |
 | 10 | Autonomous competitors | NOT STARTED |
 | 11 | Technology & sustainability | NOT STARTED |
@@ -29,7 +29,7 @@ One complete phase is delivered and signed off before starting the next. Phases 
 - Department restructuring and closure controls
 - Persistent company-management state, audit and simulation integration
 
-Current phase: Phase 7 — Digital-life expansion and integration sign-off.\n\n## Phase 5 completion\n- Script room with logline, synopsis and screenplay draft persistence.\n- Revision snapshots with dated notes and word counts.\n- Script review decisions and quality scoring.\n- Studio greenlight with approved budget, originality and feasibility scoring.\n- Pre-production readiness checklist covering director, producer, budget, cast, locations and schedule.\n- Stage progression gates prevent advancing without the required creative and production approvals.\n- Production continuity: script supervisor, footage backup and daily production reporting are mandatory before production wrap.\n- Safety incident reporting, severity classification and resolution records; unresolved high/critical incidents block wrap and delivery.\n- Production insurance policies with coverage dates, premiums, limits and claim validation, including exact-limit and invalid-amount tests.\n- Post-production gates for picture edit, sound, VFX, colour, mix and master/QC.\n- Final delivery approval with quality score, approver and notes before release.\n- Budget forecasting and alerts; stage allocations now use the approved greenlight budget rather than the larger initial project budget.\n- Browser regression validates a $1,000,000 greenlight against a $4,000,000 project budget, insurance boundaries, serious-incident blocks, full stage progression to Released, audit and save/reload.\n- Regression QA passed on commit `831ea18fc9972fbced0a6dbe45d0b82566aba2c6`; GitHub Pages deployment workflow build passed for the same commit.
+Current phase: Phase 8 — Financial empire and institutional capital integration.\n\n## Phase 5 completion\n- Script room with logline, synopsis and screenplay draft persistence.\n- Revision snapshots with dated notes and word counts.\n- Script review decisions and quality scoring.\n- Studio greenlight with approved budget, originality and feasibility scoring.\n- Pre-production readiness checklist covering director, producer, budget, cast, locations and schedule.\n- Stage progression gates prevent advancing without the required creative and production approvals.\n- Production continuity: script supervisor, footage backup and daily production reporting are mandatory before production wrap.\n- Safety incident reporting, severity classification and resolution records; unresolved high/critical incidents block wrap and delivery.\n- Production insurance policies with coverage dates, premiums, limits and claim validation, including exact-limit and invalid-amount tests.\n- Post-production gates for picture edit, sound, VFX, colour, mix and master/QC.\n- Final delivery approval with quality score, approver and notes before release.\n- Budget forecasting and alerts; stage allocations now use the approved greenlight budget rather than the larger initial project budget.\n- Browser regression validates a $1,000,000 greenlight against a $4,000,000 project budget, insurance boundaries, serious-incident blocks, full stage progression to Released, audit and save/reload.\n- Regression QA passed on commit `831ea18fc9972fbced0a6dbe45d0b82566aba2c6`; GitHub Pages deployment workflow build passed for the same commit.
 
 ## Phase 4 completion evidence
 - Department budgets and actual expenditure post to the company cash ledger; spending is constrained by available cash, annual budget and board approval threshold.
@@ -66,3 +66,13 @@ Current phase: Phase 7 — Digital-life expansion and integration sign-off.\n\n#
 - Regional population model: each region represents at least 25,000 individual residents/NPCs without allocating 25,000 heavyweight JavaScript objects. Stable per-resident IDs and deterministic profiles (name, age, occupation, income, device ownership, data use and interests) are generated on demand; named world NPCs remain separately tracked.
 - QA verifies 25,000+ resident IDs per region, deterministic resident samples, daily article generation, phone charging, offline/online gameplay, telecom billing, storage and cross-phase audits.
 - Expansion is not signed off until the full browser regression and three-year cross-phase stress test pass on the same commit.
+
+
+## Phase 8 — Financial empire (active work)
+- Institutional investment funds with named managers, strategies and investment mandates.
+- Private equity, venture capital, corporate and government bonds, real estate, infrastructure and commodity holdings.
+- Acquisitions and liquidations post through the existing company double-entry marketable-investments account; no parallel cash ledger is created.
+- Daily deterministic mark-to-market valuation, accrued investment income, month-end distributions, realized and unrealized performance.
+- Treasury policy for liquidity reserves, maximum single exposure, risk profile and target return; portfolio concentration, leverage and simulated credit-rating indicators.
+- Versioned campaign state, event audit trail, idempotent daily processing, browser regression and three-year cross-phase integration gates.
+- Phase 8 remains IN PROGRESS until browser QA, full regression and a fresh 1,095-day stress test pass on one commit.
