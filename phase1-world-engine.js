@@ -145,10 +145,7 @@ const b=document.createElement('button');b.dataset.page='worldengine';b.innerHTM
 const section=document.createElement('section');section.className='page';section.id='page-worldengine';section.innerHTML='<div class="hero"><div><div class="eyebrow">PHASE 1 · WORLD & TIME</div><h1 class="h1">World engine</h1><p class="sub">A persistent global timeline, calendar, geography registry, regional climate and scheduled world events.</p></div><div class="actions"><button class="btn" id="world-refresh">Refresh conditions</button></div></div><div id="worldengine-content"></div>';content.appendChild(section);
 const refresh=document.getElementById('world-refresh');if(refresh)refresh.onclick=renderWorldEngine;
 }
-const priorAdvance=window.advance;
-if(typeof priorAdvance==='function'){
-window.advance=function(n){if(!active)return priorAdvance(n);const before=active.date,result=priorAdvance(n),count=processWorldRange(before,active.date);if(count>0){active.worldClock=active.worldClock||{};active.worldClock.lastWorldDate=active.date;persist();}return result;};
-}
+// Daily world processing is orchestrated inside the core advance loop so world events precede population, founder and company updates.
 const priorPersist=persist;
 persist=function(){if(active)ensureWorld();return priorPersist();};
 const priorRender=render;
