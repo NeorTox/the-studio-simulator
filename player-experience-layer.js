@@ -99,6 +99,11 @@ function syncAlgorithmRegister(){
  const updates={
  'Weather and climate simulation':['PARTIAL','Deterministic regional seasons and daily weather are implemented; regional hazard events, seven-day outlooks and funded emergency response are now integrated. Hourly meteorology and city microclimates remain future work.'],
  'Transport and commuting':['PARTIAL','Global geography, flights, rail, travel bookings, permits and accommodation are implemented. NPC commuting, traffic and freight logistics remain future work.'],
+ 'Housing and property market':['PARTIAL','Household rent, mortgage amortization, property values, housing price indices and regional demand are implemented. New construction, vacancy, zoning and property transactions remain future work.'],
+ 'Healthcare and public health':['PARTIAL','Household healthcare costs, NPC health needs and mortality are modeled. Provider networks, diagnosis, treatment access, insurance claims and epidemic propagation remain future work.'],
+ 'Education and skill development':['PARTIAL','NPC skills, training, education profiles and career learning are implemented. School and university institutions, tuition markets and workforce pipelines remain future work.'],
+ 'Crime, safety and law enforcement':['MISSING','A dedicated safety model, crime incident simulation, police response, courts and neighbourhood-level risk propagation are not yet implemented.'],
+ 'Cybersecurity and platform trust':['MISSING','A dedicated cyber incident engine for breaches, service outages, piracy, account compromise, fraud and incident response is not yet implemented.'],
  'Advertising auction and ad delivery':['PARTIAL','Ad delivery, targeting and campaign performance exist; competitive real-time bidding, fraud markets and auction clearing remain future work.'],
  'Social network and creator economy':['PARTIAL','NPC relationship graphs, rumours, group action, posts, reactions and moderation exist; full creator careers and platform-level competition remain future work.'],
  'Autonomous personal relationships':['PARTIAL','Relationship graphs and family generations exist; autonomous romance, marriage, household formation and breakups need deeper integration.'],
