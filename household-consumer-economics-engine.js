@@ -10,9 +10,9 @@ function getState(){
  let s=active.world.householdEconomics;
  if(!s||s.version!==VERSION){
   const old=s||{};
-  s=active.world.householdEconomics={version:VERSION,households:{},pendingFinance:{},regions:old.regions||{},history:old.history||[],preparedDate:null,lastProcessedDate:old.lastProcessedDate||null,metrics:{}};
+  s=active.world.householdEconomics={version:VERSION,households:{},pendingFinance:{},regions:old.regions||{},history:old.history||[],bankruptcyEvents:old.bankruptcyEvents||[],preparedDate:null,lastProcessedDate:old.lastProcessedDate||null,metrics:{}};
  }
- s.households=s.households||{};s.pendingFinance=s.pendingFinance||{};s.regions=s.regions||{};s.history=Array.isArray(s.history)?s.history:[];
+ s.households=s.households||{};s.pendingFinance=s.pendingFinance||{};s.regions=s.regions||{};s.history=Array.isArray(s.history)?s.history:[];s.bankruptcyEvents=Array.isArray(s.bankruptcyEvents)?s.bankruptcyEvents:[];
  return s;
 }
 function population(){return active?.world?.population?.npcs||[]}
@@ -47,19 +47,21 @@ function prepareMonth(date){
  const householdRecords={},pendingFinance={},regional={},regionStates=s.regions;let storedHouseholdCount=0;
  for(const mr of macro?.regions||[]){
   const rs=regionStates[mr.id]||(regionStates[mr.id]={priceIndex:100,lastUpdated:null});
-  if(rs.lastUpdated!==date){const annualInflation=clamp(Number(mr.inflationPct??2.5),-2,30);rs.priceIndex=clamp(Number(rs.priceIndex||100)*(1+annualInflation/1200),50,300);rs.lastUpdated=date}
+  if(rs.lastUpdated!==date){const annualInflation=clamp(Number(mr.inflationPct??2.5),-2,30);rs.priceIndex=clamp(Number(rs.priceIndex||100)*(1+annualInflation/1200),50,300);rs.monthlyHousingGrowth=clamp(1+annualInflation/1200+.0002,.999,1.004);rs.housingPriceIndex=clamp(Number(rs.housingPriceIndex||100)*rs.monthlyHousingGrowth,50,400);rs.lastUpdated=date}
  }
  for(const [key,members] of groups){
   const regionId=regionIdFor(members[0],macro),mr=(macro?.regions||[]).find(r=>r.id===regionId)||null;
   const rs=regionStates[regionId]||(regionStates[regionId]={priceIndex:100,lastUpdated:date});
-  const priceFactor=clamp(Number(rs.priceIndex||100)/100,.5,3);
-  let adults=0,children=0,equivalent=0,rent=0,mortgage=0,adultCash=0,totalIncome=0,creditCapacity=0;
+  const priceFactor=clamp(Number(rs.priceIndex||100)/100,.5,3),housingGrowth=clamp(Number(rs.monthlyHousingGrowth)||1,.999,1.004);
+  for(const n of members){const home=n.home;if(home&&Number(home.propertyValue)>0&&home.housingLastUpdated!==date){home.propertyValue=round(Number(home.propertyValue)*housingGrowth);home.housingLastUpdated=date}}
+  let adults=0,children=0,equivalent=0,rent=0,mortgage=0,propertyValue=0,mortgageBalance=0,mortgageRatePct=0,adultCash=0,totalIncome=0,creditCapacity=0;
   const memberRows=[];
   for(const n of members){
    const age=Number(n.age)||0,isAdult=age>=18,weight=isAdult?1:.55;
    equivalent+=weight;if(isAdult)adults++;else children++;
    rent=Math.max(rent,Math.max(0,Number(n.home?.monthlyRent)||0));
    mortgage=Math.max(mortgage,Math.max(0,Number(n.home?.monthlyMortgagePayment||n.home?.mortgagePayment)||0));
+   propertyValue=Math.max(propertyValue,Math.max(0,Number(n.home?.propertyValue)||0));mortgageBalance=Math.max(mortgageBalance,Math.max(0,Number(n.home?.mortgageBalance)||0));mortgageRatePct=Math.max(mortgageRatePct,Math.max(0,Number(n.home?.mortgageRatePct)||0));
    if(isAdult){
     adultCash+=Math.max(0,Number(n.finances?.cash)||0);
     const score=clamp(Number(n.finances?.creditScore||650),300,850),factor=clamp((score-500)/350,0,1);
@@ -104,7 +106,7 @@ function prepareMonth(date){
   }
   const household={
    id:key,regionId,members:memberRows.map(x=>x.id),memberCount:members.length,adultCount:adults,childCount:children,
-   equivalentAdults:round(equivalent),currency:active.company?.currency||'USD',housingTenure:tenure,
+   equivalentAdults:round(equivalent),currency:active.company?.currency||'USD',housingTenure:tenure,propertyValue:round(propertyValue),mortgageBalance:round(mortgageBalance),homeEquity:round(Math.max(0,propertyValue-mortgageBalance)),mortgagePayment:round(mortgage),
    income:round(totalIncome),expenses:Object.fromEntries(Object.entries(expenses).map(([k,v])=>[k,round(v)])),
    purchases:Object.fromEntries(Object.entries(purchases).map(([k,v])=>[k,round(v)])),
    plannedDiscretionary:round(plannedDiscretionary),spendingPropensity:round(spendingPropensity),
@@ -118,6 +120,7 @@ function prepareMonth(date){
   };
   if(storedHouseholdCount<MAX_HOUSEHOLD_SAMPLES){householdRecords[key]=household;storedHouseholdCount++;}
   for(const row of memberRows)pendingFinance[row.id]={householdId:key,income:round(row.income),expenseShare:round(row.expenseShare||0),essentialExpenseShare:round(row.essentialShare||0),arrears:0,borrowed:0,interest:0};
+  pendingFinance['$HOUSEHOLD$:'+key]={kind:'housing',householdId:key,members:memberRows.map(x=>x.id),propertyValue:round(propertyValue),mortgageBalance:round(mortgageBalance),mortgagePayment:round(mortgage),mortgageRatePct:round(mortgageRatePct||Number(mr?.policyRatePct)||4)};
   const bucket=regional[regionId]||(regional[regionId]={households:0,income:0,spending:0,stress:0,essentialCoverage:0,categoryActual:{},categoryPlan:{}});
   bucket.households++;bucket.income+=totalIncome;bucket.spending+=total;bucket.stress+=household.financialStress;bucket.essentialCoverage+=household.essentialCoverage;
   for(const [category,value] of Object.entries(purchases))bucket.categoryActual[category]=(bucket.categoryActual[category]||0)+value;
@@ -165,20 +168,21 @@ function processIndividualMonth(n,date){
  const before=Math.max(0,Number(nf.cash)||0),debtBefore=Math.max(0,Number(nf.debt)||0),score=clamp(Number(nf.creditScore||650),300,850);
  const mr=(active.market?.globalEconomy?.regions||[]).find(r=>r.id===regionIdFor(n,active.market?.globalEconomy));
  const apr=clamp(Number(mr?.policyRatePct||4)+3+(850-score)*.08,4,36);
- const interest=round(debtBefore*apr/1200),debtAfterInterest=debtBefore+interest;
+ const interest=round(debtBefore*apr/1200),debtAfterInterest=debtBefore+interest,savingsApr=clamp(Number(mr?.policyRatePct||3)-1.5,0,10),savingsInterest=round(before*savingsApr/1200);
  const creditFactor=clamp((score-500)/350,0,1),creditLimit=round(Math.max(0,income*4*creditFactor));
- const available=before+income,essentialShortfall=Math.max(0,essentialShare-available);
+ const available=before+income+savingsInterest,essentialShortfall=Math.max(0,essentialShare-available);
  const creditDraw=round(Math.min(essentialShortfall,Math.max(0,creditLimit-debtAfterInterest)));
  const shortfall=Math.max(0,share-available-creditDraw),surplus=Math.max(0,available+creditDraw-share);
  const repayment=round(Math.min(debtAfterInterest+creditDraw,surplus*.35));
  nf.cash=round(Math.max(0,surplus-repayment));
  nf.debt=round(Math.max(0,debtAfterInterest+creditDraw-repayment));
- nf.creditLimit=creditLimit;nf.monthlyDebtInterest=interest;nf.monthlyDebtRepayment=repayment;nf.monthlyCreditDraw=creditDraw;
+ nf.creditLimit=creditLimit;nf.monthlyDebtInterest=interest;nf.monthlyDebtRepayment=repayment;nf.monthlyCreditDraw=creditDraw;nf.monthlySavingsInterest=savingsInterest;
  nf.monthlyIncome=round(income);nf.monthlyExpenses=round(share);nf.monthlyArrears=round(shortfall);
  nf.savingsRate=income>0?round(clamp((income-share)/income*100,-100,100)):0;
  nf.creditScore=round(clamp(score+(shortfall>0?-2.5:creditDraw>0?-.2:.35),300,850));
  nf.insolvencyMonths=shortfall>0?Math.min(120,Number(nf.insolvencyMonths||0)+1):Math.max(0,Number(nf.insolvencyMonths||0)-1);
  nf.insolvencyStatus=nf.insolvencyMonths>=6&&nf.debt>Math.max(1,income*12)?'insolvent':nf.insolvencyMonths>=3?'severe-stress':shortfall>0?'financial-stress':'current';
+ if(nf.insolvencyMonths>=12&&nf.debt>Math.max(2000,income*12)&&nf.bankruptcyStatus!=='filed'){nf.bankruptcyStatus='filed';nf.bankruptcyFiledDate=date;s.bankruptcyEvents.unshift({date,npcId:n.id,debt:round(nf.debt),monthsInArrears:nf.insolvencyMonths});s.bankruptcyEvents=s.bankruptcyEvents.slice(0,200)}else if(!nf.bankruptcyStatus)nf.bankruptcyStatus='none';
  nf.lastHouseholdFinanceDate=date;
  n.wealth=nf.cash;
  n.career=n.career||{};n.career.monthlyIncome=round(income);
