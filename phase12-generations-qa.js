@@ -14,6 +14,7 @@ const window={StudioPopulationEngine:{ensure(){return pop},createChild(a,b){cons
 const context={window,document,active,persist(){},toast(){},render(){},console,Date,Math,Number,String,Array,Object,JSON,Set,Map,Error};
 vm.runInNewContext(src,context,{filename:'phase12-generations-engine.js'});
 const api=window.Phase12Generations;assert(api);assert.equal(api.version,'12.0.0');
+const freshAudit=api.audit();assert.equal(freshAudit.failed,0,JSON.stringify(freshAudit.tests.filter(x=>!x.ok)));
 api.stepDay('2026-01-01');assert.equal(active.generations.lastProcessedDate,'2026-01-01');
 assert.equal(api.stepDay('2026-01-01').idempotent,true);
 assert.equal(parent.estateSettled,true);assert.equal(parent.finances.cash,0);assert.equal(child.finances.cash,1050);
