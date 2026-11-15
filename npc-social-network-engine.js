@@ -10,7 +10,7 @@ const people=()=>campaign()?.world?.population?.npcs||[];
 const alive=n=>n&&n.alive!==false&&n.status!=='Deceased';
 const relationTypes=['family','friend','colleague','mentor','rival','neighbour','acquaintance','romantic','professional-contact','community-member'];
 function state(){const c=campaign();if(!c)return null;c.world=c.world||{};let s=c.world.socialNetwork;if(!s||s.version!==VERSION)s=c.world.socialNetwork={version:VERSION,edges:[],groups:[],rumors:[],events:[],metrics:{relationshipsCreated:0,interactions:0,rumorsCreated:0,rumorTransmissions:0,groupsCreated:0,collectiveActions:0,autonomousVotes:0,autonomousGroupJoins:0},cursor:0,lastDate:null};s.edges=Array.isArray(s.edges)?s.edges:[];s.groups=Array.isArray(s.groups)?s.groups:[];s.rumors=Array.isArray(s.rumors)?s.rumors:[];s.events=Array.isArray(s.events)?s.events:[];s.metrics=s.metrics||{relationshipsCreated:0,interactions:0,rumorsCreated:0,rumorTransmissions:0,groupsCreated:0,collectiveActions:0};return s}
-function person(id){return people().find(n=>String(n.id)===String(id))||null}
+function person(id){const key=String(id),c=campaign(),founder=c?.founder||c?.player||null;if(key==='PLAYER'||String(founder?.id||'')===key){if(founder){founder.social=founder.social||{};return founder}}return people().find(n=>String(n.id)===key)||null}
 function edgeKey(a,b){return[String(a),String(b)].sort().join('|')}
 function adjacency(s){const map=new Map();for(const e of s.edges){if(!map.has(e.a))map.set(e.a,[]);if(!map.has(e.b))map.set(e.b,[]);map.get(e.a).push({edge:e,other:e.b});map.get(e.b).push({edge:e,other:e.a})}return map}
 function addEvent(s,event){s.events.push(event);if(s.events.length>MAX_EVENTS)s.events.splice(0,s.events.length-MAX_EVENTS)}
