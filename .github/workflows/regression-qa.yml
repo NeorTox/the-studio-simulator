@@ -81,5 +81,9 @@ jobs:
         run: node phase11-browser-qa.js
       - name: Run global geography and travel browser regression
         run: node phase1-global-geography-travel-qa.js
+      - name: Validate and run Phase 12 generations regression
+        run: node --check phase12-generations-engine.js && node --check phase12-generations-qa.js && node phase12-generations-qa.js
+      - name: Run Phase 12 generations browser QA
+        run: node phase12-browser-qa.js
       - name: Run three-year cross-phase integration stress test
         run: node integration-multiyear-qa.js
