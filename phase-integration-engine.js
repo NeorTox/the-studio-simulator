@@ -9,7 +9,7 @@ const CONTRACTS=[
 {id:3,key:'founder',name:'Founder & personal life',requires:['Phase3Founder.stepDay']},
 {id:4,key:'company',name:'Company management',requires:['Phase4Company.stepDay']},
 {id:5,key:'production',name:'Entertainment production',requires:['Phase5Production.audit']},
-{id:6,key:'ecosystem',name:'Entertainment ecosystem',requires:['Phase6Ecosystem.stepDay','Phase6Ecosystem.audit','Phase6Ecosystem.addFandom','Phase6Ecosystem.publishReview','Phase6Audience.processDay','Phase6Audience.audit']},
+{id:6,key:'ecosystem',name:'Entertainment ecosystem',requires:['Phase6Ecosystem.stepDay','Phase6Ecosystem.audit','Phase6Ecosystem.addFandom','Phase6Ecosystem.publishReview','Phase6Audience.processDay','Phase6Audience.audit','simulateMediaMonth','renderMedia','awardCatalog','submitForAward','processAwards','renderAwards']},
 {id:7,key:'smartphone',name:'Smartphone & media',requires:[]},
 {id:8,key:'financial-empire',name:'Financial empire',requires:[]},
 {id:9,key:'global-economy',name:'Global economy',requires:[]},
@@ -60,6 +60,9 @@ function audit(){
   const required=['world-before-life','population-founder-company','phase6-ecosystem','phase6-audience'];
   const incompletePhase6=dates.filter(d=>d.status==='completed'&&required.some(step=>!d.steps.some(x=>x.name===step)));
   add('Phase 6 is part of every completed daily pipeline',incompletePhase6.length===0,incompletePhase6.length?incompletePhase6.map(d=>d.date).join(', '):dates.length+' days include world, company and both ecosystem processors.');
+  const media=active.market?.media,awards=active.awardSubmissions;
+  add('Media simulation and presentation are available',!!media&&Array.isArray(media.outlets)&&Array.isArray(media.coverage)&&typeof window.simulateMediaMonth==='function'&&typeof window.renderMedia==='function','Media world, outlet and coverage state plus monthly simulation and UI are available.');
+  add('Awards and festival processing are available',Array.isArray(awards)&&awards.every(a=>a.id&&a.projectId&&a.event&&['Pending','Won','Nominated','Not selected'].includes(a.status))&&typeof window.processAwards==='function'&&typeof window.submitForAward==='function','Award entries have valid states and deterministic result processing.');
   const p6=window.Phase6Ecosystem?.audit?.();
   add('Phase 6 internal integrity audit',!!p6&&p6.failed===0,p6?(p6.passed+' passed / '+p6.failed+' failed'): 'Phase 6 audit API unavailable.');
   const p6Date=active.ecosystem?.lastProcessedDate,audienceDate=active.ecosystem?.audienceLastProcessedDate;
