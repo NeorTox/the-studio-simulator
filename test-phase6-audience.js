@@ -13,7 +13,7 @@ assert(api,'Phase 6 API registered');
 assert.equal(api.version,'6.1.0');
 const fandom=api.addFandom({projectId:'AUD-PROJECT',name:'The Orbit Society',segment:'Genre fans',members:10000,engagement:72});
 assert.equal(fandom.members,10000);
-assert.throws(()=>api.addFandom({projectId:'AUD-PROJECT',name:'The Orbit Society',segment:'Science fiction fans',members:1}),/already exists/i);
+assert.throws(()=>api.addFandom({projectId:'AUD-PROJECT',name:'The Orbit Society',segment:'Genre fans',members:1}),/already exists/i);
 const review=api.publishReview({projectId:'AUD-PROJECT',critic:'M. Rao',publication:'Screen Ledger',score:88,headline:'A confident cosmic epic'});
 assert.equal(review.score,88);
 assert.equal(active.projects[0].ecosystemCriticScore,88);
