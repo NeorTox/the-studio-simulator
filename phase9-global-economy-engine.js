@@ -73,7 +73,7 @@ function processDay(date){
  });
  g.commodities.forEach(c=>{
   const sn=noise(seed,date+'|supply|'+c.id),dn=noise(seed,date+'|demand|'+c.id);
-  c.supplyIndex=round(clamp(num(c.supplyIndex)+sn*.08,45,160));c.demandIndex=round(clamp(num(c.demandIndex)+dn*.07+(num(g.global.consumerConfidence,100)-100)*.0008,45,160));
+  c.supplyIndex=round(clamp(num(c.supplyIndex)+sn*.08,45,160));const householdDemand=clamp(num(active.market?.economy?.householdDemandIndex,100),35,160),householdExposure=/^(Energy|Utilities|Agriculture|Logistics)$/.test(c.sector)?.00045:.00012;c.demandIndex=round(clamp(num(c.demandIndex)+dn*.07+(num(g.global.consumerConfidence,100)-100)*.0008+(householdDemand-100)*householdExposure,45,160));
   const ret=clamp((num(c.demandIndex)-num(c.supplyIndex))/100*.00022+sn*num(c.volatilityPct,3)*.00009,-.004,.004);
   c.priceIndex=round(clamp(num(c.priceIndex)*(1+ret),15,900));c.inventoryIndex=round(clamp(num(c.inventoryIndex)+(num(c.supplyIndex)-num(c.demandIndex))*.0007,10,200));c.lastProcessedDate=date;
  });
