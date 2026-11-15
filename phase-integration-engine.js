@@ -13,7 +13,7 @@ const CONTRACTS=[
 {id:7,key:'smartphone',name:'Smartphone & media',requires:['Phase7Smartphone.processDay','Phase7Smartphone.audit','Phase7Smartphone.installApp','Phase7Smartphone.publishPost']},
 {id:8,key:'financial-empire',name:'Financial empire',requires:['Phase8FinancialEmpire.stepDay','Phase8FinancialEmpire.audit','Phase8FinancialEmpire.createFund','Phase8FinancialEmpire.buyAsset','Phase8FinancialEmpire.sellAsset']},
 {id:9,key:'global-economy',name:'Global economy',requires:['Phase9GlobalEconomy.stepDay','Phase9GlobalEconomy.audit','Phase9GlobalEconomy.setPolicy','Phase9GlobalEconomy.createAgreement']},
-{id:10,key:'competitors',name:'Autonomous competitors',requires:[]},
+{id:10,key:'competitors',name:'Autonomous competitors',requires:['Phase10Competitors.stepDay','Phase10Competitors.audit','Phase10Competitors.setStrategy']},
 {id:11,key:'technology',name:'Technology & sustainability',requires:[]},
 {id:12,key:'generations',name:'Generations & world evolution',requires:[]},
 {id:13,key:'release-quality',name:'Integration & release quality',requires:[]}
@@ -36,15 +36,17 @@ function endDay(date){
  const smartphone=active.smartphone;if(!smartphone||smartphone.lastProcessedDate!==date)throw Error('Cannot complete integration day '+date+': Phase 7 smartphone processor did not commit.');
  const financial=window.Phase8FinancialEmpire?.ensure?.();if(!financial||financial.lastProcessedDate!==date)throw Error('Cannot complete integration day '+date+': Phase 8 financial empire processor did not commit.');
  const globalEconomy=window.Phase9GlobalEconomy?.ensure?.();if(!globalEconomy||globalEconomy.lastProcessedDate!==date)throw Error('Cannot complete integration day '+date+': Phase 9 global economy processor did not commit.');
+ const competitors=window.Phase10Competitors?.ensure?.();if(!competitors||competitors.lastProcessedDate!==date)throw Error('Cannot complete integration day '+date+': Phase 10 autonomous competitor processor did not commit.');
  d.steps.push({name:'population-founder-company',at:new Date().toISOString()});
  d.steps.push({name:'phase6-ecosystem',at:new Date().toISOString()});
  d.steps.push({name:'phase6-audience',at:new Date().toISOString()});
  d.steps.push({name:'phase7-smartphone',at:new Date().toISOString()});
  d.steps.push({name:'phase8-financial-empire',at:new Date().toISOString()});
  d.steps.push({name:'phase9-global-economy',at:new Date().toISOString()});
+ d.steps.push({name:'phase10-competitors',at:new Date().toISOString()});
  if(active.world?.travel)d.steps.push({name:'global-travel',at:new Date().toISOString()});
  d.status='completed';d.completedAt=new Date().toISOString();s.days[date]=d;
- s.history.unshift({date,status:'completed',phases:['world','population','founder','company','ecosystem','audience','smartphone','financial-empire','global-economy','travel']});s.history=s.history.slice(0,90);
+ s.history.unshift({date,status:'completed',phases:['world','population','founder','company','ecosystem','audience','smartphone','financial-empire','global-economy','competitors','travel']});s.history=s.history.slice(0,90);
  if(typeof persist==='function')persist();return true;
 }
 function audit(){
@@ -52,7 +54,7 @@ function audit(){
  add('Active campaign exists',!!active,'Integration checks require an active campaign.');
  const modules=CONTRACTS.map(c=>{
   const missing=c.requires.filter(r=>!path(r));
-  const implemented=c.id<=9&&missing.length===0;
+  const implemented=c.id<=10&&missing.length===0;
   return {...c,status:c.id<=9?(missing.length?'degraded':'connected'):'not-built',missing};
  });
  modules.forEach(m=>add('Phase '+m.id+' · '+m.name,m.status==='connected'||m.status==='not-built',m.status+(m.missing.length?': '+m.missing.join(', '):'')));
@@ -64,7 +66,7 @@ function audit(){
   add('No incomplete daily pipelines',incomplete.length===0,incomplete.length?incomplete.map(d=>d.date).join(', '):dates.length+' completed day records.');
   const duplicate=dates.some(d=>new Set(d.steps.map(x=>x.name)).size!==d.steps.length);
   add('No duplicate pipeline steps',!duplicate,'Each tracked daily stage appears once per date.');
-  const required=['world-before-life','population-founder-company','phase6-ecosystem','phase6-audience','phase7-smartphone','phase8-financial-empire'];
+  const required=['world-before-life','population-founder-company','phase6-ecosystem','phase6-audience','phase7-smartphone','phase8-financial-empire','phase9-global-economy','phase10-competitors'];
   const incompletePhase6=dates.filter(d=>d.status==='completed'&&required.some(step=>!d.steps.some(x=>x.name===step)));
   add('Phase 6 is part of every completed daily pipeline',incompletePhase6.length===0,incompletePhase6.length?incompletePhase6.map(d=>d.date).join(', '):dates.length+' days include world, company and both ecosystem processors.');
   add('Phase 7 is part of every completed daily pipeline',dates.filter(d=>d.status==='completed'&&!d.steps.some(x=>x.name==='phase7-smartphone')).length===0,'Every completed day includes smartphone and digital-media processing.');
@@ -72,6 +74,10 @@ function audit(){
   const p9Start=active.market?.globalEconomy?.firstIntegratedDate||'9999-12-31';const p9Days=dates.filter(d=>d.status==='completed'&&d.date>=p9Start);
   add('Phase 9 is part of every completed daily pipeline',p9Days.every(d=>d.steps.some(x=>x.name==='phase9-global-economy')),p9Days.length+' Phase 9-enabled daily pipelines include global economy processing.');
   const p9=window.Phase9GlobalEconomy?.audit?.();add('Phase 9 internal integrity audit',!!p9&&p9.failed===0,p9?(p9.passed+' passed / '+p9.failed+' failed'):'Phase 9 audit API unavailable.');
+  const p10Start=active.competitors?.firstIntegratedDate||'9999-12-31';const p10Days=dates.filter(d=>d.status==='completed'&&d.date>=p10Start);
+  add('Phase 10 is part of every completed daily pipeline',p10Days.every(d=>d.steps.some(x=>x.name==='phase10-competitors')),p10Days.length+' Phase 10-enabled daily pipelines include autonomous competitor processing.');
+  const p10=window.Phase10Competitors?.audit?.();add('Phase 10 internal integrity audit',!!p10&&p10.failed===0,p10?(p10.passed+' passed / '+p10.failed+' failed'):'Phase 10 audit API unavailable.');
+  add('Phase 10 daily checkpoint synchronized',p10Days.length===0||active.competitors?.lastProcessedDate===active.date,'Competitors '+String(active.competitors?.lastProcessedDate||'not run')+' · campaign '+active.date);
   add('Phase 9 daily checkpoint synchronized',p9Days.length===0||active.market?.globalEconomy?.lastProcessedDate===active.date,'Global economy '+String(active.market?.globalEconomy?.lastProcessedDate||'not run')+' · campaign '+active.date);
   add('Global travel is part of every completed daily pipeline',dates.filter(d=>d.status==='completed'&&!d.steps.some(x=>x.name==='global-travel')).length===0,'Every completed day includes global mobility processing.');
   add('Global travel checkpoint is synchronized',dates.length===0||active.world?.travel?.lastProcessedDate===active.date,'Travel '+String(active.world?.travel?.lastProcessedDate||'not yet processed')+' · campaign '+active.date);
