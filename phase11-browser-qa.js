@@ -4,7 +4,7 @@ const {chromium}=require('playwright'),assert=require('assert');
  const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
  await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
  await page.getByRole('button',{name:/New campaign/}).click();await page.getByRole('button',{name:/Create campaign/}).click();
- for(const [id,value] of [['nfounder','Phase 11 QA Founder'],['ncompany','Innovation Test Studios'],['ncountry','India'],['ncity','Mumbai']])await page.locator('#'+id).fill(value);
+ for(const [id,value] of [['nfounder','Phase 11 QA Founder'],['ncompany','Innovation Test Studios'],['ncapital','50000000'],['ncountry','India'],['ncity','Mumbai']])await page.locator('#'+id).fill(value);
  await page.getByRole('button',{name:/Create and save campaign/}).click();
  const initial=await page.evaluate(()=>{const a=window.Phase11Technology;if(!a)throw Error('Phase 11 engine did not load');const s=a.ensure();return{version:a.version,technologies:s.technologies.length,lab:s.lab,audit:a.audit()}});
  assert.equal(initial.version,'11.0.0');assert.equal(initial.technologies,12);assert.equal(initial.audit.failed,0,JSON.stringify(initial.audit.tests.filter(x=>!x.ok)));
