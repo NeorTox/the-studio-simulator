@@ -33,7 +33,12 @@ jobs:
             curl -fsS http://127.0.0.1:4173/index.html >/dev/null && break
             sleep 1
           done
-      - name: Validate global geography and travel engines\n        run: |\n          node --check phase1-global-geography-engine.js\n          node --check phase1-global-mobility-engine.js\n          node --check phase1-global-geography-travel-qa.js\n      - name: Validate Phase 7 digital-life syntax early
+      - name: Validate global geography and travel engines
+        run: |
+          node --check phase1-global-geography-engine.js
+          node --check phase1-global-mobility-engine.js
+          node --check phase1-global-geography-travel-qa.js
+      - name: Validate Phase 7 digital-life syntax early
         run: node --check phase7-digital-life-engine.js && node --check phase7-digital-life-qa.js
       - name: Run actual application form regression
         run: node actual-phase3-submit-qa.js
@@ -64,5 +69,7 @@ jobs:
         run: node phase7-digital-life-qa.js
       - name: Validate and run Phase 8 financial empire regression
         run: node --check phase8-financial-empire-engine.js && node --check phase8-browser-qa.js && node phase8-browser-qa.js
-      - name: Run global geography and travel browser regression\n        run: node phase1-global-geography-travel-qa.js\n      - name: Run three-year cross-phase integration stress test
+      - name: Run global geography and travel browser regression
+        run: node phase1-global-geography-travel-qa.js
+      - name: Run three-year cross-phase integration stress test
         run: node integration-multiyear-qa.js
