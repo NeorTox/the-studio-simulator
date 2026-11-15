@@ -3,7 +3,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('nod
 const source=fs.readFileSync('npc-autonomy-engine.js','utf8');
 const tasks=new Map(),campaign={date:'2026-01-01',world:{population:{npcs:[]}}};
 for(let i=0;i<2500;i++)campaign.world.population.npcs.push({id:'NPC-'+i,alive:true,status:'Independent',age:30,needs:{health:70,energy:i%2?15:80,social:i%3?20:75,security:60,purpose:30},skills:{technical:20,creative:40},career:{satisfaction:40,performance:60},finances:{monthlyIncome:1000,monthlyExpenses:800},schedule:{routine:'Balanced',workHours:8,leisureHours:3},mood:50,stress:30});
-const api={registerTask(spec){assert.ok(!tasks.has(spec.id));tasks.set(spec.id,spec);return{registered:true}},ensure(){return{taskStates:{[...tasks.keys()][0]:state}}}};
+const api={registerTask(spec){assert.ok(!tasks.has(spec.id));tasks.set(spec.id,spec);return{registered:true}},ensure(){return{taskStates:{'npc.personal-agency':state}}}};
 let state={};
 const context={active:campaign,window:{StudioAutonomy:api,StudioPopulationEngine:{},StudioPhase0:{registerModule(){}}},document:{readyState:'complete',addEventListener(){} }};
 vm.createContext(context);vm.runInContext(source,context);
