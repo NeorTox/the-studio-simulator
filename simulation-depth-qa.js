@@ -34,7 +34,7 @@ assert.match(index,/q\.askDepthLevels/,'Buy orders must consume modeled ask dept
 assert.match(index,/q\.bidDepthLevels/,'Sell orders must consume modeled bid depth');
 assert.match(index,/q\.marketImpactPct/,'Order fills must include liquidity impact');
 assert.match(sw,/\.\/simulation-depth-engine\.js/,'Offline shell must cache the depth engine');
-assert.match(sw,/v4\.39\.0-world-systems-market/,'Offline cache version must rotate for new assets');
+assert.match(sw,/v4\.40\.0-world-systems-market/,'Offline cache version must rotate for new assets');
 assert.doesNotMatch(index,/'Crime, safety and law enforcement','World','MISSING'/,'Crime and safety may no longer be marked completely missing');
 assert.doesNotMatch(index,/'Cybersecurity and platform trust','Technology','MISSING'/,'Cybersecurity may no longer be marked completely missing');
 assert.match(experience,/'Crime, safety and law enforcement':\['PARTIAL'/,'Dynamic algorithm inventory must report the new safety model');
