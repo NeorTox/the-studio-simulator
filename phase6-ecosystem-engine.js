@@ -285,6 +285,8 @@ function audit(){
  add('Royalty balances are finite and non-negative',e.royalties.every(r=>r.rate>=0&&r.rate<=100&&r.accrued>=0&&r.paid>=0&&Number.isFinite(r.accrued+r.paid)),'Accrued and settled royalty balances reconcile.');
  add('Revenue event amounts are finite',e.revenueEvents.every(r=>r.id&&isoDate(r.date)&&Number.isFinite(r.amount)&&r.amount>0),'Revenue events are auditable and date-stamped.');
  add('Ecosystem checkpoint matches campaign clock',!e.lastProcessedDate||e.lastProcessedDate<=active.date,'Daily ecosystem processing cannot run ahead of campaign time.');
+ const media=active.market?.media;add('Media state is structurally valid',!media||(Array.isArray(media.outlets)&&Array.isArray(media.coverage)&&Array.isArray(media.campaigns)&&media.outlets.every(o=>o.id&&o.name&&o.status)),'Media outlets, coverage and campaign collections remain available and well-formed.');
+ const awards=active.awardSubmissions;add('Award submissions have valid lifecycle state',!Array.isArray(awards)||awards.every(a=>a.id&&a.projectId&&a.event&&isoDate(a.resultDate)&&['Pending','Won','Nominated','Not selected'].includes(a.status)),'Award and festival entries have valid projects, result dates and lifecycle states.');
  add('Campaign save serialization',(()=>{try{JSON.stringify(active);return true}catch(e){return false}})(),'Phase 6 records remain serializable in the campaign save.');
  return {passed:tests.filter(x=>x.ok).length,failed:tests.filter(x=>!x.ok).length,tests};
 }
