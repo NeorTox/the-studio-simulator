@@ -50,9 +50,11 @@ Current phase: Phase 8 — Financial empire.\n\n## Phase 5 completion\n- Script 
 
 ## Phase 7 completion evidence
 - Studio One smartphone and StudioOS app catalog with install/uninstall and storage accounting.
-- Creator profiles with unique handles, publishing to installed platforms, audience preference controls and personalized feed ranking.
+- Creator profiles with unique handles, publishing to installed platforms, follow/unfollow, like/unlike reactions, comments, reporting and moderation decisions, audience preference controls and personalized feed ranking.
+- Creator sponsorship deals with CPM, budgets, durations and capped creator payouts.
 - Daily industry news and studio updates sourced from Phase 6 release and media state; engagement, trends, creator growth and notifications.
 - Digital ad campaigns with CPM, impressions, clicks, conversions and spend caps.
 - Versioned campaign save state and integration end-of-day requirement.
-- Browser regression passed for apps, creator publishing, advertising, idempotency, integration and save/reload.
+- Browser regression passed for apps, creator publishing, follow/like/comment, moderation, sponsorship payout, advertising, idempotency, integration and save/reload.
+- Phase 7 integrity audit passed 12/12 checks.
 - Three-year stress test on commit `f7688b60b955981bd18db25520a5b558ee67c981`: 1,095/1,095 Phase 7 daily pipeline records, synchronized smartphone/world date, 500 retained feed items, 30/30 integration checks and zero errors.
