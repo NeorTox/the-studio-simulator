@@ -11,7 +11,7 @@ const document={readyState:'complete',querySelector(s){return s==='.nav'?nav:s==
 const integration={contracts:[{id:12,name:'Generations & world evolution',requires:[]}],endDay(date){return true},audit(){return{modules:[{id:12,status:'not-built',missing:[]}],tests:[{name:'Phase 12 · Generations & world evolution',ok:true}],passed:1,failed:0}}};
 const management=active.company.management;
 const window={StudioPopulationEngine:{ensure(){return pop},createChild(a,b){const p=pop.npcs.find(n=>n.id===a),q=pop.npcs.find(n=>n.id===b),n={id:'N'+pop.nextId++,name:'Baby Morgan',age:0,birthDate:active.date,alive:true,status:'Dependent',finances:{cash:0,debt:0},family:{familyId:'F1',parentIds:[a,b],childIds:[],partnerId:null},skills:{leadership:1,communication:1,technical:1},career:{performance:20}};pop.npcs.push(n);family.memberIds.push(n.id);p.family.childIds.push(n.id);q.family.childIds.push(n.id);return{ok:true,npc:n}}},Phase4Company:{ensure(){return management}},Phase6Ecosystem:{stepDay(date){return{date}}},StudioPhaseIntegration:integration,nav(){},render(){}};
-const context={window,document,active,persist(){},toast(){},console,Date,Math,Number,String,Array,Object,JSON,Set,Map,Error};
+const context={window,document,active,persist(){},toast(){},render(){},console,Date,Math,Number,String,Array,Object,JSON,Set,Map,Error};
 vm.runInNewContext(src,context,{filename:'phase12-generations-engine.js'});
 const api=window.Phase12Generations;assert(api);assert.equal(api.version,'12.0.0');
 api.stepDay('2026-01-01');assert.equal(active.generations.lastProcessedDate,'2026-01-01');
