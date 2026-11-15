@@ -573,7 +573,7 @@ async function advanceInChunks(total,chunkSize=30){
  if(window.__advanceBatchActive){toast('A time-advance operation is already running.');return}
  if(!active){toast('Create a campaign first.');return}
  if(active.clockFrozen){toast('Simulation clock is frozen. Use TIME UNFREEZE in Sandbox.');return}
- total=Math.max(1,Math.min(3650,Math.floor(Number(total)||1)));chunkSize=Math.max(1,Math.min(5,Math.floor(Number(chunkSize)||5)));
+ total=Math.max(1,Math.min(3650,Math.floor(Number(total)||1)));chunkSize=Math.max(1,Math.min(1,Math.floor(Number(chunkSize)||1)));
  window.__advanceBatchActive=true;let completed=0;const clock=active.worldClock||null,wasRunning=!!clock?.running&&!active.clockFrozen;
  if(wasRunning){clock.running=false;clock.lastWallMs=Date.now();saveClock()}
  try{while(completed<total){const step=Math.min(chunkSize,total-completed),before=active.date,startedAt=Date.now();advance(step,{silent:true,quiet:true,deferPersist:true});const elapsed=Math.max(0,Math.round((Date.parse(active.date+'T00:00:00Z')-Date.parse(before+'T00:00:00Z'))/86400000));completed+=elapsed;console.info('[STUDIO_BATCH_PROGRESS]',JSON.stringify({completed,total,date:active.date,chunkDays:elapsed,chunkMs:Date.now()-startedAt}));if(elapsed<step)break;await new Promise(resolve=>setTimeout(resolve,0));}}
