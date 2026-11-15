@@ -58,9 +58,9 @@ assert.equal(platform.subscribers,subscribersAfterFirstAttempt,'Subscriber acqui
 assert.equal(streamingDeal.pendingStatement,null,'Pending platform statement should clear after payment posts');
 assert.equal(streamingDeal.lastStatementMonth,'2026-12');
 assert.equal(active.ecosystem.lastMonthlyDate,'2026-12');
-platform.active=false;royalty.accrued+=25;failRevenue=true;active.date='2027-01-01';api.stepDay('2027-01-01');
+platform.active=false;royalty.accrued+=25;const cashBeforeRoyaltyRetry=active.company.cash;active.company.cash=0;active.date='2027-01-01';api.stepDay('2027-01-01');
 assert.equal(active.ecosystem.royaltySettlementPending,true,'Failed royalty settlement must remain pending');
-const paidBeforeRetry=royalty.paid;failRevenue=false;active.date='2027-01-02';api.stepDay('2027-01-02');
+const paidBeforeRetry=royalty.paid;active.company.cash=cashBeforeRoyaltyRetry;active.date='2027-01-02';api.stepDay('2027-01-02');
 assert.equal(active.ecosystem.royaltySettlementPending,false,'Royalty settlement retry should clear pending state');
 assert(royalty.paid>paidBeforeRetry,'Outstanding royalties should be paid after finance recovers');
 
