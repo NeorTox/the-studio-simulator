@@ -38,7 +38,7 @@ const {chromium}=require('playwright'),assert=require('assert');
  assert(result.popDays>=1095);
  assert.equal(result.trackedDays,result.completedDays);
  assert.equal(result.phase6Status,'connected','Phase 6 must satisfy the integration contract.');
- assert.equal(result.connectedPhases,8,'Phases 0–7 must all be connected.');
+ assert.equal(result.connectedPhases,9,'Phases 0–8 must all be connected.');
  assert.equal(result.phase6PipelineDays,1095,'Every completed integration day must include Phase 6 ecosystem and audience processing.');
  assert.equal(result.phase7PipelineDays,1095,'Every completed integration day must include Phase 7 smartphone processing.');
  assert.equal(result.phoneDate,result.date,'Phase 7 smartphone date must remain synchronized with world time.');assert.equal(result.financialDate,result.date,'Phase 8 financial empire date must remain synchronized with world time.');assert.equal(result.phase8PipelineDays,1095,'Every completed integration day must include Phase 8 financial empire processing.');assert.equal(result.financialAudit.failed,0,JSON.stringify(result.financialAudit.tests.filter(x=>!x.ok)));assert.equal(result.digitalNewsDate,result.date,'Phase 7 newsroom date must remain synchronized with world time.');assert(result.digitalOutlets>=8,'All seeded news outlets must remain registered.');assert(result.digitalArticles>=8,'The newsroom must continue publishing throughout the three-year simulation.');assert(result.digitalRegions>=1,'The regional digital population model must remain initialized.');assert(result.regionalNPCFloor,'Every digital region must retain at least 25,000 represented NPCs.');assert.equal(result.digitalAudit.failed,0,JSON.stringify(result.digitalAudit.tests.filter(x=>!x.ok)));
