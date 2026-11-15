@@ -88,6 +88,7 @@ function move(id,city,region){
  const n=find(id);if(!n||!alive(n)||!String(city||'').trim())return {ok:false,error:'Choose a living person and a destination.'};const old=n.city;n.residenceHistory.unshift({date:active.date,city:old,region:n.region});n.residenceHistory=n.residenceHistory.slice(0,20);n.city=String(city).trim().slice(0,80);n.home.city=n.city;if(region)n.region=String(region).slice(0,80);n.needs.security=clamp(n.needs.security-4,0,100);n.needs.purpose=clamp(n.needs.purpose+2,0,100);event(pop(),active.date,'migration',n.name+' moved from '+old+' to '+n.city+'.',n.id,{from:old,to:n.city});persist();return {ok:true};
 }
 function monthlyFinance(n,date){
+ if(window.StudioHouseholdEconomics?.processIndividualMonth?.(n,date))return;
  if(!alive(n))return;
  let income=0,expenses=0;
  if(n.status==='Employed'){const emp=(active.employees||[]).find(e=>e.npcId===n.id||e.id==='EMP-'+n.id);income=Math.max(0,Number(emp?.salary||n.career.monthlyIncome||0));n.career.monthlyIncome=income}
@@ -149,7 +150,7 @@ function processDay(date){
  const nlist=p.npcs.slice(0,MAX_NPCS);
  nlist.forEach(n=>daily(n,date));p.phase2.dailyTicks++;
  const day=Number(date.slice(8,10));
- if(day===1){nlist.forEach(n=>{if(!alive(n))return;monthlyFinance(n,date);monthlyCareer(n,date);mortality(n,date)});monthlySocial(p,date);p.phase2.monthlyTicks++;macroStats(p,date)}
+ if(day===1){window.StudioHouseholdEconomics?.prepareMonth?.(date);nlist.forEach(n=>{if(!alive(n))return;monthlyFinance(n,date)});window.StudioHouseholdEconomics?.finalizeMonth?.(date);nlist.forEach(n=>{if(!alive(n))return;monthlyCareer(n,date);mortality(n,date)});monthlySocial(p,date);p.phase2.monthlyTicks++;macroStats(p,date)}
  if(date.slice(5)==='01-01'){p.phase2.annualTicks++;nlist.forEach(n=>{if(!alive(n))return;n.reputation.professional=clamp(n.reputation.professional+(n.career.performance-50)*.01,0,100);if(n.age>=66&&n.status==='Employed'&&rand(n.id+'|retire|'+date)<.02){const emp=(active.employees||[]).find(e=>e.npcId===n.id||e.id==='EMP-'+n.id);if(emp){emp.status='Terminated';emp.endDate=date}n.status='Retired';n.employer=null;event(p,date,'career',n.name+' retired from full-time employment.',n.id)}})}
  p.phase2.lastProcessedDate=date;
 }
