@@ -45,7 +45,7 @@ function prepareMonth(date){
  (active.employees||[]).forEach(e=>{if(e.npcId)employeeMap.set(e.npcId,e);else if(String(e.id||'').startsWith('EMP-'))employeeMap.set(String(e.id).slice(4),e)});
  const groups=new Map();
  for(const n of people){if(!alive(n))continue;const key=householdKey(n);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(n)}
- const householdRecords={},incomeByNpc=new Map(),expenseByNpc=new Map(),regional={};
+ const householdRecords={},regional={};
  const regionStates=s.regions;
  for(const [id,r] of Object.entries(macro?.regions||{}))void id,void r;
  for(const [key,members] of groups){
