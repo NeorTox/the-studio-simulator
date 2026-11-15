@@ -4,8 +4,10 @@ A film and entertainment company simulation game.
 
 ## Project baseline
 
-- Game version: 4.19.0
+- Game version: 4.20.0
+- Engine versions: Phase 6 Ecosystem 6.1.0; Phase 6 Audience version is reported by its runtime module
 - Completed development phases: 0–5
+- Phase 6: core ecosystem systems implemented; final audit and regression closure in progress
 - Active development phase: Phase 6 — Entertainment Ecosystem
 - Production: https://neortox.github.io/the-studio-simulator/
 
