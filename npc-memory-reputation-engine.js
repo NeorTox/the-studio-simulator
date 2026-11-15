@@ -3,7 +3,7 @@
 const VERSION='1.0.0',TASK='npc.memory-reputation',MAX_DAILY=1200,MAX_MEMORIES=100,MAX_REPUTATION_EVENTS=100,MAX_AMBITIONS=12;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,Number(v)||0));
 const hash=s=>{let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return(h>>>0).toString(16).padStart(8,'0')};
-const validDate=s=>{const d=new Date(String(s)+'T00:00:00Z');return /^\\d{4}-\\d{2}-\\d{2}$/.test(String(s))&&!Number.isNaN(d.getTime())&&d.toISOString().slice(0,10)===String(s)};
+const validDate=s=>{const d=new Date(String(s)+'T00:00:00Z');return /^\d{4}-\d{2}-\d{2}$/.test(String(s))&&!Number.isNaN(d.getTime())&&d.toISOString().slice(0,10)===String(s)};
 const daysBetween=(a,b)=>Math.max(0,Math.floor((Date.parse(b+'T00:00:00Z')-Date.parse(a+'T00:00:00Z'))/86400000));
 const campaign=()=>typeof active!=='undefined'&&active?active:null;
 const people=()=>campaign()?.world?.population?.npcs||[];
