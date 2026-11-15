@@ -47,15 +47,18 @@ function prepareMonth(date){
  for(const n of people){if(!alive(n))continue;const key=householdKey(n);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(n)}
  const householdRecords={},pendingFinance={},regional={};
  const regionStates=s.regions;
- for(const [id,r] of Object.entries(macro?.regions||{}))void id,void r;
- for(const [key,members] of groups){
-  const regionId=regionIdFor(members[0],macro),mr=(macro?.regions||[]).find(r=>r.id===regionId)||null;
-  const rs=regionStates[regionId]||(regionStates[regionId]={priceIndex:100,lastUpdated:null});
+ for(const mr of macro?.regions||[]){
+  const rs=regionStates[mr.id]||(regionStates[mr.id]={priceIndex:100,lastUpdated:null});
   if(rs.lastUpdated!==date){
-   const annualInflation=clamp(Number(mr?.inflationPct??2.5),-2,30);
+   const annualInflation=clamp(Number(mr.inflationPct??2.5),-2,30);
    rs.priceIndex=clamp(Number(rs.priceIndex||100)*(1+annualInflation/1200),50,300);
    rs.lastUpdated=date;
   }
+ }
+ for(const [id,r] of Object.entries(macro?.regions||{}))void id,void r;
+ for(const [key,members] of groups){
+  const regionId=regionIdFor(members[0],macro),mr=(macro?.regions||[]).find(r=>r.id===regionId)||null;
+  const rs=regionStates[regionId]||(regionStates[regionId]={priceIndex:100,lastUpdated:date});
   const priceFactor=clamp(Number(rs.priceIndex||100)/100,.5,3);
   let adults=0,children=0,equivalent=0,rent=0,mortgage=0,maintenance=0,totalIncome=0,adultCash=0;
   const memberRows=[];
