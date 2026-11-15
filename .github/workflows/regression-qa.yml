@@ -62,5 +62,7 @@ jobs:
         run: node phase7-browser-qa.js
       - name: Run Phase 7 digital-life expansion regression
         run: node phase7-digital-life-qa.js
+      - name: Validate and run Phase 8 financial empire regression
+        run: node --check phase8-financial-empire-engine.js && node --check phase8-browser-qa.js && node phase8-browser-qa.js
       - name: Run three-year cross-phase integration stress test
         run: node integration-multiyear-qa.js
