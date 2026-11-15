@@ -48,6 +48,8 @@ jobs:
         run: node phase3-end-to-end.js
       - name: Run Phase 4 company management browser QA
         run: node phase4-browser-qa.js
+      - name: Run corporate risk resilience browser QA
+        run: node risk-resilience-browser-qa.js
       - name: Validate Phase 5 production engine
         run: node --check phase5-production-engine.js
       - name: Run Phase 5 production browser QA
