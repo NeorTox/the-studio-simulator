@@ -18,10 +18,10 @@ api.stepDay('2026-01-01');assert.equal(active.generations.lastProcessedDate,'202
 assert.equal(api.stepDay('2026-01-01').idempotent,true);
 assert.equal(parent.estateSettled,true);assert.equal(parent.finances.cash,0);assert.equal(child.finances.cash,1050);
 assert.equal(child.generationIndex,2);assert.equal(family.generationCount,2);
-api.stepDay('2027-01-01');assert.equal(active.generations.annualTicks,1);assert(active.market.worldEvolution);assert(active.generations.world.era.length>0);
+active.date='2027-01-01';api.stepDay('2027-01-01');assert.equal(active.generations.annualTicks,1);assert(active.market.worldEvolution);assert(active.generations.world.era.length>0);
 const plan=api.planSuccessor('Chief Operating Officer','N2');assert.equal(plan.npcId,'N2');
 const appointed=api.appointSuccessor('Chief Operating Officer');assert.equal(appointed.ok,true);assert.equal(management.executives[0].npcId,'N2');
-assert.equal(window.Phase6Ecosystem.stepDay('2027-01-02').date,'2027-01-02');assert.equal(active.generations.lastProcessedDate,'2027-01-02');
+active.date='2027-01-02';assert.equal(window.Phase6Ecosystem.stepDay('2027-01-02').date,'2027-01-02');assert.equal(active.generations.lastProcessedDate,'2027-01-02');
 active.integration.days['2027-01-02']={date:'2027-01-02',status:'started',steps:[]};
 integration.endDay('2027-01-02');assert(active.integration.days['2027-01-02'].steps.some(x=>x.name==='phase12-generations'));
 const audit=api.audit();assert.equal(audit.failed,0,JSON.stringify(audit.tests.filter(x=>!x.ok)));
