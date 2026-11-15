@@ -76,13 +76,13 @@ function settleEstates(s){
 }
 function autonomousBirths(s,date){
  const p=window.StudioPopulationEngine?.ensure?.();if(!p||!window.StudioPopulationEngine?.createChild||p.npcs.length>=MAX_NPCS)return;
+ const byId=new Map(p.npcs.map(n=>[n.id,n]));
  const couples=p.npcs.filter(n=>living(n)&&n.age>=21&&n.age<=39&&n.family?.partnerId&&n.id<n.family.partnerId&&n.family.childIds?.length<3);
  let made=0;
  for(const a of couples){
   if(made>=2||p.npcs.length>=MAX_NPCS)break;
-  const b=p.npcs.find(x=>x.id===a.family.partnerId&&living(x)&&x.age>=18);if(!b)continue;
-  const family=familyMap().get(a.family.familyId),children=family?(family.memberIds||[]).map(id=>p.npcs.find(n=>n.id===id)).filter(n=>n&&n.family?.parentIds?.includes(a.id)).length:a.family.childIds.length;
-  if(children>=3||rand('birth|'+a.id+'|'+b.id+'|'+date)>.0018)continue;
+  const b=byId.get(a.family.partnerId);if(!living(b)||b.age<18)continue;
+  if(a.family.childIds.length>=3||rand('birth|'+a.id+'|'+b.id+'|'+date)>.0018)continue;
   const r=window.StudioPopulationEngine.createChild(a.id,b.id);
   if(r?.ok){r.npc.generationIndex=Math.max(a.generationIndex||1,b.generationIndex||1)+1;s.births.unshift({date,npcId:r.npc.id,name:r.npc.name,parentIds:[a.id,b.id],familyId:r.npc.family.familyId,generation:r.npc.generationIndex,autonomous:true});s.births=s.births.slice(0,1000);event(s,date,'birth',a.name+' and '+b.name+' welcomed '+r.npc.name+' into the next generation.',{npcId:r.npc.id,familyId:r.npc.family.familyId});made++}
  }
