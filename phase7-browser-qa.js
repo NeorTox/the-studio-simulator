@@ -13,6 +13,8 @@ const {chromium}=require('playwright');
  assert.equal(initialHealth.modules.find(x=>x.id===6).status,'connected','Phase 6 must be connected immediately after campaign creation: '+JSON.stringify(initialHealth.modules.find(x=>x.id===6)));
  assert.equal(initialHealth.modules.find(x=>x.id===7).status,'connected','Phase 7 must be connected immediately after campaign creation: '+JSON.stringify(initialHealth.modules.find(x=>x.id===7)));
  assert.equal(initialHealth.failed,0,'Fresh campaign integration audit must be green: '+JSON.stringify(initialHealth.tests.filter(x=>!x.ok)));
+ const staleStatus=await page.evaluate(()=>{active.integration.lastAudit={date:active.date,passed:0,failed:99,modules:[{id:7,status:'degraded',missing:['stale cached status']}],tests:[]};window.nav('integrationhealth');const row=[...document.querySelectorAll('#integration-health-content .rowitem')].find(x=>x.innerText.includes('Phase 7 · Smartphone & media'));return row?.querySelector('.tag')?.textContent?.trim()||null});
+ assert.equal(staleStatus,'CONNECTED','Phase 7 dashboard must refresh stale persisted degraded status from live audits');
  const setup=await page.evaluate(()=>{
   const p=window.Phase7Smartphone;if(!p)throw Error('Phase 7 engine did not load');
   const s=p.ensure();const creator=p.createCreator({name:'QA Creator',handle:'qa_creator',category:'Film',followers:50000});
