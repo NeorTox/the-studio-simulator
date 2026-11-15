@@ -9,7 +9,7 @@ const CONTRACTS=[
 {id:3,key:'founder',name:'Founder & personal life',requires:['Phase3Founder.stepDay']},
 {id:4,key:'company',name:'Company management',requires:['Phase4Company.stepDay']},
 {id:5,key:'production',name:'Entertainment production',requires:['Phase5Production.audit']},
-{id:6,key:'ecosystem',name:'Entertainment ecosystem',requires:['Phase6Ecosystem.stepDay','Phase6Ecosystem.audit']},
+{id:6,key:'ecosystem',name:'Entertainment ecosystem',requires:['Phase6Ecosystem.stepDay','Phase6Ecosystem.audit','Phase6Ecosystem.addFandom','Phase6Ecosystem.publishReview']},
 {id:7,key:'smartphone',name:'Smartphone & media',requires:[]},
 {id:8,key:'financial-empire',name:'Financial empire',requires:[]},
 {id:9,key:'global-economy',name:'Global economy',requires:[]},
