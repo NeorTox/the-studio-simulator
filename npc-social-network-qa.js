@@ -14,7 +14,8 @@ for(let i=0;i<4;i++)assert.equal(api.joinGroup('GROUP-01','NPC-'+i).joined,true)
 const action=api.proposeCollectiveAction('GROUP-01',{id:'ACTION-01',kind:'petition',description:'Request safer working conditions'});assert.equal(action.created,true);
 for(let i=0;i<4;i++)api.voteCollectiveAction('GROUP-01','ACTION-01','NPC-'+i,i<3?'support':'oppose');
 const outcome=api.resolveCollectiveAction('GROUP-01','ACTION-01','2026-03-02');assert.equal(outcome.resolved,true);assert.equal(outcome.action.status,'approved');
-const autoAction=api.proposeCollectiveAction('GROUP-01',{id:'ACTION-AUTO',kind:'petition',description:'Ask for safer public facilities'});assert.equal(autoAction.created,true);\nconst task=tasks.get('npc.social-networks'),ctx={date:'2026-03-03',state:{},random:key=>.5},tick=task.run(ctx);assert.equal(autoAction.action.status,'approved');assert.ok(api.metrics().autonomousVotes>=4);assert.equal(tick.processed,1200);assert.ok(tick.newRelationships>=0);assert.ok(api.metrics().edges<=100000);
+const autoAction=api.proposeCollectiveAction('GROUP-01',{id:'ACTION-AUTO',kind:'petition',description:'Ask for safer public facilities'});assert.equal(autoAction.created,true);
+const task=tasks.get('npc.social-networks'),ctx={date:'2026-03-03',state:{},random:key=>.5},tick=task.run(ctx);assert.equal(autoAction.action.status,'approved');assert.ok(api.metrics().autonomousVotes>=4);assert.equal(tick.processed,1200);assert.ok(tick.newRelationships>=0);assert.ok(api.metrics().edges<=100000);
 const report=api.audit();assert.equal(report.failed,0,JSON.stringify(report.tests.filter(t=>!t.ok)));
 assert.ok(JSON.stringify(campaign).includes('Regional Film Workers Association'));
 console.log('NPC SOCIAL NETWORK QA PASSED: relationship graph, interaction dynamics, rumor propagation, group formation, collective voting, autonomous daily processing, bounded state and save serialization.');
