@@ -77,7 +77,7 @@ function audit(){
  add('Passport nationality resolves',!!G.getCountry(t?.passport?.nationality),'Passport nationality is a registered country.');
  add('All bookings reference valid cities',t?.bookings?.every(b=>G.getCity(b.fromCityId)&&G.getCity(b.toCityId)),(t?.bookings?.length||0)+' bookings');
  add('All stays reference bookings',t?.stays?.every(s=>t.bookings.some(b=>b.id===s.bookingId)),(t?.stays?.length||0)+' accommodation records');
- add('Travel costs are finite and nonnegative',t?.bookings?.every(b=>Number.isFinite(b.fare)&&b.fare>=0&&Number.isFinite(b.hotel.total)&&b.hotel.total>=0),'Ticket and accommodation charges are finite.');
+ add('Travel costs are finite and nonnegative',t?.bookings?.every(b=>Number.isFinite(b.fare)&&b.fare>=0&&Number.isFinite(b.hotel.total)&&b.hotel.total>=0),'Ticket and accommodation charges are finite.');add('Booking state and date invariants',t?.bookings?.every(b=>['Booked','In transit','Arrived'].includes(b.status)&&dateValid(b.departureDate)&&dateValid(b.arrivalDate)&&b.arrivalDate>b.departureDate),'Every booking has a valid state and a strictly later arrival date.');add('Route coverage spans multiple world regions',new Set(G.cities.filter(c=>c.airport&&Number.isFinite(c.latitude)).map(c=>c.countryId)).size>=90,new Set(G.cities.filter(c=>c.airport&&Number.isFinite(c.latitude)).map(c=>c.countryId)).size+' countries have seeded airport hubs.');
  add('Travel save state is serializable',(()=>{try{JSON.stringify(t);return true}catch(e){return false}})(),'Travel bookings, visas and history serialize to campaign saves.');
  return {passed:tests.filter(x=>x.ok).length,failed:tests.filter(x=>!x.ok).length,tests};
 }
