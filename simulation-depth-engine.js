@@ -134,7 +134,7 @@ function addRelationshipLink(a,b,date,key){
 }
 function processRelationships(date){
  const c=campaign(),s=ensureRelationships(),people=c?.world?.population?.npcs||[];if(!c||!s||s.lastProcessedDate===date)return{processed:false};
- const macro=ensureMacro(),safety=ensureSafety(),supply=ensureSupply(),byId=new Map(people.map(n=>[n.id,n])),groups=new Map();people.forEach(n=>{if(!alive(n))return;const k=String(n.city||'Unknown').toLowerCase();if(!groups.has(k))groups.set(k,[]);groups.get(k).push(n)});
+ const macro=ensureMacro(),safety=ensureSafety(),supply=ensureSupply(),byId=new Map(people.map(n=>[n.id,n])),groups=new Map(),regionCache=new Map(),resolveRegion=value=>{const key=String(value||'').toLowerCase();if(!regionCache.has(key))regionCache.set(key,P.phase1.regionFor(value)||regions[3]);return regionCache.get(key)};people.forEach(n=>{if(!alive(n))return;const k=String(n.city||'Unknown').toLowerCase();if(!groups.has(k))groups.set(k,[]);groups.get(k).push(n)});
  let edges=0,lonely=0,interactions=0;
  people.forEach(n=>{if(!alive(n))return;if(!Array.isArray(n.socialLinks))n.socialLinks=[];if(!n.relationshipDynamics)n.relationshipDynamics={loneliness:35,trust:50,socialActivity:0,lowPartnerDays:0,lastEvaluatedDate:date};
   let strong=0,weak=0;
@@ -155,7 +155,7 @@ function processRelationships(date){
    if(n.relationshipDynamics.lowPartnerDays>=60){n.family.partnerId=null;partner.family.partnerId=null;n.family.relationshipStatus='Separated';partner.family.relationshipStatus='Separated';if(link){link.type='Former partner';link.quality=Math.min(link.quality,20)}const reverse=partner.socialLinks.find(x=>x.targetId===n.id);if(reverse){reverse.type='Former partner';reverse.quality=Math.min(reverse.quality,20)}s.metrics.breakups++;P.emit('world:relationship',{date,type:'separation',npcIds:[n.id,partner.id]})}
   }
   n.relationshipDynamics.lastEvaluatedDate=date;
-  const worldRegion=P.phase1.regionFor(n.country||n.region||n.city)||regions[3],macroRecord=macro?.regions?.find(x=>x.id===worldRegion.key),safetyRecord=safety?.regions?.[worldRegion.id],grid=supply?.energyGrid?.find(x=>x.regionId===worldRegion.key);
+  const worldRegion=resolveRegion(n.country||n.region||n.city),macroRecord=macro?.regions?.find(x=>x.id===worldRegion.key),safetyRecord=safety?.regions?.[worldRegion.id],grid=supply?.energyGrid?.find(x=>x.regionId===worldRegion.key);
   n.home=n.home||{};const income=Math.max(1,Number(n.finances?.monthlyIncome||n.career?.monthlyIncome||0)),rent=Math.max(0,Number(n.home.monthlyRent||0)),rentBurden=clamp(rent/income*100,0,100);
   n.home.housingStressIndex=round(rentBurden);n.home.conditionIndex=round(clamp(Number(n.home.conditionIndex??72)+(Number(n.home.maintenanceIndex??50)-50)*.00008-.0004,5,100));n.home.utilityReliabilityPct=round(clamp(grid?.reliabilityPct??98,50,100));n.home.securityIndex=round(clamp(88-rentBurden*.32+(safetyRecord?.safetyIndex??65)*.12,0,100));
   n.healthcare=n.healthcare||{};n.healthcare.accessIndex=round(clamp(42+(Number(macroRecord?.publicSpendingIndex??100)-100)*.22+(Number(macroRecord?.gdpIndex??100)-100)*.08-(Number(macroRecord?.unemploymentPct??5)-5)*.7,10,98));n.healthcare.coverageIndex=round(clamp(Number(n.healthcare.coverageIndex??(n.status==='Employed'?64:38)),0,100));n.healthcare.lastEvaluatedDate=date;
