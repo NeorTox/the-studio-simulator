@@ -71,6 +71,7 @@ function processDay(date){
  t.stays.forEach(s=>{if(s.status==='Checked in'&&s.checkOut<=date)s.status='Completed';});
  t.lastProcessedDate=date;return true;
 }
+function catchUp(){const t=ensure();if(!t)return 0;if(!t.lastProcessedDate)t.lastProcessedDate=t.bookings.length?dateAdd(active.date,-1):active.date;let d=t.lastProcessedDate,count=0;while(d<active.date&&count<5000){d=dateAdd(d,1);processDay(d);count++;}if(d<active.date)throw Error('Global travel catch-up exceeded 5,000 simulation days.');return count;}
 function audit(){
  const t=ensure(),tests=[],add=(name,ok,detail)=>tests.push({name,ok:!!ok,detail:String(detail||'')});
  add('Travel state is initialized',!!t,'Campaign travel state exists.');
@@ -104,7 +105,7 @@ const oldNav=window.nav;if(typeof oldNav==='function'&&!oldNav.__globalTravelWra
 const oldPersist=window.persist;if(typeof oldPersist==='function'&&!oldPersist.__globalTravelWrapped){const wrapped=function(...a){if(active)ensure();return oldPersist.apply(this,a)};wrapped.__globalTravelWrapped=true;window.persist=wrapped;}
 const oldEndDay=window.StudioPhaseIntegration?.endDay;if(typeof oldEndDay==='function'&&!oldEndDay.__globalTravelWrapped){const wrappedEnd=function(date){const t=ensure();if(t&&t.lastProcessedDate!==date)throw Error('Cannot complete integration day '+date+': global travel processor did not commit.');return oldEndDay.call(this,date)};wrappedEnd.__globalTravelWrapped=true;window.StudioPhaseIntegration.endDay=wrappedEnd;}
 const oldAudit=window.StudioPhaseIntegration?.audit;if(typeof oldAudit==='function'){window.StudioPhaseIntegration.audit=function(){const r=oldAudit.call(this),g=G.audit(),t=audit();r.tests.push({name:'Global geography registry audit',ok:g.failed===0,detail:g.passed+' passed / '+g.failed+' failed'});r.tests.push({name:'Global travel daily checkpoint',ok:!Object.keys(active.integration?.days||{}).length||ensure()?.lastProcessedDate===active.date,detail:'Travel '+String(ensure()?.lastProcessedDate||'not yet processed')+' · campaign '+active.date});r.tests.push({name:'Global mobility and travel audit',ok:t.failed===0,detail:t.passed+' passed / '+t.failed+' failed'});r.passed=r.tests.filter(x=>x.ok).length;r.failed=r.tests.length-r.passed;return r};}
-window.StudioGlobalTravel={version:VERSION,ensure,quote,passportNationality,applyForEntryPermit,planTrip,processDay,audit,render};
+window.StudioGlobalTravel={version:VERSION,ensure,quote,passportNationality,applyForEntryPermit,planTrip,processDay,catchUp,audit,render};
 try{P.registerModule({id:'global-mobility',name:'Worldwide player travel and mobility',deps:['world','global-geography','founder'],owns:['player location','route estimates','transport bookings','entry permits','accommodation','travel history'],status:'implemented'});}catch(e){}
-if(active)ensure();render();
+if(active)catchUp();render();
 })();
