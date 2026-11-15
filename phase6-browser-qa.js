@@ -13,7 +13,7 @@ const {chromium}=require('playwright'),assert=require('assert');
   active.company.ipAssets.push({id:'IP-P6-BROWSER',title:'The Last Orbit',category:'Original screenplay',source:'Original',creator:'QA Creator',rightsOwner:active.company.name,territory:'Worldwide',termYears:70,acquiredDate:active.date,bookValue:0,projectId:'P6-BROWSER',licenses:[]});
   persist();return {date:active.date,cash:active.company.cash,version:Phase6Ecosystem.version};
  });
- assert.equal(setup.version,'6.0.0');
+ assert.equal(setup.version,'6.1.0');
  await p.locator('[data-page="ecosystem"]').click();
  assert.equal(await p.locator('#page-ecosystem').count(),1);
  assert(await p.getByRole('heading',{name:/Distribution & ecosystem/}).count());
