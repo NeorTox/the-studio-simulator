@@ -6,12 +6,12 @@ A film and entertainment company simulation game.
 
 - Game version: 4.25.0
 - Engine versions: Phase 6 Ecosystem 6.1.0; Phase 6 Audience version is reported by its runtime module
-- Completed development phases: 0–12; Phase 13 is active
+- Completed development phases: 0–13; all fourteen phase contracts connected and the 1,095-day cross-phase stress test passed
 - Phase 6: Entertainment ecosystem — complete; financial retries, media, awards and multi-year integration verified
 - Phase 7: Smartphone & media — complete; app catalog, social creators, personalized feeds, daily engagement, digital advertising and save persistence verified
 - Phase 10: Autonomous competitors — complete; ten rival studios, autonomous financial/production cycles, bids, acquisitions, market-share dynamics and strategy controls verified
 - Phase 11: Technology & sustainability — complete; 12-node technology tree, research labs, patents/licensing, sustainability operations and three-year integration verified
-- Active development phase: Phase 13 — Integration & release quality
+- Next milestone: complete landscape-first UI overhaul; the advanced algorithms/autonomous-systems package follows the completed 14-phase roadmap
 - Production: https://neortox.github.io/the-studio-simulator/
 
 ## Phase 6 scope
@@ -135,3 +135,19 @@ Phase 12 verification:
 - Playwright browser QA passed for the Generations dashboard, successor planning and appointment, 45-day daily processing, integration audit and save/reload; Phase 12 audit 14/14 and global integration audit 53/53.
 - Three-year cross-phase stress test passed: 1,095/1,095 daily pipelines include Phase 12; three annual evolution updates completed; campaign, population and generation dates synchronized; all 13 implemented phases connected; zero browser/simulation errors.
 - Full regression workflow succeeded on commit `5674497a4104a7caa1fe98142669726854983a43` (run [43701468068](https://github.com/NeorTox/the-studio-simulator/actions/runs/43701468068)); GitHub Pages build and deployment succeeded (run [43701468113](https://github.com/NeorTox/the-studio-simulator/actions/runs/43701468113)).
+
+
+## Phase 13 — Integration & release quality (complete)
+
+Phase 13 closes the fourteen-phase development roadmap with a release-quality control plane. The Release QA page checks the prior phase runtime contracts, the complete phase registry, campaign schema validity, JSON save round-trips, unique local campaign IDs, finite financial-ledger values, browser storage write/read/remove, the PWA manifest and landscape orientation, the service-worker asset, and every local JavaScript engine referenced by the application page. The integration dashboard now reports all fourteen phases as connected, including Phase 13's release-quality contract.
+
+The production build no longer relies on a manually maintained partial list of engine files. It discovers every local JavaScript file referenced by `index.html`, syntax-checks it, copies it into the Pages artifact and fails the build if any referenced engine is missing. The service-worker cache was advanced to the Phase 13 release and its offline shell now includes the Phase 10–13 engines plus global geography and mobility.
+
+Phase 13 verification:
+- Dedicated Playwright release QA passed: 21 local engine assets reachable, landscape manifest verified, 36 release checks passed, 14/14 phase contracts connected, release audit state persisted across reload, zero browser errors.
+- Phase 13 internal release-quality integrity: 12/12 checks passed.
+- Full regression workflow passed on commit `d54b5c34c1f9cc69a07f481d35f7ebc36eeed33b` (run [43703851798](https://github.com/NeorTox/the-studio-simulator/actions/runs/43703851798)).
+- Three-year integration stress test passed: 1,095/1,095 daily pipelines completed, all 14 phases connected, 54/54 global integration checks passed, world/population/company/market/travel/generations dates synchronized, zero browser or simulation errors.
+- GitHub Pages build and production deployment succeeded (build [43703851833](https://github.com/NeorTox/the-studio-simulator/actions/runs/43703851833); deployment [43703851810](https://github.com/NeorTox/the-studio-simulator/actions/runs/43703851810)).
+
+All numbered phases 0–13 are complete. The full landscape-first UI overhaul is now the next milestone. The advanced algorithms and autonomous-systems package remains a separate post-roadmap effort, as planned.
