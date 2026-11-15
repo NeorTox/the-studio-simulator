@@ -15,7 +15,7 @@ function ensure(){
  let s=c.autonomy;
  if(!s||typeof s!=='object'||Array.isArray(s))s=c.autonomy={version:STATE_VERSION,seed:Number(c.worldSeed)||parseInt(hash(c.id||'studio'),16),lastTickDate:null,ticks:0,taskStates:{},events:[],deadLetters:[],history:[],metrics:{tasksRun:0,eventsHandled:0,failures:0,lastDurationMs:0}};
  if(s.version!==STATE_VERSION)throw new Error('Unsupported autonomous simulation state version: '+s.version);
- s.taskStates=s.taskStates||{};s.events=Array.isArray(s.events)?s.events:[];s.deadLetters=Array.isArray(s.deadLetters)?s.deadLetters:[];s.history=Array.isArray(s.history)?s.history:[];s.metrics=s.metrics||{tasksRun:0,eventsHandled:0,failures:0,lastDurationMs:0};
+ s.taskStates=s.taskStates||{};s.events=Array.isArray(s.events)?s.events:[];s.deadLetters=Array.isArray(s.deadLetters)?s.deadLetters:[];s.processedEventIds=Array.isArray(s.processedEventIds)?s.processedEventIds:[];s.history=Array.isArray(s.history)?s.history:[];s.metrics=s.metrics||{tasksRun:0,eventsHandled:0,failures:0,lastDurationMs:0};
  return s;
 }
 function random(seed,key){let x=(Number(seed)^parseInt(hash(key),16))>>>0;x^=x<<13;x^=x>>>17;x^=x<<5;return (x>>>0)/4294967296}
@@ -40,7 +40,7 @@ function emit(type,payload={},options={}){
  if(!validDate(date))throw Error('Autonomous event requires a valid campaign date.');
  const identity=String(options.id||hash(date+'|'+type+'|'+JSON.stringify(payload)));
  const id='AUT-'+hash(type+'|'+identity);
- if(s.events.some(e=>e.id===id)||s.deadLetters.some(e=>e.id===id))return {queued:false,duplicate:true,id};
+ if(s.events.some(e=>e.id===id)||s.deadLetters.some(e=>e.id===id)||s.processedEventIds.includes(id))return {queued:false,duplicate:true,id};
  s.events.push({id,type,date,payload:clone(payload),createdAt:date,attempts:0});
  if(s.events.length>MAX_EVENTS)s.events.splice(0,s.events.length-MAX_EVENTS);
  return {queued:true,id};
@@ -77,14 +77,17 @@ function runTick(date){
   catch(e){failed.push({id:t.id,error:String(e&&e.message||e)});s.metrics.failures++;s.deadLetters.push({id:'DLQ-'+hash(date+'|'+t.id),taskId:t.id,date,error:String(e&&e.message||e)});}
  }
  let handled=0,processed=0;
- while(s.events.length&&processed<MAX_EVENTS_PER_TICK){
-  const event=s.events.shift();processed++;
+ const batch=s.events.splice(0,Math.min(s.events.length,MAX_EVENTS_PER_TICK));
+ for(const event of batch){
+  processed++;
   const listeners=[...(handlers.get(event.type)||[])];
-  if(!listeners.length){s.events.push(event);break;}
+  if(!listeners.length){s.events.push(event);continue;}
   let ok=true;
   for(const fn of listeners){try{const result=fn(clone(event),{date,seed:s.seed,random:key=>random(s.seed,date+'|event|'+event.id+'|'+key),campaign:c,emit});if(result&&typeof result.then==='function')throw Error('Event handlers must be synchronous.');}catch(e){ok=false;event.attempts=(event.attempts||0)+1;event.lastError=String(e&&e.message||e);break;}}
-  if(ok){handled++;s.metrics.eventsHandled++;}else if(event.attempts>=3){s.deadLetters.push(event)}else{s.events.push(event);break;}
+  if(ok){handled++;s.metrics.eventsHandled++;s.processedEventIds.push(event.id);if(s.processedEventIds.length>2000)s.processedEventIds.splice(0,s.processedEventIds.length-2000);}
+  else if(event.attempts>=3){s.deadLetters.push(event)}else{s.events.push(event)}
  }
+ if(s.events.length>MAX_EVENTS)s.events.splice(0,s.events.length-MAX_EVENTS);
  s.deadLetters=s.deadLetters.slice(-MAX_EVENTS);s.lastTickDate=date;s.ticks++;s.metrics.lastDurationMs=Math.max(0,Date.now()-started);
  const record={date,tasksDue:dueList.length,tasksRun:ran.length,failed:failed.length,skipped:skipped.length,eventsHandled:handled,eventsPending:s.events.length,durationMs:s.metrics.lastDurationMs};
  s.history.unshift(record);s.history=s.history.slice(0,MAX_HISTORY);
@@ -105,6 +108,7 @@ function audit(){
   add('Dead-letter queue bounded',s.deadLetters.length<=MAX_EVENTS,s.deadLetters.length+' retained failed events/tasks.');
   add('Task state serializable',(()=>{try{JSON.stringify(s.taskStates);return true}catch(e){return false}})(),'Task state can be saved as JSON.');
   add('No duplicate queued event IDs',new Set(s.events.map(e=>e.id)).size===s.events.length,'Queued event IDs are unique.');
+  add('Processed event deduplication history',new Set(s.processedEventIds).size===s.processedEventIds.length&&s.processedEventIds.length<=2000,s.processedEventIds.length+' bounded processed event IDs.');
   add('Deterministic random stream',random(s.seed,'audit')===random(s.seed,'audit'),'Identical campaign seed and key reproduce the same sample.');
   add('Daily tick history bounded',s.history.length<=MAX_HISTORY,s.history.length+' retained tick records.');
   add('No task failures on latest tick',!s.history[0]||s.history[0].failed===0,s.history[0]?s.history[0].failed+' failed task(s) on '+s.history[0].date:'No autonomous tick has run.');
