@@ -25,7 +25,7 @@ assert.equal(family.memberCount,3);assert.equal(family.adultCount,2);assert.equa
 assert.ok(Math.abs(family.allocatedExpenses-family.totalExpenses)<.05);
 assert.equal(people[2].finances.monthlyExpenses,0,'dependent children must not be charged household bills');
 const before=people[0].finances.cash;api.processIndividualMonth(people[0],campaign.date);assert.equal(people[0].finances.cash,before,'monthly finance processing must be idempotent');
-const finalized=api.finalizeMonth(campaign.date);assert.equal(finalized.processed,true);assert.equal(finalized.households,5);assert.ok(finalized.newConsumerCredit>=0&&finalized.debtInterestAccrued>=0&&finalized.mortgageInterestAccrued>=0);assert.equal(api.finalizeMonth(campaign.date).idempotent,true);
+const finalized=api.finalizeMonth(campaign.date);assert.equal(finalized.processed,true);assert.equal(finalized.households,5);assert.ok(finalized.newConsumerCredit>=0&&finalized.debtInterestAccrued>=0&&finalized.mortgageInterestAccrued>=0&&finalized.aggregateMortgageDebt>0&&finalized.aggregateTotalDebt>=finalized.aggregateDebt);assert.equal(api.finalizeMonth(campaign.date).idempotent,true);
 for(const date of ['2026-03-01','2026-04-01','2026-05-01','2026-06-01','2026-07-01','2026-08-01','2026-09-01','2026-10-01','2026-11-01','2026-12-01','2027-01-01','2027-02-01']){
  campaign.date=date;
  const next=api.prepareMonth(date);assert.equal(next.processed,true);
