@@ -106,7 +106,7 @@ function renderAudience(){
  $('p6-add-fandom').onclick=openFandomForm;$('p6-add-review').onclick=openReviewForm;
 }
 const oldStep=api.stepDay;
-api.stepDay=function(date){const result=oldStep.call(api,date);if(!result?.skipped)processAudienceDay(date||active?.date);return result;};
+api.stepDay=function(date){const target=date||active?.date;const result=oldStep.call(api,target);const e=ensure();if(e?.audienceLastProcessedDate!==target)processAudienceDay(target);return result;};
 api.addFandom=addFandom;api.publishReview=publishReview;api.processAudienceDay=processAudienceDay;api.auditAudience=auditAudience;
 const oldAudit=api.audit;
 api.audit=function(){const base=oldAudit.call(api),extra=auditAudience();return {...base,passed:base.passed+extra.passed,failed:base.failed+extra.failed,tests:[...base.tests,...extra.tests]};};
