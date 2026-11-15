@@ -194,16 +194,62 @@ function processIndividualMonth(n,date){
 function finalizeMonth(date){
  const s=getState();if(!s||s.preparedDate!==date)return {processed:false};
  if(s.lastProcessedDate===date)return {processed:false,idempotent:true,date};
- let cash=0,debt=0,householdArrears=0,borrowed=0,interest=0;
+ const people=population().slice(0,MAX_NPCS),byId=new Map(people.map(n=>[n.id,n]));
+ let cash=0,debt=0,householdArrears=0,borrowed=0,interest=0,mortgageInterest=0,mortgagePrincipal=0;
  const arrearsByHousehold={};
  for(const entry of Object.values(s.pendingFinance||{})){
+  if(entry.kind==='housing')continue;
   householdArrears+=Number(entry.arrears)||0;borrowed+=Number(entry.borrowed)||0;interest+=Number(entry.interest)||0;
   arrearsByHousehold[entry.householdId]=(arrearsByHousehold[entry.householdId]||0)+(Number(entry.arrears)||0);
  }
+ for(const entry of Object.values(s.pendingFinance||{})){
+  if(entry.kind!=='housing'||!(Number(entry.mortgageBalance)>0))continue;
+  const rate=clamp(Number(entry.mortgageRatePct)||4,0,36);
+  const mi=round(Number(entry.mortgageBalance)*rate/1200);
+  const principal=round(Math.min(Number(entry.mortgageBalance),Math.max(0,Number(entry.mortgagePayment)-mi)));
+  const newBalance=round(Math.max(0,Number(entry.mortgageBalance)+mi-Number(entry.mortgagePayment)));
+  mortgageInterest+=mi;mortgagePrincipal+=principal;
+  for(const id of entry.members||[]){
+   const n=byId.get(id);
+   if(n?.home&&Number(n.home.mortgageBalance)>0){
+    n.home.mortgageBalance=newBalance;
+    n.home.mortgageInterestRatePct=rate;
+    n.home.equity=round(Math.max(0,Number(n.home.propertyValue||entry.propertyValue)-newBalance));
+    n.home.lastMortgagePaymentDate=date;
+   }
+  }
+ }
  for(const [id,h] of Object.entries(s.households)){h.lastProcessedDate=date;h.arrears=round(arrearsByHousehold[id]||0)}
- for(const n of population().slice(0,MAX_NPCS)){if(!alive(n))continue;cash+=Number(n.finances?.cash)||0;debt+=Number(n.finances?.debt)||0}
- const summary={date,households:Number(s.metrics?.households)||Object.keys(s.households).length,namedResidents:s.metrics.namedResidents,householdDemandIndex:Number(active.market?.economy?.householdDemandIndex)||100,aggregateCash:round(cash),aggregateDebt:round(debt),unpaidHouseholdArrears:round(householdArrears),newConsumerCredit:round(borrowed),debtInterestAccrued:round(interest)};
- s.history.unshift(summary);s.history=s.history.slice(0,MAX_HISTORY);s.lastProcessedDate=date;s.metrics.summary=summary;s.pendingFinance={};
+ for(const n of people){if(!alive(n))continue;cash+=Number(n.finances?.cash)||0;debt+=Number(n.finances?.debt)||0}
+ const wealthGroups=new Map();
+ for(const n of people){if(!alive(n))continue;const key=householdKey(n);if(!wealthGroups.has(key))wealthGroups.set(key,[]);wealthGroups.get(key).push(n)}
+ const wealthValues=[];
+ for(const members of wealthGroups.values()){
+  const adults=members.filter(n=>(Number(n.age)||0)>=18),count=Math.max(1,adults.length);
+  const property=Math.max(0,...members.map(n=>Number(n.home?.propertyValue)||0));
+  const mortgageBal=Math.max(0,...members.map(n=>Number(n.home?.mortgageBalance)||0));
+  const equity=Math.max(0,property-mortgageBal)/count;
+  for(const n of adults)wealthValues.push(Math.max(0,(Number(n.finances?.cash)||0)+equity-(Number(n.finances?.debt)||0)));
+ }
+ wealthValues.sort((a,b)=>a-b);
+ const wealthTotal=wealthValues.reduce((a,b)=>a+b,0),nWealth=wealthValues.length;
+ let giniNumerator=0;
+ for(let i=0;i<nWealth;i++)giniNumerator+=(2*(i+1)-nWealth-1)*wealthValues[i];
+ const wealthGini=wealthTotal>0&&nWealth?clamp(giniNumerator/(nWealth*wealthTotal),0,1):0;
+ const percentile=p=>nWealth?round(wealthValues[Math.min(nWealth-1,Math.floor((nWealth-1)*p))]):0;
+ const summary={
+  date,households:Number(s.metrics?.households)||Object.keys(s.households).length,namedResidents:s.metrics.namedResidents,
+  householdDemandIndex:Number(active.market?.economy?.householdDemandIndex)||100,
+  aggregateCash:round(cash),aggregateDebt:round(debt),unpaidHouseholdArrears:round(householdArrears),
+  newConsumerCredit:round(borrowed),debtInterestAccrued:round(interest),
+  mortgageInterestAccrued:round(mortgageInterest),mortgagePrincipalPaid:round(mortgagePrincipal),
+  bankruptciesFiled:s.bankruptcyEvents.filter(e=>e.date===date).length,
+  wealthGini:round(wealthGini),wealthP10:percentile(.1),wealthMedian:percentile(.5),wealthP90:percentile(.9)
+ };
+ s.history.unshift(summary);s.history=s.history.slice(0,MAX_HISTORY);
+ s.lastProcessedDate=date;s.metrics.summary=summary;
+ s.metrics.wealth={gini:summary.wealthGini,p10:summary.wealthP10,median:summary.wealthMedian,p90:summary.wealthP90};
+ s.pendingFinance={};
  return {processed:true,...summary};
 }
 function audit(){
