@@ -1,0 +1,42 @@
+const {chromium}=require('playwright'),assert=require('assert');
+(async()=>{
+ const b=await chromium.launch({headless:true,args:['--no-sandbox']});
+ const p=await b.newPage({viewport:{width:390,height:844}}),errors=[];
+ p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+ await p.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
+ await p.getByRole('button',{name:/New campaign/}).click();await p.getByRole('button',{name:/Create campaign/}).click();
+ for(const [id,v] of [['nfounder','Phase Six QA'],['ncompany','Ecosystem QA Studios'],['ncountry','India'],['ncity','Kochi']])await p.locator('#'+id).fill(v);
+ await p.getByRole('button',{name:/Create and save campaign/}).click();
+ const setup=await p.evaluate(()=>{
+  active.company.cash=10000000;
+  active.projects.push({id:'P6-BROWSER',title:'The Last Orbit',format:'Feature Film',genre:'Science Fiction',stage:6,budget:1000000,spent:0,cast:[],crew:[],performance:{}});
+  active.company.ipAssets.push({id:'IP-P6-BROWSER',title:'The Last Orbit',category:'Original screenplay',source:'Original',creator:'QA Creator',rightsOwner:active.company.name,territory:'Worldwide',termYears:70,acquiredDate:active.date,bookValue:0,projectId:'P6-BROWSER',licenses:[]});
+  persist();return {date:active.date,cash:active.company.cash,version:Phase6Ecosystem.version};
+ });
+ assert.equal(setup.version,'6.0.0');
+ await p.locator('[data-page="ecosystem"]').click();
+ assert.equal(await p.locator('#page-ecosystem').count(),1);
+ assert(await p.getByRole('heading',{name:/Distribution & ecosystem/}).count());
+ const state=await p.evaluate(()=>{
+  const api=Phase6Ecosystem;
+  const deal=api.addDistributionDeal({projectId:'P6-BROWSER',licensee:'Global Releasing',channel:'Theatrical',territory:'India',rights:'Theatrical exhibition',startDate:active.date,endDate:'2027-12-31',upfrontFee:50000,revenueShare:70,distributorFee:10,exclusive:true});
+  const release=api.addRelease({projectId:'P6-BROWSER',territory:'India',openingDate:active.date,screens:120,averageTicket:150,exhibitorShare:50,distributorFee:10,expectedRunDays:28});
+  const campaign=api.addCampaign({projectId:'P6-BROWSER',name:'The Last Orbit launch',channel:'Trailer / video',segment:'Genre fans',budget:5000,durationDays:21});
+  const royalty=api.addRoyalty({ipId:'IP-P6-BROWSER',payee:'QA Creator',rate:5,basis:'gross'});
+  const merch=api.addMerchandise({ipId:'IP-P6-BROWSER',name:'Orbit collector poster',category:'Collectibles',initialStock:100,unitCost:20,retailPrice:75,royaltyRate:5});
+  const sale=api.sellMerchandise(merch.id,4);
+  return {deal:deal.id,release:release.id,campaign:campaign.id,royalty:royalty.id,merch:merch.id,sale,counts:{deals:active.ecosystem.deals.length,releases:active.ecosystem.releases.length,campaigns:active.ecosystem.campaigns.length,merchandise:active.ecosystem.merchandise.length}};
+ });
+ assert.deepEqual(state.counts,{deals:1,releases:1,campaigns:1,merchandise:1});
+ assert.equal(state.sale.inventory,96);
+ await p.evaluate(()=>{advance(1);Phase6Ecosystem.render();});
+ const result=await p.evaluate(()=>({date:active.date,ecosystemDate:active.ecosystem.lastProcessedDate,boxOffice:active.ecosystem.releases[0].totalGross,impressions:active.ecosystem.campaigns[0].impressions,audit:Phase6Ecosystem.audit(),cash:active.company.cash}));
+ assert.equal(result.ecosystemDate,result.date);
+ assert(result.boxOffice>0);assert(result.impressions>0);assert.equal(result.audit.failed,0,JSON.stringify(result.audit.tests.filter(x=>!x.ok)));
+ await p.reload({waitUntil:'networkidle'});
+ const saved=await p.evaluate(()=>({deals:active.ecosystem.deals.length,releases:active.ecosystem.releases.length,campaigns:active.ecosystem.campaigns.length,products:active.ecosystem.merchandise.length,audit:Phase6Ecosystem.audit().failed}));
+ assert.deepEqual(saved,{deals:1,releases:1,campaigns:1,products:1,audit:0});
+ assert.deepEqual(errors,[]);
+ console.log('PASS Phase 6 mobile ecosystem UI, distribution economics, theatrical release, marketing analytics, merchandise, royalties, daily simulation, audit and save reload',JSON.stringify({setup,state,result:{...result,audit:undefined},saved}));
+ await b.close();
+})();
