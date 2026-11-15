@@ -23,7 +23,7 @@ function ensure(){
  f.succession=Object.assign({retirementAge:65,status:'Active',heirs:[],estateNotes:'',lastReviewed:null},f.succession||{});
  f.lifestyle=Object.assign({homeStatus:'Not specified',securityLevel:'Standard',monthlyLifestyleCost:0},f.lifestyle||{});
  f.phase3=Object.assign({version:'3.0.2',lastDay:null},f.phase3||{});
- f.phase3.version='3.0.2';
+ f.phase3.version='3.0.3';
  syncCashAccount(f);
  return f;
 }
@@ -164,8 +164,8 @@ function openInvestment(){
  });
 }
 
-function stepDay(date){
- const f=ensure();if(!f||f.phase3.lastDay===date)return;
+function addIsoDays(date,days){const d=new Date(date+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);}
+function processOneDay(f,date){
  const w=f.wellbeing,r=f.dailyRoutine,day=new Date(date+'T00:00:00Z').getUTCDay();
  const sleep=Number(r.sleepHours)||0,work=Number(r.workHours)||0,exercise=Number(r.exerciseHours)||0,off=(day===0&&r.daysOffPerWeek>=1)||(day===6&&r.daysOffPerWeek>=2);
  w.energy=clamp(Number(w.energy||75)+(sleep-7.5)*.45-Math.max(0,work-8)*.55+(off?2:0)+Math.min(.25,Number(r.leisureHours||0)*.06));
@@ -182,6 +182,14 @@ function stepDay(date){
  f.relationships.forEach(rel=>{if(rel.birthDate&&rel.birthDate.slice(5)===date.slice(5)){const key='birthday-'+rel.id+'-'+date.slice(0,4);if(!f.personalCalendar.some(e=>e.id===key))f.personalCalendar.push({id:key,title:rel.name+' birthday',date:date,type:'Family',duration:2,priority:'High',status:'Scheduled'});}});
  if(Number(f.age||0)>=Number(f.succession.retirementAge||65)&&f.succession.status==='Active')f.succession.retirementEligible=true;
  syncCashAccount(f);f.phase3.lastDay=date;
+}
+function stepDay(date){
+ const f=ensure();if(!f)return;
+ const target=active&&active.date&&active.date>date?active.date:date;
+ let cursor=f.phase3.lastDay?addIsoDays(f.phase3.lastDay,1):date;
+ // Time skips may move the campaign clock before this phase hook runs. Catch up
+ // every missed founder day so recurring obligations and monthly valuation updates persist.
+ while(cursor<=target){processOneDay(f,cursor);cursor=addIsoDays(cursor,1);}
 }
 const baseSim=typeof window.simulateLifeDay==='function'?window.simulateLifeDay:null;
 if(baseSim)window.simulateLifeDay=function(date){baseSim(date);stepDay(date);};
