@@ -82,7 +82,7 @@ function processDay(date){
  g.regions.forEach(r=>r.fxVsBaseIndex=round(num(r.currencyStrengthIndex,100)/Math.max(1,anchor)*100));
  aggregate(g,date);g.lastProcessedDate=date;
  if(monthEnd(date)){g.monthIndex++;g.history.unshift({date,monthIndex:g.monthIndex,...g.global});g.history=g.history.slice(0,240)}
- if(typeof persist==='function')persist();
+ // The outer daily simulation pipeline persists once after its complete cross-phase batch.
  return {processed:true,date,regions:g.regions.length,commodities:g.commodities.length,tradeRoutes:g.tradeRoutes.length,global:g.global};
 }
 function setPolicy(id,v={}){
