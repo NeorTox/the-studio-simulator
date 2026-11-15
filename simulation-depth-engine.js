@@ -20,7 +20,8 @@ function appendEvent(date,title,detail,category,region,source='simulation-depth'
  const c=campaign();if(Array.isArray(c.market?.news)&&(category==='Public safety'||category==='Cybersecurity'||category==='Supply chain')){c.market.news.unshift({date,text:title+' — '+String(detail||''),kind:category.toLowerCase().replace(/\s/g,'-')});c.market.news=c.market.news.slice(0,80)}return item;
 }
 function regionById(id){return regions.find(r=>r.id===id||r.key===id||r.name===id)||null}
-function macroRegion(id){return String(id||'')}\nfunction worldRegionForMacro(id){return regions.find(r=>r.key===String(id)||r.id===String(id)||r.name===String(id))||null}
+function macroRegion(id){return String(id||'')}
+function worldRegionForMacro(id){return regions.find(r=>r.key===String(id)||r.id===String(id)||r.name===String(id))||null}
 let npcCache={campaign:null,list:null,length:-1,byRegion:new Map(),byCity:new Map(),byId:new Map()};
 function npcIndex(){
  const c=campaign(),list=c?.world?.population?.npcs||[];if(npcCache.campaign===c&&npcCache.list===list&&npcCache.length===list.length)return npcCache;
