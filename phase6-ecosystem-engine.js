@@ -106,8 +106,8 @@ function sellMerchandise(id,units){
  if(!postCash('Merchandise cost of goods — '+m.name,'Merchandise cost of sales',-cost,active.date,{merchandiseId:m.id}))throw Error('Insufficient cash to fulfil this merchandise sale.');
  if(!recordRevenue('Merchandise sales — '+m.name,revenue,active.date,{ipId:m.ipId,merchandiseId:m.id,royaltyBasis:'gross'}))throw Error('Merchandise revenue could not be posted.');
  m.inventory-=units;m.unitsSold+=units;m.revenue+=revenue;m.costOfGoods+=cost;m.royaltyAccrued+=royalty;
- const royaltyRow=ensure().royalties.find(r=>r.ipId===m.ipId&&r.status==='Active');
- if(royaltyRow)royaltyRow.accrued=money(royaltyRow.accrued)+royalty;
+ // IP-level royalty agreements accrue through recordRevenue(); the product's
+ // own royalty meter is tracked separately to avoid double-accruing the same sale.
  log('Merchandise sale',m.name+' · '+units+' units · '+revenue);persist('Merchandise sale recorded.');return {units,revenue,cost,royalty,inventory:m.inventory};
 }
 function addRoyalty(data){
