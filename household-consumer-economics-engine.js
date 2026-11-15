@@ -224,4 +224,5 @@ function audit(){
 }
 function metrics(){const s=getState();return s?{...s.metrics,households:Number(s.metrics?.households)||Object.keys(s.households).length,storedHouseholdSamples:Object.keys(s.households).length,version:s.version,lastPreparedDate:s.lastPreparedDate,lastProcessedDate:s.lastProcessedDate,history:s.history.length}:null}
 window.StudioHouseholdEconomics={version:VERSION,prepareMonth,processIndividualMonth,finalizeMonth,audit,metrics,ensure:getState};
+try{window.StudioPhase0?.registerModule?.({id:'household-consumer-economics',name:'Household & consumer economics',deps:['kernel','population','economy'],owns:['household budgets','shared household expenses','autonomous consumer purchases','personal cashflow','savings','consumer credit','debt','arrears','regional consumer demand','household financial stress'],status:'implemented'})}catch(e){}
 })();
