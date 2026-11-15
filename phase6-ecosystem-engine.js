@@ -154,7 +154,8 @@ function processMonth(date){
  const e=ensure(),month=date.slice(0,7);if(e.lastMonthlyDate===month)return;
  e.lastMonthlyDate=month;
  e.deals.filter(d=>d.status==='Active'&&d.startDate<=date&&(!d.endDate||d.endDate>=date)&&['Streaming SVOD','Streaming AVOD','Broadcast TV','Cable TV'].includes(d.channel)).forEach(d=>{
-  const platform=e.platforms.find(p=>p.active&&p.type.toLowerCase().includes(d.channel.includes('Broadcast')?'broadcast':d.channel.includes('Cable')?'cable':'stream'))||e.platforms.find(p=>p.active);
+  const desired=d.channel.includes('AVOD')?'avod':d.channel.includes('SVOD')?'svod':d.channel.includes('Broadcast')?'broadcast':d.channel.includes('Cable')?'cable':'stream';
+  const platform=e.platforms.find(p=>p.active&&(String(p.type).toLowerCase().includes(desired)||String(p.name).toLowerCase().includes(desired)))||e.platforms.find(p=>p.active);
   if(!platform)return;
   const base=money(platform.subscribers||500000),views=Math.round(base*(.12+Number(stableUnit(active.worldSeed||hashSeed(active.id),d.id+'|'+month))*.42));
   const gross=views*(money(platform.monthlyRevenuePerSubscriber)||4)/Math.max(1,base);
