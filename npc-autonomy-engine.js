@@ -50,7 +50,7 @@ function register(){
   const p=population();if(!p||!Array.isArray(p.npcs))return{processed:0,reason:'population-not-initialized'};
   const list=p.npcs,total=list.length;if(!total)return{processed:0,reason:'empty-population'};
   const state=ctx.state;const cursor=((Number(state.cursor)||0)%total+total)%total;
-  const count=Math.min(MAX_DAILY,total),selected=[];
+  const count=Math.min(MAX_DAILY,total-cursor),selected=[];
   for(let i=0;i<count;i++){const n=list[(cursor+i)%total];if(alive(n))selected.push(n)}
   let acted=0;const counts={};
   for(const n of selected){const action=decide(n,ctx);counts[action]=(counts[action]||0)+1;acted++}
