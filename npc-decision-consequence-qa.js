@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const source=fs.readFileSync('npc-decision-consequence-engine.js','utf8'),tasks=new Map(),campaign={id:'qa-world',date:'2026-01-01',world:{population:{npcs:[]}}};
+for(let i=0;i<2500;i++)campaign.world.population.npcs.push({id:'NPC-'+i,alive:true,status:'Independent',needs:{health:70,energy:65,social:50,security:60,purpose:45},personality:{empathy:i%100,cautious:50,ambition:40},stress:20});
+const controller={registerTask(spec){assert.ok(!tasks.has(spec.id));tasks.set(spec.id,spec);return{registered:true}}};
+const context={active:campaign,window:{StudioAutonomy:controller,StudioPhase0:{registerModule(){}}},document:{readyState:'complete',addEventListener(){}}};vm.createContext(context);vm.runInContext(source,context);
+const api=context.window.StudioNPCDecisionConsequences;assert.ok(api);assert.equal(api.responseStyles.length,12);assert.equal(api.catalog.length,100);assert.equal(tasks.size,1);
+const made=api.createSituation({id:'RUDREN-HELP-01',npcId:'NPC-0',date:'2026-01-01',type:'personal-crisis',title:'Rudren needs help',description:'A neighbour has lost their job.',severity:65,visibility:.8,relevance:.9});
+assert.equal(made.created,true);assert.equal(made.options.length,12);assert.equal(api.createSituation({id:'RUDREN-HELP-01',npcId:'NPC-0'}).duplicate,true);
+const chosen=api.intervene('RUDREN-HELP-01','help-directly');assert.equal(chosen.resolved,true);assert.ok(chosen.consequences.length>=1&&chosen.consequences.length<=3);assert.equal(api.intervene('RUDREN-HELP-01','ignore').resolved,false);
+const due=api.processDue('2026-02-01');assert.equal(due.processed,chosen.consequences.length);assert.equal(due.applied,chosen.consequences.length);assert.equal(due.pending,0);assert.ok(JSON.stringify(campaign).includes('RUDREN-HELP-01'));
+api.createSituation({id:'AUTONOMOUS-01',npcId:'NPC-1',date:'2026-02-01',severity:90,visibility:0,relevance:0});assert.equal(api.resolveSituation('AUTONOMOUS-01',null,{autonomous:true,date:'2026-02-01'}).resolved,true);assert.equal(api.metrics().autonomousChoices,1);
+const task=tasks.get('npc.universal-decision-consequence'),ctx={date:'2026-02-02',state:{},random:key=>{let h=0;for(const c of key)h=(h*31+c.charCodeAt(0))>>>0;return h/4294967296}},result=task.run(ctx);assert.equal(result.processed,1200);assert.equal(result.cursor,1200);
+const report=api.audit();assert.equal(report.failed,0,JSON.stringify(report.tests.filter(x=>!x.ok)));assert.ok(api.observe('2026-02-02').length<=30);
+console.log('NPC DECISION & CONSEQUENCE QA PASSED: 12 response strategies, 100 consequence templates, optional player intervention, autonomous NPC resolution, delayed consequences, idempotency, bounded population scheduling, ambient observation and save serialization.');
