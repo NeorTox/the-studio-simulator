@@ -24,8 +24,9 @@ function ensure(){
  s.births=Array.isArray(s.births)?s.births:[];s.deaths=Array.isArray(s.deaths)?s.deaths:[];s.inheritances=Array.isArray(s.inheritances)?s.inheritances:[];
  s.familyLedger=Array.isArray(s.familyLedger)?s.familyLedger:[];s.leadershipHistory=Array.isArray(s.leadershipHistory)?s.leadershipHistory:[];
  s.successionPlans=Array.isArray(s.successionPlans)?s.successionPlans:[];s.worldHistory=Array.isArray(s.worldHistory)?s.worldHistory:[];s.errors=Array.isArray(s.errors)?s.errors:[];
- s.world=s.world||{year:Number(active.date.slice(0,4)),era:'Modern entertainment economy',indices:{globalization:45,streaming:35,technology:30,audienceFragmentation:25,sustainability:20,nostalgia:30},trends:[]};
- s.world.indices=s.world.indices||{globalization:45,streaming:35,technology:30,audienceFragmentation:25,sustainability:20,nostalgia:30};s.metrics=s.metrics||{};
+ s.world=s.world||{};const initialYear=Number(active.date.slice(0,4));s.world.year=Number(s.world.year||initialYear);s.world.era=s.world.era||(initialYear<1895?'Live performance & print era':initialYear<1927?'Silent cinema era':initialYear<1955?'Studio system & radio era':initialYear<1980?'Broadcast television era':initialYear<2005?'Global blockbuster era':initialYear<2020?'Digital distribution era':'Platform, AI & immersive era');
+ s.world.indices=s.world.indices||{globalization:45,streaming:35,technology:30,audienceFragmentation:25,sustainability:20,nostalgia:30};s.world.trends=Array.isArray(s.world.trends)?s.world.trends:[];s.metrics=s.metrics||{};
+ active.market=active.market||{};active.market.worldEvolution=active.market.worldEvolution||{date:active.date,year:s.world.year,era:s.world.era,indices:{...s.world.indices},trends:s.world.trends.map(x=>({...x}))};
  const p=window.StudioPopulationEngine?.ensure?.();
  if(p?.phase2){
   p.phase2.families.forEach(f=>{f.generationCount=Number(f.generationCount||1);f.lineageId=f.lineageId||f.id;f.legacyScore=Number(f.legacyScore||0);f.headId=f.headId||null;});
