@@ -2,7 +2,7 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
 (async()=>{
  const b=await chromium.launch({headless:true,args:['--no-sandbox']});
  const p=await b.newPage({viewport:{width:1440,height:900},acceptDownloads:true});const errors=[];
- p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{const message=m.text();if(m.type()==='error')errors.push(message);if(message.includes('[STUDIO_BATCH_PROGRESS]'))console.log(message)});
+ p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{const message=m.text();if(m.type()==='error')errors.push(message);if(message.includes('[STUDIO_BATCH_PROGRESS]')||message.includes('[STUDIO_CORE_STAGE]'))console.log(message)});
  await p.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
  await p.getByRole('button',{name:/New campaign/}).click();await p.getByRole('button',{name:/Create campaign/}).click();
  for(const [id,v] of [['nfounder','End-to-End Founder'],['ncompany','E2E Pictures'],['ncountry','India'],['ncity','Kochi']])await p.locator('#'+id).fill(v);
@@ -27,6 +27,7 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
  await p.locator('#p3iname').fill('Index Portfolio');await p.locator('#p3ivalue').fill('1000');await p.locator('#p3ireturn').fill('1');await p.locator('#p3form button').click();
  const before=await p.evaluate(()=>({date:active.date,cash:Number(active.founder.personalCash),recurring:active.founder.personalFinance.recurring.length}));
  await p.getByRole('button',{name:/Overview/}).click();
+ await p.evaluate(()=>{window.__studioBatchDebug=true});
  await p.getByRole('button',{name:/\+1 year/}).click({timeout:120000});
  await p.waitForFunction(()=>!window.__advanceBatchActive,null,{timeout:900000});
  const simulated=await p.evaluate(()=>({date:active.date,clockFrozen:active.clockFrozen,batchActive:!!window.__advanceBatchActive,toast:document.querySelector('#toast')?.textContent||''}));
