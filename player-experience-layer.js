@@ -23,10 +23,10 @@ let tour={open:false,index:0,highlight:null};
 function showTutorial(index=0){
  tour.open=true;tour.index=Math.max(0,Math.min(tutorialSteps.length-1,index));renderTutorial();
 }
-function closeTutorial(done=false){
+function closeTutorial(done=false,skipped=false){
  tour.open=false;if(tour.highlight){tour.highlight.classList.remove('studio-highlight');tour.highlight=null}
  const el=$('studio-tutorial-overlay');if(el)el.remove();
- if(done){try{localStorage.setItem(STORE_KEY,'completed')}catch(e){}notice('Tutorial completed. You can replay it from Help at any time.')}
+ if(done||skipped){try{localStorage.setItem(STORE_KEY,done?'completed':'skipped')}catch(e){}}if(done)notice('Tutorial completed. You can replay it from Help at any time.');
 }
 function renderTutorial(){
  const step=tutorialSteps[tour.index];if(!step)return;
@@ -34,7 +34,7 @@ function renderTutorial(){
  const overlay=$('studio-tutorial-overlay');if(!overlay){document.body.insertAdjacentHTML('beforeend','<div class="studio-overlay" id="studio-tutorial-overlay" role="dialog" aria-modal="true" aria-label="Guided tutorial"><div class="studio-dialog" id="studio-tutorial-dialog"></div></div>')}
  const root=$('studio-tutorial-dialog');if(!root)return;
  root.innerHTML='<div class="eyebrow">THE STUDIO · STARTER GUIDE · '+String(tour.index+1).padStart(2,'0')+' / '+tutorialSteps.length+'</div><h2>'+esc(step.title)+'</h2><p>'+esc(step.body)+'</p><div class="studio-step"><span style="font-size:23px">✦</span><div><b>Quick tip</b><div class="tiny">You can reopen this guided tour at any time using the Help button.</div></div></div><div class="studio-progress"><i style="width:'+((tour.index+1)/tutorialSteps.length*100)+'%"></i></div><div class="actions"><button class="btn" id="studio-tour-skip">Skip tour</button><button class="btn" id="studio-tour-back" '+(tour.index===0?'disabled':'')+'>Back</button><button class="btn primary" id="studio-tour-next">'+(tour.index===tutorialSteps.length-1?'Finish':'Continue')+'</button></div>';
- $('studio-tour-skip').onclick=()=>closeTutorial(false);
+ $('studio-tour-skip').onclick=()=>closeTutorial(false,true);
  $('studio-tour-back').onclick=()=>{if(tour.index>0){tour.index--;navigateTourStep()}};
  $('studio-tour-next').onclick=()=>{if(tour.index===tutorialSteps.length-1){closeTutorial(true);return}tour.index++;navigateTourStep()};
 }
