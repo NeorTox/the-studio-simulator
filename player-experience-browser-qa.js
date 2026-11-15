@@ -14,7 +14,7 @@ const assert = require('node:assert/strict');
  assert.equal(await page.locator('#studio-tutorial-overlay').count(),1,'Tutorial should be available from Help');
  await page.locator('#studio-tour-skip').click();
  await page.locator('[data-page="situations"]').click();
- assert.equal(await page.locator('#page-situations').evaluate(e=>e.classList.contains('active')),true);
+ assert.equal(await page.locator('#page-situations').evaluate(e=>e.classList.contains('active')),true,'Life & Events navigation must activate its page');
  assert.equal(await page.locator('#studio-situation-feed').count(),1);
  await page.locator('[data-page="overview"]').click();
  await page.getByRole('button',{name:/New campaign/}).click();
