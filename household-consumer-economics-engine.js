@@ -11,7 +11,7 @@ function getState(){
   const old=s||{};
   s=active.world.householdEconomics={version:VERSION,households:{},regions:old.regions||{},history:old.history||[],preparedDate:null,lastProcessedDate:null,metrics:{}};
  }
- s.households=s.households||{};s.regions=s.regions||{};s.history=Array.isArray(s.history)?s.history:[];
+ s.households=s.households||{};s.pendingFinance=s.pendingFinance||{};s.regions=s.regions||{};s.history=Array.isArray(s.history)?s.history:[];
  return s;
 }
 function population(){return active?.world?.population?.npcs||[]}
@@ -162,7 +162,7 @@ function finalizeMonth(date){
  let cash=0,debt=0,householdArrears=Object.values(s.pendingFinance||{}).reduce((sum,x)=>sum+(Number(x.arrears)||0),0);
  for(const h of Object.values(s.households))h.lastProcessedDate=date;
  for(const n of population()){if(!alive(n))continue;cash+=Number(n.finances?.cash)||0;debt+=Number(n.finances?.debt)||0}
- const summary={date,households:Object.keys(s.households).length,namedResidents:s.metrics.namedResidents,householdDemandIndex:Number(active.market?.economy?.householdDemandIndex)||100,aggregateCash:round(cash),aggregateDebt:round(debt),unpaidHouseholdArrears:round(householdArrears)};
+ const summary={date,households:Number(s.metrics?.households)||Object.keys(s.households).length,namedResidents:s.metrics.namedResidents,householdDemandIndex:Number(active.market?.economy?.householdDemandIndex)||100,aggregateCash:round(cash),aggregateDebt:round(debt),unpaidHouseholdArrears:round(householdArrears)};
  s.history.unshift(summary);s.history=s.history.slice(0,MAX_HISTORY);s.lastProcessedDate=date;s.metrics.summary=summary;s.pendingFinance={};
  return {processed:true,...summary};
 }
