@@ -3,11 +3,11 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('nod
 const source=fs.readFileSync('npc-digital-society-engine.js','utf8'),tasks=new Map();
 const campaign={id:'digital-qa',date:'2026-11-15',founder:{id:'PLAYER',name:'Player'},world:{population:{npcs:[]}}};
 for(let i=0;i<2500;i++)campaign.world.population.npcs.push({id:'NPC-'+i,name:'Citizen '+i,alive:true,status:'Independent',region:'South Asia'});
-const context={active:campaign,window:{StudioAutonomy:{registerTask(s){assert.ok(!tasks.has(s.id));tasks.set(s.id,s)}},StudioSocialNetwork:{interact(){},networkFor(id){return{id,relationships:[{otherNpcId:'NPC-1',trust:80,closeness:70}]}}},StudioNPCMemory:{recordMemory(){return{created:true}}},StudioPhase0:{registerModule(){}}},document:{readyState:'complete',getElementById(){return null},addEventListener(){}}};
+const phone={telecom:{usageMb:0},device:{batteryPercent:100}};const context={active:campaign,window:{Phase7Smartphone:{ensure(){return phone}},StudioAutonomy:{registerTask(s){assert.ok(!tasks.has(s.id));tasks.set(s.id,s)}},StudioSocialNetwork:{interact(){},networkFor(id){return{id,relationships:[{otherNpcId:'NPC-1',trust:80,closeness:70}]}}},StudioNPCMemory:{recordMemory(){return{created:true}}},StudioPhase0:{registerModule(){}}},document:{readyState:'complete',getElementById(){return null},addEventListener(){}}};
 vm.createContext(context);vm.runInContext(source,context);
 const api=context.window.StudioDigitalSociety;assert.ok(api);assert.equal(tasks.size,1);assert.equal(api.version,'1.0.0');
 const a=api.sendMessage('NPC-0','PLAYER','A quick hello from a neighbour.');assert.equal(a.sent,true);assert.equal(api.inbox('PLAYER')[0].unread,1);assert.equal(api.markRead(a.chatId,'PLAYER'),true);assert.equal(api.inbox('PLAYER')[0].unread,0);
-const reply=api.sendMessage('PLAYER','NPC-0','Thanks for checking in.');assert.equal(reply.sent,true);
+const reply=api.sendMessage('PLAYER','NPC-0','Thanks for checking in.');assert.equal(reply.sent,true);assert.ok(phone.telecom.usageMb>0&&phone.device.batteryPercent<100,'Player communications consume phone data and battery');
 const group=api.createGroupChat('NPC-0',['NPC-1','NPC-2'],'Weekend plans');assert.equal(group.created,true);assert.equal(api.sendGroupMessage(group.chat.id,'NPC-1','Anyone free this weekend?').sent,true);
 const post=api.publishPost('NPC-0','A small win today after a long week.','Community');assert.equal(post.created,true);assert.equal(api.react(post.post.id,'PLAYER').likes,1);assert.equal(api.comment(post.post.id,'PLAYER','Congratulations!').text,'Congratulations!');
 assert.equal(api.report(post.post.id),1);assert.equal(api.moderate(post.post.id,'hide'),'hidden');
