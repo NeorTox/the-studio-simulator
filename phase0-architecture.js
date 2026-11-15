@@ -7,6 +7,9 @@ const domains=[
 {id:'kernel',name:'Simulation kernel',deps:[],owns:['simulation date','day counter','deterministic random streams','simulation event dispatch'],status:'foundation'},
 {id:'world',name:'World and time',deps:['kernel'],owns:['world clock','calendar','regions','environment','world events'],status:'partial'},
 {id:'population',name:'Population and NPCs',deps:['kernel','world'],owns:['people','demographics','life events','social graph','careers'],status:'partial'},
+{id:'npc-personal-agency',name:'NPC personal agency',deps:['kernel','population'],owns:['need-driven daily decisions','personal goals','career intent','routine adaptation'],status:'implemented'},
+{id:'npc-decision-consequences',name:'NPC decisions and consequences',deps:['kernel','population','npc-personal-agency'],owns:['12 response strategies','100 consequence templates','delayed consequences','optional player intervention','ambient life events'],status:'implemented'},
+{id:'npc-social-networks',name:'NPC relationships and collective behaviour',deps:['kernel','population','npc-personal-agency','npc-decision-consequences'],owns:['relationship graph','trust and affinity dynamics','rumor propagation','group membership','collective action','bounded social memory'],status:'implemented'},
 {id:'household-consumer-economics',name:'Household and consumer economics',deps:['kernel','population','economy'],owns:['households','budgets','consumer purchases','savings','credit','debt','arrears','financial stress','regional consumer demand'],status:'implemented'},
 {id:'founder',name:'Founder and personal life',deps:['kernel','world','population'],owns:['founder profile','wellbeing','personal assets','relationships'],status:'partial'},
 {id:'company',name:'Corporate management',deps:['kernel','finance','workforce'],owns:['companies','divisions','subsidiaries','facilities','governance'],status:'partial'},
@@ -119,7 +122,7 @@ window.StudioPhase0.lastTestResults=results;return {passed,failed,total:results.
 }
 function runStructuralAudit(){
 const report=dependencyReport(),result=[
-{name:'Domain registry',ok:domains.length===17,detail:domains.length+' domains registered.'},
+{name:'Domain registry',ok:domains.length===21,detail:domains.length+' domains registered.'},
 {name:'Dependency graph',ok:report.invalidEdges.length===0,detail:report.edges+' dependency edges; '+report.invalidEdges.length+' invalid references.'},
 {name:'Campaign save collection',ok:typeof saves!=='undefined'&&Array.isArray(saves),detail:(typeof saves!=='undefined'?saves.length:0)+' local saves visible to this browser.'},
 {name:'Schema contract',ok:schema.required.every(k=>schema.fields[k]&&schema.fields[k].required),detail:schema.required.length+' required top-level fields documented.'},
