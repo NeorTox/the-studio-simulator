@@ -11,9 +11,9 @@ A film and entertainment company simulation game.
 
 ## Phase 6 scope
 
-The Entertainment Ecosystem models the commercial and cultural life of released content across film, television, animation, music and games. Current systems cover distribution agreements and rights windows, negotiation and minimum guarantees, theatrical releases and box office, streaming/broadcast partner economics, marketing and publicity, audience segments, fan communities, critic reviews, merchandise, intellectual property royalties, media coverage, awards and festivals.
+The Entertainment Ecosystem models the commercial and cultural life of released content across film, television, animation, music and games. Current systems cover distribution agreements and rights windows, negotiation and minimum guarantees, theatrical releases and box office, streaming/broadcast partner economics, marketing analytics, audience segments, fan communities, critic reviews, merchandise, and intellectual-property royalties. Phase 6 also links to the existing media and awards areas of the application; those areas still require their own end-to-end feature audit before the phase can be marked complete.
 
-Phase 6 is not complete until all systems are integrated with Phases 0–5, regression and multi-year simulation checks pass, and save compatibility and deployment are verified.
+Phase 6 is still in progress. Its daily ecosystem and audience processors are explicitly orchestrated by the cross-phase pipeline. Revenue posting, box-office receipts, platform statements, merchandise reversals, and royalty settlements include retry handling. The phase is not complete until all financial failure-path, browser, integration, save-compatibility, and multi-year tests pass, and the media/awards surfaces are audited.
 
 ## Deployment
 
