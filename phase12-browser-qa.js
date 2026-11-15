@@ -1,0 +1,33 @@
+const {chromium}=require('playwright'),assert=require('assert');
+(async()=>{
+ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ const page=await browser.newPage({viewport:{width:1440,height:900}});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+ await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
+ await page.getByRole('button',{name:/New campaign/}).click();
+ await page.getByRole('button',{name:/Create campaign/}).click();
+ for(const [id,value] of [['nfounder','Generation QA Founder'],['ncompany','Legacy Motion Studios'],['ncountry','India'],['ncity','Mumbai']])await page.locator('#'+id).fill(value);
+ await page.getByRole('button',{name:/Create and save campaign/}).click();
+ await page.waitForFunction(()=>!!window.Phase12Generations&&!!active);
+ await page.evaluate(()=>{
+  const p=window.StudioPopulationEngine.ensure(),id='PHASE12-EXEC-CANDIDATE';
+  if(!p.npcs.some(n=>n.id===id))p.npcs.push({id,name:'Morgan Successor',age:32,birthDate:'1994-01-01',alive:true,status:'Independent',city:'Mumbai',occupation:'Producer',family:{familyId:null,parentIds:[],childIds:[],partnerId:null},skills:{leadership:88,communication:82,technical:76,creative:72,commercial:65},career:{level:5,experience:400,tenureDays:1000,performance:86,satisfaction:85,careerChanges:0},finances:{cash:100000,debt:0,monthlyIncome:5000,monthlyExpenses:2500,creditScore:740},needs:{health:90,energy:80,social:75,security:85,purpose:90},socialLinks:[],reputation:{personal:80,professional:85,public:70},educationProfile:{level:'Graduate'},residenceHistory:[],lifeStage:'Adult'});
+  window.StudioPopulationEngine.ensure();
+ });
+ await page.getByRole('button',{name:/Generations/}).click();
+ await page.locator('#gen-role').fill('Chief Operating Officer');
+ await page.locator('#gen-candidate').selectOption('PHASE12-EXEC-CANDIDATE');
+ await page.locator('#gen-succession-form button[type=submit]').click();
+ await page.getByRole('button',{name:/Appoint/}).click();
+ const appointed=await page.evaluate(()=>({executives:active.company.management.executives.map(x=>({name:x.name,role:x.role,npcId:x.npcId})),state:active.generations,report:window.StudioPhaseIntegration.audit()}));
+ assert(appointed.executives.some(x=>x.npcId==='PHASE12-EXEC-CANDIDATE'&&x.role==='Chief Operating Officer'));
+ assert.equal(appointed.report.modules.find(x=>x.id===12).status,'connected');
+ await page.evaluate(()=>window.advance(45));
+ const after=await page.evaluate(()=>({date:active.date,last:active.generations.lastProcessedDate,days:Object.values(active.integration.days).filter(d=>d.status==='completed').length,phase12Days:Object.values(active.integration.days).filter(d=>d.status==='completed'&&d.steps.some(x=>x.name==='phase12-generations')).length,audit:window.Phase12Generations.audit(),integration:window.StudioPhaseIntegration.audit()}));
+ assert.equal(after.last,after.date);assert.equal(after.phase12Days,45);assert.equal(after.audit.failed,0,JSON.stringify(after.audit.tests.filter(x=>!x.ok)));assert.equal(after.integration.failed,0,JSON.stringify(after.integration.tests.filter(x=>!x.ok)));
+ await page.reload({waitUntil:'networkidle'});
+ const reload=await page.evaluate(()=>({date:active.date,last:active.generations?.lastProcessedDate,plans:active.generations?.successionPlans?.length,execs:active.company.management.executives.length}));
+ assert.equal(reload.last,reload.date);assert(reload.plans>=1);assert(reload.execs>=1);assert.deepEqual(errors,[]);
+ await browser.close();
+ console.log('PASS Phase 12 browser dashboard, successor planning/appointment, 45-day pipeline, audits and save/reload',JSON.stringify({appointed:appointed.executives,after:{date:after.date,phase12Days:after.phase12Days,audit:after.audit.passed,integration:after.integration.passed},reload}));
+})();
