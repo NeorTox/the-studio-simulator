@@ -17,6 +17,7 @@ const assert = require('node:assert/strict');
  assert.equal(await page.locator('#page-situations').evaluate(e=>e.classList.contains('active')),true,'Life & Events navigation must activate its page');
  assert.equal(await page.locator('#studio-situation-feed').count(),1);
  await page.locator('[data-page="overview"]').click();
+  assert.equal(await page.locator('#page-overview').evaluate(e=>e.classList.contains('active')),true,'Overview navigation must reactivate its page');
  await page.getByRole('button',{name:/New campaign/}).click();
  await page.getByRole('button',{name:/Create campaign/}).click();
  for(const [id,value] of [['nfounder','Weather QA Founder'],['ncompany','Weather QA Studios'],['ncountry','India'],['ncity','Mumbai']])await page.locator('#'+id).fill(value);
