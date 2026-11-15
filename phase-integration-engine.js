@@ -3,7 +3,7 @@
 const P=window.StudioPhase0;
 if(!P)throw new Error('THE STUDIO Phase 0 kernel is required before the integration engine.');
 const CONTRACTS=[
-{id:0,key:'kernel',name:'Architecture & stability',requires:['StudioPhase0','createCampaignScheduler']},
+{id:0,key:'kernel',name:'Architecture & stability',requires:['StudioPhase0','StudioPhase0.createCampaignScheduler']},
 {id:1,key:'world',name:'World, time & geography',requires:['phase1.processWorldDay','phase1.processWorldRange']},
 {id:2,key:'population',name:'Population & NPC intelligence',requires:['StudioPopulationEngine.processDay']},
 {id:3,key:'founder',name:'Founder & personal life',requires:['Phase3Founder.stepDay']},
