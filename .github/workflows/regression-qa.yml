@@ -2,7 +2,7 @@ name: THE STUDIO regression QA
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'algorithms/**']
   workflow_dispatch:
 
 permissions:
@@ -87,5 +87,7 @@ jobs:
         run: node phase12-browser-qa.js
       - name: Run Phase 13 release-quality browser QA
         run: node --check phase13-release-quality-engine.js && node --check phase13-release-quality-qa.js && node phase13-release-quality-qa.js
+      - name: Validate and run autonomous simulation controller regression
+        run: node --check autonomous-simulation-engine.js && node --check autonomous-simulation-qa.js && node autonomous-simulation-qa.js
       - name: Run three-year cross-phase integration stress test
         run: node integration-multiyear-qa.js
