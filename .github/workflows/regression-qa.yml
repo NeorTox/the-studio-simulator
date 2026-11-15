@@ -2,7 +2,7 @@ name: THE STUDIO regression QA
 
 on:
   push:
-    branches: [main, 'algorithms/**', 'refinement/**']
+    branches: [main, 'algorithms/**', 'refinement/**', 'systems/**']
   workflow_dispatch:
 
 permissions:
