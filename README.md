@@ -4,12 +4,13 @@ A film and entertainment company simulation game.
 
 ## Project baseline
 
-- Game version: 4.23.0
+- Game version: 4.24.0
 - Engine versions: Phase 6 Ecosystem 6.1.0; Phase 6 Audience version is reported by its runtime module
-- Completed development phases: 0–9; Phase 10 is active
+- Completed development phases: 0–10; Phase 11 is active
 - Phase 6: Entertainment ecosystem — complete; financial retries, media, awards and multi-year integration verified
 - Phase 7: Smartphone & media — complete; app catalog, social creators, personalized feeds, daily engagement, digital advertising and save persistence verified
-- Active development phase: Phase 10 — Autonomous competitors
+- Phase 10: Autonomous competitors — complete; ten rival studios, autonomous financial/production cycles, bids, acquisitions, market-share dynamics and strategy controls verified
+- Active development phase: Phase 11 — Technology & sustainability
 - Production: https://neortox.github.io/the-studio-simulator/
 
 ## Phase 6 scope
@@ -87,3 +88,19 @@ The installable app requests landscape orientation. On narrow mobile screens in 
 - 11/11 Phase 9 integrity checks and 42/42 full integration checks passed.
 - Three-year simulation: 1,095/1,095 completed daily pipelines with synchronized global economy and world dates.
 - GitHub Pages build and deployment succeeded for the verified code commit.
+
+
+## Phase 10 — Autonomous competitors
+
+The industry now contains ten autonomous rival studios with distinct headquarters, executives, strategies, reputations, quality, innovation, workforces, cash, debt, valuations and market positions. Rival studios run monthly operating cycles that update cash flow, investment, recruitment, restructuring, production budgets, project progress, releases, acquisitions and insolvency. They generate industry opportunities, submit competing bids, win contracts and publish events to the industry newswire.
+
+The player can set a competitive posture (Balanced, Quality, Price, Innovation or Franchise), investment level, talent-retention target and marketing intensity. Those controls feed the monthly player market-share model. The Competitors dashboard exposes rival profiles, industry opportunities, production pipelines, market concentration and recent events. Competitor state is versioned, persisted in campaign saves and guarded by daily idempotency and end-of-day integration checks.
+
+Phase 10 verification:
+- Ten unique competitor studios and deterministic one-year simulation.
+- 10/10 competitor integrity checks passed, including financial bounds, project-budget controls, valid bid/contract references, date synchronization and save serialization.
+- Browser QA passed for dashboard navigation, competitive strategy submission, 45-day simulation, integration audit and save/reload.
+- Three-year cross-phase stress test: 1,095/1,095 daily pipelines include Phase 10; all phases 0–10 connected; synchronized competitor/world dates; zero pipeline errors.
+- Full integration audit: 46/46 checks passed.
+- GitHub Pages build and production deployment succeeded for the verified Phase 10 release candidate.
+

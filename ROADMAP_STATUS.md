@@ -14,7 +14,7 @@ One complete phase is delivered and signed off before starting the next. Phases 
 | 7 | Smartphone & media | COMPLETE — phone, telecom, newsrooms, games, regional NPC simulation and three-year integration passed |
 | 8 | Financial empire | COMPLETE — institutional funds, private assets, portfolio valuation, treasury policy, credit metrics, browser QA and three-year integration passed |
 | 9 | Global economy | COMPLETE — 8 regional economies, 15 trade corridors, 10 commodity markets, policy controls, browser QA and 1,095-day integration passed |
-| 10 | Autonomous competitors | NOT STARTED |
+| 10 | Autonomous competitors | COMPLETE — ten rival studios, autonomous monthly operations, browser QA and 1,095-day integration passed |
 | 11 | Technology & sustainability | NOT STARTED |
 | 12 | Generations & world evolution | NOT STARTED |
 | 13 | Integration & release quality | NOT STARTED |
@@ -29,7 +29,7 @@ One complete phase is delivered and signed off before starting the next. Phases 
 - Department restructuring and closure controls
 - Persistent company-management state, audit and simulation integration
 
-Current phase: Phase 10 — Autonomous competitors.\n\n## Phase 5 completion\n- Script room with logline, synopsis and screenplay draft persistence.\n- Revision snapshots with dated notes and word counts.\n- Script review decisions and quality scoring.\n- Studio greenlight with approved budget, originality and feasibility scoring.\n- Pre-production readiness checklist covering director, producer, budget, cast, locations and schedule.\n- Stage progression gates prevent advancing without the required creative and production approvals.\n- Production continuity: script supervisor, footage backup and daily production reporting are mandatory before production wrap.\n- Safety incident reporting, severity classification and resolution records; unresolved high/critical incidents block wrap and delivery.\n- Production insurance policies with coverage dates, premiums, limits and claim validation, including exact-limit and invalid-amount tests.\n- Post-production gates for picture edit, sound, VFX, colour, mix and master/QC.\n- Final delivery approval with quality score, approver and notes before release.\n- Budget forecasting and alerts; stage allocations now use the approved greenlight budget rather than the larger initial project budget.\n- Browser regression validates a $1,000,000 greenlight against a $4,000,000 project budget, insurance boundaries, serious-incident blocks, full stage progression to Released, audit and save/reload.\n- Regression QA passed on commit `831ea18fc9972fbced0a6dbe45d0b82566aba2c6`; GitHub Pages deployment workflow build passed for the same commit.
+Current phase: Phase 11 — Technology & sustainability.\n\n## Phase 5 completion\n- Script room with logline, synopsis and screenplay draft persistence.\n- Revision snapshots with dated notes and word counts.\n- Script review decisions and quality scoring.\n- Studio greenlight with approved budget, originality and feasibility scoring.\n- Pre-production readiness checklist covering director, producer, budget, cast, locations and schedule.\n- Stage progression gates prevent advancing without the required creative and production approvals.\n- Production continuity: script supervisor, footage backup and daily production reporting are mandatory before production wrap.\n- Safety incident reporting, severity classification and resolution records; unresolved high/critical incidents block wrap and delivery.\n- Production insurance policies with coverage dates, premiums, limits and claim validation, including exact-limit and invalid-amount tests.\n- Post-production gates for picture edit, sound, VFX, colour, mix and master/QC.\n- Final delivery approval with quality score, approver and notes before release.\n- Budget forecasting and alerts; stage allocations now use the approved greenlight budget rather than the larger initial project budget.\n- Browser regression validates a $1,000,000 greenlight against a $4,000,000 project budget, insurance boundaries, serious-incident blocks, full stage progression to Released, audit and save/reload.\n- Regression QA passed on commit `831ea18fc9972fbced0a6dbe45d0b82566aba2c6`; GitHub Pages deployment workflow build passed for the same commit.
 
 ## Phase 4 completion evidence
 - Department budgets and actual expenditure post to the company cash ledger; spending is constrained by available cash, annual budget and board approval threshold.
@@ -93,3 +93,16 @@ Current phase: Phase 10 — Autonomous competitors.\n\n## Phase 5 completion\n- 
 - Browser QA verified regional policy updates, trade agreement creation, daily idempotency, 45-day simulation, campaign save/reload, landscape PWA metadata and zero browser errors.
 - Full regression passed on commit 4a252cba879c87877d793b2a5dc4320f30f3a2cd; GitHub Pages deployment and Pages build/deployment workflows succeeded.
 - Fresh three-year cross-phase stress test: 1,095/1,095 daily pipelines complete, 1,095 Phase 9 processing markers, 8 regional economies, 36 monthly macro snapshots, 11/11 Phase 9 integrity checks, 42/42 integration checks, zero failed checks and zero browser errors.
+
+
+## Phase 10 — Autonomous competitors (complete)
+- Ten deterministic rival studios with distinct regional headquarters, executive identities, business strategies, reputation, quality, innovation, cash, debt, valuation, workforce and market share.
+- Autonomous monthly operating cycles with financial performance, hiring, workforce reductions, investment, restructuring, insolvency, project greenlights, approved-budget spending, releases and acquisitions.
+- Industry opportunities, rival bid submissions, deterministic bid scoring, contract awards/expiry and an industry event/news wire.
+- Player competitive strategy controls: Balanced, Quality, Price, Innovation and Franchise postures; investment, talent retention and marketing intensity feed the player market-share model.
+- Competitor dashboard with rival register, financial/market intelligence, opportunity pipeline, production progress and event history.
+- Versioned campaign state, deterministic simulation, daily idempotency checkpoints, save/reload persistence and end-of-day integration gate.
+- Dedicated Node regression and Playwright browser QA passed; Phase 10 integrity audit 10/10.
+- Three-year cross-phase stress test passed: 1,095/1,095 daily pipelines include Phase 10; 11/11 phases 0–10 connected; competitor and world dates synchronized; 46/46 global integration checks passed; zero pipeline errors.
+- GitHub Pages build and deployment succeeded for the Phase 10 candidate.
+
