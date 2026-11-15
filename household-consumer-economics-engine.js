@@ -170,9 +170,9 @@ function processIndividualMonth(n,date){
  const nf=n.finances||(n.finances={cash:0,debt:0,creditScore:650});
  const before=Math.max(0,Number(nf.cash)||0),debtBefore=Math.max(0,Number(nf.debt)||0),score=clamp(Number(nf.creditScore||650),300,850);
  const mr=(active.market?.globalEconomy?.regions||[]).find(r=>r.id===regionIdFor(n,active.market?.globalEconomy));
- const apr=clamp(Number(mr?.policyRatePct||4)+3+(850-score)*.08,4,36);
+ const apr=nf.bankruptcyStatus==='filed'?0:clamp(Number(mr?.policyRatePct||4)+3+(850-score)*.08,4,36);
  const interest=round(debtBefore*apr/1200),debtAfterInterest=debtBefore+interest,savingsApr=clamp(Number(mr?.policyRatePct||3)-1.5,0,10),savingsInterest=round(before*savingsApr/1200);
- const creditFactor=clamp((score-500)/350,0,1),creditLimit=round(Math.max(0,income*4*creditFactor));
+ const creditFactor=clamp((score-500)/350,0,1),creditLimit=nf.bankruptcyStatus==='filed'?0:round(Math.max(0,income*4*creditFactor));
  const available=before+income+savingsInterest,essentialShortfall=Math.max(0,essentialShare-available);
  const creditDraw=round(Math.min(essentialShortfall,Math.max(0,creditLimit-debtAfterInterest)));
  const shortfall=Math.max(0,share-available-creditDraw),surplus=Math.max(0,available+creditDraw-share);
@@ -226,11 +226,11 @@ function finalizeMonth(date){
  for(const n of people){if(!alive(n))continue;cash+=Number(n.finances?.cash)||0;debt+=Number(n.finances?.debt)||0}
  const wealthGroups=new Map();
  for(const n of people){if(!alive(n))continue;const key=householdKey(n);if(!wealthGroups.has(key))wealthGroups.set(key,[]);wealthGroups.get(key).push(n)}
- const wealthValues=[];
+ const wealthValues=[];let mortgageDebtTotal=0;
  for(const members of wealthGroups.values()){
   const adults=members.filter(n=>(Number(n.age)||0)>=18),count=Math.max(1,adults.length);
   const property=Math.max(0,...members.map(n=>Number(n.home?.propertyValue)||0));
-  const mortgageBal=Math.max(0,...members.map(n=>Number(n.home?.mortgageBalance)||0));
+  const mortgageBal=Math.max(0,...members.map(n=>Number(n.home?.mortgageBalance)||0));mortgageDebtTotal+=mortgageBal;
   const equity=Math.max(0,property-mortgageBal)/count;
   for(const n of adults)wealthValues.push(Math.max(0,(Number(n.finances?.cash)||0)+equity-(Number(n.finances?.debt)||0)));
  }
@@ -243,7 +243,7 @@ function finalizeMonth(date){
  const summary={
   date,households:Number(s.metrics?.households)||Object.keys(s.households).length,namedResidents:s.metrics.namedResidents,
   householdDemandIndex:Number(active.market?.economy?.householdDemandIndex)||100,
-  aggregateCash:round(cash),aggregateDebt:round(debt),unpaidHouseholdArrears:round(householdArrears),
+  aggregateCash:round(cash),aggregateDebt:round(debt),aggregateMortgageDebt:round(mortgageDebtTotal),aggregateTotalDebt:round(debt+mortgageDebtTotal),unpaidHouseholdArrears:round(householdArrears),
   newConsumerCredit:round(borrowed),debtInterestAccrued:round(interest),
   mortgageInterestAccrued:round(mortgageInterest),mortgagePrincipalPaid:round(mortgagePrincipal),
   bankruptciesFiled:s.bankruptcyEvents.filter(e=>e.date===date).length,
@@ -272,6 +272,7 @@ function audit(){
  add('Property and mortgage balances valid',people.every(n=>!n.home||[n.home.propertyValue,n.home.mortgageBalance,n.home.equity].every(v=>v===undefined||Number.isFinite(Number(v))&&Number(v)>=0)),'Property values, mortgage balances and equity remain finite and non-negative.');
  add('Bankruptcy event ledger bounded',Array.isArray(s.bankruptcyEvents)&&s.bankruptcyEvents.length<=200,'Bankruptcy filings are retained in a bounded, serializable ledger.');
  add('Wealth inequality metrics valid',!s.metrics?.summary||Number.isFinite(s.metrics.summary.wealthGini)&&s.metrics.summary.wealthGini>=0&&s.metrics.summary.wealthGini<=1,'Gini coefficient stays within [0, 1].');
+ add('Total debt aggregation reconciles',!s.metrics?.summary||Math.abs(s.metrics.summary.aggregateTotalDebt-(s.metrics.summary.aggregateDebt+s.metrics.summary.aggregateMortgageDebt))<.05,'Consumer debt plus mortgage debt equals total household debt.');
  add('Month preparation checkpoint',!s.preparedDate||s.preparedDate<=active.date,'Household processor does not run ahead of campaign time.');
  add('Closed month has no pending finance transactions',s.lastProcessedDate!==s.preparedDate||Object.keys(s.pendingFinance||{}).length===0,'Per-person transactions clear after monthly settlement.');
  add('Household persistence remains bounded',Object.keys(s.households).length<=MAX_HOUSEHOLD_SAMPLES,'Detailed records are capped at '+MAX_HOUSEHOLD_SAMPLES+' while aggregate processing covers '+MAX_NPCS+' named NPCs.');
