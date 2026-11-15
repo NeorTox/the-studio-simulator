@@ -266,13 +266,16 @@ function audit(){
  const people=population().slice(0,MAX_NPCS);
  add('Individual finance balances valid',people.every(n=>!n.finances||[n.finances.cash,n.finances.debt,n.finances.monthlyIncome,n.finances.monthlyExpenses,n.finances.creditScore].every(v=>Number.isFinite(Number(v))&&Number(v)>=0)),'NPC cash, debt, income, expenses and credit scores remain finite and non-negative.');
  add('Credit and insolvency states bounded',people.every(n=>!n.finances||Number(n.finances.creditScore||650)>=300&&Number(n.finances.creditScore||650)<=850&&Number(n.finances.insolvencyMonths||0)>=0&&Number(n.finances.insolvencyMonths||0)<=120),'Credit scores and insolvency counters remain within defined bounds.');
+ add('Property and mortgage balances valid',people.every(n=>!n.home||[n.home.propertyValue,n.home.mortgageBalance,n.home.equity].every(v=>v===undefined||Number.isFinite(Number(v))&&Number(v)>=0)),'Property values, mortgage balances and equity remain finite and non-negative.');
+ add('Bankruptcy event ledger bounded',Array.isArray(s.bankruptcyEvents)&&s.bankruptcyEvents.length<=200,'Bankruptcy filings are retained in a bounded, serializable ledger.');
+ add('Wealth inequality metrics valid',!s.metrics?.summary||Number.isFinite(s.metrics.summary.wealthGini)&&s.metrics.summary.wealthGini>=0&&s.metrics.summary.wealthGini<=1,'Gini coefficient stays within [0, 1].');
  add('Month preparation checkpoint',!s.preparedDate||s.preparedDate<=active.date,'Household processor does not run ahead of campaign time.');
  add('Closed month has no pending finance transactions',s.lastProcessedDate!==s.preparedDate||Object.keys(s.pendingFinance||{}).length===0,'Per-person transactions clear after monthly settlement.');
  add('Household persistence remains bounded',Object.keys(s.households).length<=MAX_HOUSEHOLD_SAMPLES,'Detailed records are capped at '+MAX_HOUSEHOLD_SAMPLES+' while aggregate processing covers '+MAX_NPCS+' named NPCs.');
  add('Household state serializes',(()=>{try{JSON.stringify(s);return true}catch(e){return false}})(),'Household summaries, pending finance and regional indices are save-safe.');
  const passed=tests.filter(t=>t.ok).length;return {date:active.date,passed,failed:tests.length-passed,tests};
 }
-function metrics(){const s=getState();return s?{...s.metrics,households:Number(s.metrics?.households)||Object.keys(s.households).length,storedHouseholdSamples:Object.keys(s.households).length,version:s.version,lastPreparedDate:s.lastPreparedDate,lastProcessedDate:s.lastProcessedDate,history:s.history.length}:null}
+function metrics(){const s=getState();return s?{...s.metrics,households:Number(s.metrics?.households)||Object.keys(s.households).length,storedHouseholdSamples:Object.keys(s.households).length,version:s.version,lastPreparedDate:s.lastPreparedDate,lastProcessedDate:s.lastProcessedDate,history:s.history.length,bankruptcyEvents:s.bankruptcyEvents.length}:null}
 window.StudioHouseholdEconomics={version:VERSION,prepareMonth,processIndividualMonth,finalizeMonth,audit,metrics,ensure:getState};
 try{window.StudioPhase0?.registerModule?.({id:'household-consumer-economics',name:'Household & consumer economics',deps:['kernel','population','economy'],owns:['household budgets','shared household expenses','autonomous consumer purchases','personal cashflow','savings','consumer credit','debt','arrears','regional consumer demand','household financial stress'],status:'implemented'})}catch(e){}
 })();
