@@ -1,7 +1,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const nodes={};
 const document={readyState:'complete',getElementById:id=>nodes[id]||null,querySelector:()=>null,querySelectorAll:()=>[],createElement:()=>({}),addEventListener(){}};
-const active={id:'P6-AUDIENCE-QA',date:'2026-11-14',day:1,worldSeed:24680,company:{name:'Audience QA Studios',currency:'USD',cash:100000,ipAssets:[]},projects:[{id:'AUD-PROJECT',title:'The Last Orbit',format:'Feature Film',stage:6,genre:'Science Fiction',budget:1000000,performance:{criticsScore:82,audienceScore:91}}],market:{economy:{cinemaAttendance:'100'},media:{publicSentiment:'12.5'}}};
+const active={id:'P6-AUDIENCE-QA',date:'2026-11-14',day:1,worldSeed:24680,company:{name:'Audience QA Studios',currency:'USD',cash:100000,ipAssets:[]},projects:[{id:'AUD-PROJECT',title:'The Last Orbit',format:'Feature Film',stage:6,genre:'Science Fiction',budget:1000000,performance:{criticsScore:82,audienceScore:91}}],market:{economy:{cinemaAttendance:'100'},media:{publicSentiment:'12.5',outlets:[],coverage:[],campaigns:[]}}};
 const posts=[];
 function post(description,category,amount,date,type,meta){if(amount<0&&active.company.cash<Math.abs(amount))return false;active.company.cash+=Number(amount);posts.push({description,category,amount:Number(amount),date,type,meta});return true;}
 const ctx={document,window:{post,persist(){},StudioPhase0:{registerModule:x=>x},simulateLifeDay:null},active,show(){},close(){},toast(){},fmt:n=>String(n),esc:s=>String(s),addDays:(d,n)=>{const x=new Date(d+'T00:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)},stableUnit:(seed,key)=>String(((String(seed).length+String(key).length*17)%997)/997),hashSeed:s=>String(s).length,persist(){},addLog(){},Date,Math,console};
