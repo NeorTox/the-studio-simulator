@@ -28,7 +28,7 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
  const before=await p.evaluate(()=>({date:active.date,cash:Number(active.founder.personalCash),recurring:active.founder.personalFinance.recurring.length}));
  await p.getByRole('button',{name:/Overview/}).click();
  await p.getByRole('button',{name:/\+1 year/}).click({timeout:120000});
- await p.waitForFunction(()=>active.date==='2027-11-14',{timeout:120000});
+ await p.waitForFunction(()=>active.date==='2027-11-14',null,{timeout:120000});
  const after=await p.evaluate(()=>({date:active.date,cash:Number(active.founder.personalCash),entries:active.founder.personalFinance.ledger.filter(x=>x.source==='recurring').map(x=>({description:x.description,amount:x.amount,date:x.date})),lastDay:active.founder.phase3.lastDay}));
  console.log('LONG SIM',JSON.stringify({initial,before,after}));
  assert.equal(after.date,'2027-11-14');assert.equal(after.entries.filter(x=>x.description==='Monthly rent').length,12);assert.equal(after.entries.filter(x=>x.description==='Quarterly tax').length,4);assert.equal(after.entries.filter(x=>x.description==='Annual insurance').length,1);
