@@ -52,11 +52,13 @@ function accountingAccountFor(t){
  if(cat.includes('legal'))return accountMeta('5700','Legal & compliance expense','debit');
  return accountMeta('5900','Other operating expense','debit');
 }
+let accountingIndexCache={accounting:null,postedArray:null,journalRefs:null,posted:new Set(),journal:new Set(),ledger:null,ledgerLength:-1};
+function accountingIndexes(){const a=active?.accounting;if(!a)return null;if(accountingIndexCache.accounting!==a||accountingIndexCache.postedArray!==a.postedTransactionIds||accountingIndexCache.journalRefs!==a.journalRefs){accountingIndexCache={accounting:a,postedArray:a.postedTransactionIds,journalRefs:a.journalRefs,posted:new Set(a.postedTransactionIds||[]),journal:new Set(a.journalRefs||[]),ledger:null,ledgerLength:-1}}return accountingIndexCache}
 function accountTransaction(t){
  if(!active||!t)return;
  active.accounting=active.accounting||{version:'double-entry-1.1',postedTransactionIds:[],journal:[],journalRefs:[]};
  active.accounting.postedTransactionIds=active.accounting.postedTransactionIds||[];
- if(active.accounting.postedTransactionIds.includes(t.id))return;
+ const indexes=accountingIndexes();if(indexes?.posted.has(t.id))return;
  const amount=dstr(dec(Math.abs(Number(t.amount)).toString()));
  if(dec(amount)===0n&&t.type!=='fx_conversion')return;
  let lines;
@@ -95,19 +97,19 @@ function accountTransaction(t){
   lines=[{code:offset.code,name:offset.name,debit:amount,credit:'0'},{code:'1000',name:'Cash and cash equivalents',debit:'0',credit:amount}];
  }
  journalPost('JRN-'+t.id,t.date,t.description,lines,t.id);
- active.accounting.postedTransactionIds.push(t.id);
+ active.accounting.postedTransactionIds.push(t.id);if(indexes){indexes.posted.add(t.id);indexes.ledger=active.ledger||null;indexes.ledgerLength=indexes.ledger?.length||0}
 }
 function journalPost(id,date,description,lines,reference){
  if(!active)return false;
  active.accounting=active.accounting||{version:'double-entry-1.1',postedTransactionIds:[],journal:[],journalRefs:[]};
  active.accounting.journal=active.accounting.journal||[];
  active.accounting.journalRefs=active.accounting.journalRefs||active.accounting.journal.map(j=>j.id);
- if(active.accounting.journalRefs.includes(id))return false;
+ const indexes=accountingIndexes();if(indexes?.journal.has(id))return false;
  const debit=lines.reduce((s,l)=>dadd(s,l.debit||'0'),dec('0'));
  const credit=lines.reduce((s,l)=>dadd(s,l.credit||'0'),dec('0'));
  if(debit!==credit){addLog('Accounting control blocked unbalanced journal '+id+'.');return false}
  active.accounting.journal.push({id,date,description,reference:reference||id,lines});
- active.accounting.journalRefs.push(id);
+ active.accounting.journalRefs.push(id);if(indexes)indexes.journal.add(id);
  return true;
 }
 function ensureAccounting(){
@@ -116,7 +118,7 @@ function ensureAccounting(){
  active.accounting.postedTransactionIds=active.accounting.postedTransactionIds||[];
  active.accounting.journal=active.accounting.journal||[];
  active.accounting.journalRefs=active.accounting.journalRefs||active.accounting.journal.map(j=>j.id);
- (active.ledger||[]).slice().reverse().forEach(accountTransaction);
+ const indexes=accountingIndexes(),ledger=active.ledger||[];if(indexes&&(indexes.ledger!==ledger||indexes.ledgerLength!==ledger.length)){ledger.slice().reverse().forEach(accountTransaction);indexes.ledger=ledger;indexes.ledgerLength=ledger.length}
 }
 function accountingBalances(){
  ensureAccounting();const map={};
