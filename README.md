@@ -22,9 +22,9 @@ Phase 6 is still in progress. Its daily ecosystem and audience processors are ex
 
 The Studio One smartphone runs StudioOS and includes an installable app catalog: StudioSphere, ReelLoop, CineWire, PlayGrid, SoundWave, Streamline, MarketPulse and CreatorHub. App installation and removal update device storage and persist with the campaign.
 
-The social layer supports creator profiles with unique handles, publishing to installed platforms, audience preferences and relevance/freshness/engagement-based feed ranking. Daily simulation generates industry news and studio updates from Phase 6 releases and media coverage, calculates platform impressions and engagement, builds topic trends, grows creator audiences and produces daily notifications.
+The social layer supports creator profiles with unique handles, publishing to installed platforms, follow/unfollow, like/unlike reactions, comments, community reporting and moderation decisions. Audience preferences and relevance/freshness/engagement-based ranking drive personalized feeds. Daily simulation generates industry news and studio updates from Phase 6 releases and media coverage, calculates platform impressions and engagement, builds topic trends, grows creator audiences and produces daily notifications.
 
-Digital advertising campaigns track budget, CPM, impressions, clicks, conversions and bounded spend. Smartphone state is versioned and serialized in the campaign save. Phase 7 is processed inside the existing daily Phase 6 ecosystem call and is required by the cross-phase integration end-of-day gate.
+Creator sponsorship deals track sponsor, creator, CPM, budget, duration and capped creator payouts. Digital advertising campaigns track budget, CPM, impressions, clicks, conversions and bounded spend. Smartphone state is versioned and serialized in the campaign save. Phase 7 is processed inside the existing daily Phase 6 ecosystem call and is required by the cross-phase integration end-of-day gate.
 
 Regression evidence on the Phase 7 candidate:
 - Mobile browser QA passed: app installation, creator creation, publishing, ad campaign creation, daily idempotency, personalized feed, integration and save/reload.
