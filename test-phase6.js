@@ -1,0 +1,26 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const nodes={};
+const document={readyState:'complete',getElementById:id=>nodes[id]||null,querySelector:()=>null,querySelectorAll:()=>[],createElement:()=>({}),addEventListener(){}};
+const active={id:'P6-QA',date:'2026-11-14',day:1,worldSeed:12345,company:{name:'QA Studios',currency:'USD',cash:100000,ipAssets:[{id:'IP-QA',title:'The Last Orbit',category:'Original screenplay',creator:'A. Rao',rightsOwner:'QA Studios',projectId:'P6-PROJECT',licenses:[]}]},projects:[{id:'P6-PROJECT',title:'The Last Orbit',format:'Feature Film',stage:6,genre:'Science Fiction',budget:1000000,performance:{}}],market:{economy:{cinemaAttendance:'100'}}};
+const posts=[];
+function post(description,category,amount,date,type,meta){if(amount<0&&active.company.cash<Math.abs(amount))return false;active.company.cash+=Number(amount);posts.push({description,category,amount:Number(amount),date,type,meta});return true;}
+const ctx={document,window:{post,persist(){},StudioPhase0:{registerModule:x=>x},simulateLifeDay:null},active,show(){},close(){},toast(){},fmt:n=>String(n),esc:s=>String(s),addDays:(d,n)=>{const x=new Date(d+'T00:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)},stableUnit:(seed,key)=>String(((seed+key.length*17)%997)/997),hashSeed:s=>String(s).length,persist(){},addLog(){},Date,Math,console};
+vm.createContext(ctx);vm.runInContext(fs.readFileSync('phase6-ecosystem-engine.js','utf8'),ctx);
+const api=ctx.window.Phase6Ecosystem;assert(api,'Phase 6 API registered');assert.equal(api.version,'6.0.0');
+const deal=api.addDistributionDeal({projectId:'P6-PROJECT',licensee:'Global Releasing',channel:'Theatrical',territory:'India',rights:'Theatrical exhibition',startDate:'2026-11-14',endDate:'2027-11-14',upfrontFee:1000,revenueShare:70,distributorFee:10,exclusive:true});
+assert.equal(deal.status,'Active');assert.equal(active.company.cash,101000);
+assert.throws(()=>api.addDistributionDeal({projectId:'P6-PROJECT',licensee:'Second Distributor',channel:'Theatrical',territory:'India',rights:'Theatrical exhibition',startDate:'2026-12-01',endDate:'2027-01-01',upfrontFee:0,revenueShare:70,distributorFee:10,exclusive:true}),/conflict/i);
+const offer=api.createOffer({projectId:'P6-PROJECT',licensee:'Orbit Stream',channel:'Streaming SVOD',territory:'Worldwide',rights:'Streaming',startDate:'2027-01-01',endDate:'2028-01-01',upfrontFee:500,revenueShare:65,distributorFee:10});
+api.counterOffer(offer.id,{upfrontFee:750,revenueShare:70,distributorFee:8});const accepted=api.acceptOffer(offer.id);assert.equal(accepted.upfrontFee,750);assert.equal(offer.status,'Accepted');
+const release=api.addRelease({projectId:'P6-PROJECT',territory:'India',openingDate:'2026-11-14',screens:200,averageTicket:10,exhibitorShare:50,distributorFee:10,expectedRunDays:28});
+const campaign=api.addCampaign({projectId:'P6-PROJECT',name:'Orbit launch',channel:'Trailer / video',segment:'Science fiction fans',budget:2000,durationDays:14});
+const royalty=api.addRoyalty({ipId:'IP-QA',payee:'A. Rao',rate:5,basis:'gross'});
+const merch=api.addMerchandise({ipId:'IP-QA',name:'Orbit collector edition',category:'Collectibles',initialStock:50,unitCost:4,retailPrice:12,royaltyRate:5});
+const sale=api.sellMerchandise(merch.id,5);assert.equal(sale.inventory,45);assert.equal(sale.revenue,60);assert.equal(merch.royaltyAccrued,3);
+const first=api.stepDay('2026-11-15');assert.equal(first.date,'2026-11-15');assert(release.totalGross>0);assert(campaign.impressions>0);assert(royalty.accrued>0);
+const snapshot=JSON.stringify(active.ecosystem);assert(snapshot.includes('Orbit Stream'));
+assert.equal(api.stepDay('2026-11-15').skipped,true,'same-day processing is idempotent');
+const settlement=api.settleRoyalties('2026-11-16');assert(settlement.paid>0);assert.equal(royalty.accrued,0);assert(royalty.paid>0);
+const audit=api.audit();assert.equal(audit.failed,0,JSON.stringify(audit.tests.filter(x=>!x.ok)));
+assert(posts.some(x=>x.category==='Entertainment ecosystem revenue'));assert(posts.some(x=>x.category==='Talent & IP royalties'));
+console.log('PASS Phase 6 distribution rights conflicts, negotiations, theatrical box office, marketing analytics, merchandise inventory, royalty accrual/settlement, daily idempotency, save serialization and audit');
