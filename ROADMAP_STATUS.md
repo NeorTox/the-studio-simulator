@@ -5,15 +5,15 @@ One complete phase is delivered and signed off before starting the next. Phases 
 | Phase | Scope | Status |
 |---:|---|---|
 | 0 | Architecture & stability | COMPLETE — regression rechecked |
-| 1 | World, time & geography | COMPLETE — global geography and travel extension added; expanded regression in progress |
+| 1 | World, time & geography | COMPLETE — global geography, 252 country/territory records, 5,274 divisions, 303 city records and travel regression passed |
 | 2 | Population & NPC intelligence | COMPLETE — population audit and active-campaign regression passed |
 | 3 | Founder & personal life | COMPLETE — browser forms, finance integrity, one-year simulation, export/import/reload and legacy migration passed in CI |
 | 4 | Company management | COMPLETE — branch economics, contract settlements, board capital approvals, compliance penalties, management accounts, audit and mobile browser regression passed |
 | 5 | Entertainment production | COMPLETE — full production lifecycle, approved-budget enforcement, continuity, safety, insurance, post-production, delivery approval, audit and save/reload browser QA passed in CI |
 | 6 | Entertainment ecosystem | COMPLETE — finance retries, browser QA, media/awards and three-year integration passed |
-| 7 | Smartphone & media | COMPLETE — expanded phone, telecom, newsrooms, games, regional NPC simulation and three-year integration passed on commit `2ee7ee3` |
-| 8 | Financial empire | IN PROGRESS — institutional funds, private assets, portfolio valuation, treasury policy, credit metrics and daily integration under regression |
-| 9 | Global economy | NOT STARTED |
+| 7 | Smartphone & media | COMPLETE — phone, telecom, newsrooms, games, regional NPC simulation and three-year integration passed |
+| 8 | Financial empire | COMPLETE — institutional funds, private assets, portfolio valuation, treasury policy, credit metrics, browser QA and three-year integration passed |
+| 9 | Global economy | IN PROGRESS — regional macroeconomies, FX strength, commodities, trade corridors, policy and daily integration |
 | 10 | Autonomous competitors | NOT STARTED |
 | 11 | Technology & sustainability | NOT STARTED |
 | 12 | Generations & world evolution | NOT STARTED |
@@ -29,7 +29,7 @@ One complete phase is delivered and signed off before starting the next. Phases 
 - Department restructuring and closure controls
 - Persistent company-management state, audit and simulation integration
 
-Current phase: Phase 8 — Financial empire and institutional capital integration.\n\n## Phase 5 completion\n- Script room with logline, synopsis and screenplay draft persistence.\n- Revision snapshots with dated notes and word counts.\n- Script review decisions and quality scoring.\n- Studio greenlight with approved budget, originality and feasibility scoring.\n- Pre-production readiness checklist covering director, producer, budget, cast, locations and schedule.\n- Stage progression gates prevent advancing without the required creative and production approvals.\n- Production continuity: script supervisor, footage backup and daily production reporting are mandatory before production wrap.\n- Safety incident reporting, severity classification and resolution records; unresolved high/critical incidents block wrap and delivery.\n- Production insurance policies with coverage dates, premiums, limits and claim validation, including exact-limit and invalid-amount tests.\n- Post-production gates for picture edit, sound, VFX, colour, mix and master/QC.\n- Final delivery approval with quality score, approver and notes before release.\n- Budget forecasting and alerts; stage allocations now use the approved greenlight budget rather than the larger initial project budget.\n- Browser regression validates a $1,000,000 greenlight against a $4,000,000 project budget, insurance boundaries, serious-incident blocks, full stage progression to Released, audit and save/reload.\n- Regression QA passed on commit `831ea18fc9972fbced0a6dbe45d0b82566aba2c6`; GitHub Pages deployment workflow build passed for the same commit.
+Current phase: Phase 9 — Global economy.\n\n## Phase 5 completion\n- Script room with logline, synopsis and screenplay draft persistence.\n- Revision snapshots with dated notes and word counts.\n- Script review decisions and quality scoring.\n- Studio greenlight with approved budget, originality and feasibility scoring.\n- Pre-production readiness checklist covering director, producer, budget, cast, locations and schedule.\n- Stage progression gates prevent advancing without the required creative and production approvals.\n- Production continuity: script supervisor, footage backup and daily production reporting are mandatory before production wrap.\n- Safety incident reporting, severity classification and resolution records; unresolved high/critical incidents block wrap and delivery.\n- Production insurance policies with coverage dates, premiums, limits and claim validation, including exact-limit and invalid-amount tests.\n- Post-production gates for picture edit, sound, VFX, colour, mix and master/QC.\n- Final delivery approval with quality score, approver and notes before release.\n- Budget forecasting and alerts; stage allocations now use the approved greenlight budget rather than the larger initial project budget.\n- Browser regression validates a $1,000,000 greenlight against a $4,000,000 project budget, insurance boundaries, serious-incident blocks, full stage progression to Released, audit and save/reload.\n- Regression QA passed on commit `831ea18fc9972fbced0a6dbe45d0b82566aba2c6`; GitHub Pages deployment workflow build passed for the same commit.
 
 ## Phase 4 completion evidence
 - Department budgets and actual expenditure post to the company cash ledger; spending is constrained by available cash, annual budget and board approval threshold.
@@ -60,7 +60,7 @@ Current phase: Phase 8 — Financial empire and institutional capital integratio
 - Three-year stress test on commit `f7688b60b955981bd18db25520a5b558ee67c981`: 1,095/1,095 Phase 7 daily pipeline records, synchronized smartphone/world date, 500 retained feed items, 30/30 integration checks and zero errors.
 
 
-## Phase 7 digital-life expansion — active work (2026-11-15)
+## Phase 7 digital-life expansion — complete (2026-11-15)
 - Expanded smartphone economy: phone models/upgrades, battery charging, installable mobile games, storage limits, online data usage, mobile carriers, data plans and recurring bills.
 - Newsroom network: eight seeded outlets, user-created outlets, outlet-linked daily articles, read tracking and date-keyed publication idempotency.
 - Regional population model: each region represents at least 25,000 individual residents/NPCs without allocating 25,000 heavyweight JavaScript objects. Stable per-resident IDs and deterministic profiles (name, age, occupation, income, device ownership, data use and interests) are generated on demand; named world NPCs remain separately tracked.
@@ -68,11 +68,20 @@ Current phase: Phase 8 — Financial empire and institutional capital integratio
 - Expansion is not signed off until the full browser regression and three-year cross-phase stress test pass on the same commit.
 
 
-## Phase 8 — Financial empire (active work)
+## Phase 8 — Financial empire (complete)
 - Institutional investment funds with named managers, strategies and investment mandates.
 - Private equity, venture capital, corporate and government bonds, real estate, infrastructure and commodity holdings.
 - Acquisitions and liquidations post through the existing company double-entry marketable-investments account; no parallel cash ledger is created.
 - Daily deterministic mark-to-market valuation, accrued investment income, month-end distributions, realized and unrealized performance.
 - Treasury policy for liquidity reserves, maximum single exposure, risk profile and target return; portfolio concentration, leverage and simulated credit-rating indicators.
 - Versioned campaign state, event audit trail, idempotent daily processing, browser regression and three-year cross-phase integration gates.
-- Phase 8 remains IN PROGRESS until browser QA, full regression and a fresh 1,095-day stress test pass on one commit.
+- Phase 8 browser QA, full regression and a fresh 1,095-day cross-phase stress test passed on the integrated candidate.
+
+
+## Phase 9 — Global economy (active work)
+- Eight linked simulation regions with GDP/output indices, real growth, inflation, unemployment, household confidence, central-bank policy rates, fiscal balance, public debt and currency-strength indices.
+- Fifteen bilateral trade corridors with evolving trade-flow indices, import tariffs and trade-friction calculations.
+- Ten commodity markets covering energy, utilities, industrial materials, critical minerals, agriculture, timber and shipping capacity; price, supply, demand and inventory indices evolve daily.
+- Regional monetary/fiscal policy controls and time-limited trade agreements; policy changes persist in campaign saves and influence later simulation ticks.
+- Deterministic daily processing, idempotency, monthly macro snapshots, bounded histories, macro event wire, save/reload support and integration with existing market/financial-empire risk calculations.
+- Phase 9 sign-off requires browser QA, full regression, integration audit and a fresh 1,095-day cross-phase stress test on one commit.

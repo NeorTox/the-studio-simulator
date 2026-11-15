@@ -12,7 +12,7 @@ const CONTRACTS=[
 {id:6,key:'ecosystem',name:'Entertainment ecosystem',requires:['Phase6Ecosystem.stepDay','Phase6Ecosystem.audit','Phase6Audience.addFandom','Phase6Audience.publishReview','Phase6Audience.processDay','Phase6Audience.audit','simulateMediaMonth','renderMedia','awardCatalog','submitForAward','processAwards','renderAwards']},
 {id:7,key:'smartphone',name:'Smartphone & media',requires:['Phase7Smartphone.processDay','Phase7Smartphone.audit','Phase7Smartphone.installApp','Phase7Smartphone.publishPost']},
 {id:8,key:'financial-empire',name:'Financial empire',requires:['Phase8FinancialEmpire.stepDay','Phase8FinancialEmpire.audit','Phase8FinancialEmpire.createFund','Phase8FinancialEmpire.buyAsset','Phase8FinancialEmpire.sellAsset']},
-{id:9,key:'global-economy',name:'Global economy',requires:[]},
+{id:9,key:'global-economy',name:'Global economy',requires:['Phase9GlobalEconomy.stepDay','Phase9GlobalEconomy.audit','Phase9GlobalEconomy.setPolicy','Phase9GlobalEconomy.createAgreement']},
 {id:10,key:'competitors',name:'Autonomous competitors',requires:[]},
 {id:11,key:'technology',name:'Technology & sustainability',requires:[]},
 {id:12,key:'generations',name:'Generations & world evolution',requires:[]},
@@ -35,14 +35,16 @@ function endDay(date){
  if(ecosystem.audienceLastProcessedDate!==date)throw Error('Cannot complete integration day '+date+': Phase 6 audience model did not commit.');
  const smartphone=active.smartphone;if(!smartphone||smartphone.lastProcessedDate!==date)throw Error('Cannot complete integration day '+date+': Phase 7 smartphone processor did not commit.');
  const financial=window.Phase8FinancialEmpire?.ensure?.();if(!financial||financial.lastProcessedDate!==date)throw Error('Cannot complete integration day '+date+': Phase 8 financial empire processor did not commit.');
+ const globalEconomy=window.Phase9GlobalEconomy?.ensure?.();if(!globalEconomy||globalEconomy.lastProcessedDate!==date)throw Error('Cannot complete integration day '+date+': Phase 9 global economy processor did not commit.');
  d.steps.push({name:'population-founder-company',at:new Date().toISOString()});
  d.steps.push({name:'phase6-ecosystem',at:new Date().toISOString()});
  d.steps.push({name:'phase6-audience',at:new Date().toISOString()});
  d.steps.push({name:'phase7-smartphone',at:new Date().toISOString()});
  d.steps.push({name:'phase8-financial-empire',at:new Date().toISOString()});
+ d.steps.push({name:'phase9-global-economy',at:new Date().toISOString()});
  if(active.world?.travel)d.steps.push({name:'global-travel',at:new Date().toISOString()});
  d.status='completed';d.completedAt=new Date().toISOString();s.days[date]=d;
- s.history.unshift({date,status:'completed',phases:['world','population','founder','company','ecosystem','audience','smartphone','financial-empire','travel']});s.history=s.history.slice(0,90);
+ s.history.unshift({date,status:'completed',phases:['world','population','founder','company','ecosystem','audience','smartphone','financial-empire','global-economy','travel']});s.history=s.history.slice(0,90);
  if(typeof persist==='function')persist();return true;
 }
 function audit(){
@@ -50,8 +52,8 @@ function audit(){
  add('Active campaign exists',!!active,'Integration checks require an active campaign.');
  const modules=CONTRACTS.map(c=>{
   const missing=c.requires.filter(r=>!path(r));
-  const implemented=c.id<=8&&missing.length===0;
-  return {...c,status:c.id<=8?(missing.length?'degraded':'connected'):'not-built',missing};
+  const implemented=c.id<=9&&missing.length===0;
+  return {...c,status:c.id<=9?(missing.length?'degraded':'connected'):'not-built',missing};
  });
  modules.forEach(m=>add('Phase '+m.id+' · '+m.name,m.status==='connected'||m.status==='not-built',m.status+(m.missing.length?': '+m.missing.join(', '):'')));
  const dep=P.dependencyReport();add('Architecture dependency graph',dep.invalidEdges.length===0,dep.invalidEdges.length?dep.invalidEdges.join('; '):dep.domains+' domains / '+dep.edges+' declared edges');
@@ -67,6 +69,10 @@ function audit(){
   add('Phase 6 is part of every completed daily pipeline',incompletePhase6.length===0,incompletePhase6.length?incompletePhase6.map(d=>d.date).join(', '):dates.length+' days include world, company and both ecosystem processors.');
   add('Phase 7 is part of every completed daily pipeline',dates.filter(d=>d.status==='completed'&&!d.steps.some(x=>x.name==='phase7-smartphone')).length===0,'Every completed day includes smartphone and digital-media processing.');
   add('Phase 8 is part of every completed daily pipeline',dates.filter(d=>d.status==='completed'&&!d.steps.some(x=>x.name==='phase8-financial-empire')).length===0,'Every completed day includes financial-empire valuation and income processing.');
+  const p9Start=active.market?.globalEconomy?.firstIntegratedDate||'9999-12-31';const p9Days=dates.filter(d=>d.status==='completed'&&d.date>=p9Start);
+  add('Phase 9 is part of every completed daily pipeline',p9Days.every(d=>d.steps.some(x=>x.name==='phase9-global-economy')),p9Days.length+' Phase 9-enabled daily pipelines include global economy processing.');
+  const p9=window.Phase9GlobalEconomy?.audit?.();add('Phase 9 internal integrity audit',!!p9&&p9.failed===0,p9?(p9.passed+' passed / '+p9.failed+' failed'):'Phase 9 audit API unavailable.');
+  add('Phase 9 daily checkpoint synchronized',p9Days.length===0||active.market?.globalEconomy?.lastProcessedDate===active.date,'Global economy '+String(active.market?.globalEconomy?.lastProcessedDate||'not run')+' · campaign '+active.date);
   add('Global travel is part of every completed daily pipeline',dates.filter(d=>d.status==='completed'&&!d.steps.some(x=>x.name==='global-travel')).length===0,'Every completed day includes global mobility processing.');
   add('Global travel checkpoint is synchronized',dates.length===0||active.world?.travel?.lastProcessedDate===active.date,'Travel '+String(active.world?.travel?.lastProcessedDate||'not yet processed')+' · campaign '+active.date);
   const p7=window.Phase7Smartphone?.audit?.();add('Phase 7 internal integrity audit',!!p7&&p7.failed===0,p7?(p7.passed+' passed / '+p7.failed+' failed'):'Phase 7 audit API unavailable.');

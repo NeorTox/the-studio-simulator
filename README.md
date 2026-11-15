@@ -4,19 +4,19 @@ A film and entertainment company simulation game.
 
 ## Project baseline
 
-- Game version: 4.22.0
+- Game version: 4.23.0
 - Engine versions: Phase 6 Ecosystem 6.1.0; Phase 6 Audience version is reported by its runtime module
-- Completed development phases: 0–7; Phase 8 is active
+- Completed development phases: 0–8; Phase 9 is active
 - Phase 6: Entertainment ecosystem — complete; financial retries, media, awards and multi-year integration verified
 - Phase 7: Smartphone & media — complete; app catalog, social creators, personalized feeds, daily engagement, digital advertising and save persistence verified
-- Active development phase: Phase 8 — Financial empire
+- Active development phase: Phase 9 — Global economy
 - Production: https://neortox.github.io/the-studio-simulator/
 
 ## Phase 6 scope
 
 The Entertainment Ecosystem models the commercial and cultural life of released content across film, television, animation, music and games. Current systems cover distribution agreements and rights windows, negotiation and minimum guarantees, theatrical releases and box office, streaming/broadcast partner economics, marketing analytics, audience segments, fan communities, critic reviews, merchandise, and intellectual-property royalties. Phase 6 also links to the existing media and awards areas of the application; those areas still require their own end-to-end feature audit before the phase can be marked complete.
 
-Phase 6 is still in progress. Its daily ecosystem and audience processors are explicitly orchestrated by the cross-phase pipeline. Revenue posting, box-office receipts, platform statements, merchandise reversals, and royalty settlements include retry handling. The phase is not complete until all financial failure-path, browser, integration, save-compatibility, and multi-year tests pass, and the media/awards surfaces are audited.
+Phase 6 is complete. Its daily ecosystem and audience processors are explicitly orchestrated by the cross-phase pipeline. Revenue posting, box-office receipts, platform statements, merchandise reversals, and royalty settlements include retry handling. Media and awards surfaces are included in the end-to-end integration audit.
 
 ## Phase 7 — Smartphone & media
 
@@ -53,7 +53,7 @@ Phase 8 adds an institutional capital-management layer to the existing company f
 
 The daily financial-empire processor deterministically marks active holdings to market, accrues modeled investment income, and distributes accrued income at month end. Treasury reporting includes portfolio cost and market value, unrealized and realized gains, accrued income, liquidity, concentration, leverage and a simulated credit rating. Investment policy controls include risk profile, liquidity reserve target, maximum single exposure and target annual return. All state is stored in the campaign save and checked by the cross-phase integration gate.
 
-Phase 8 is under active development. It is not signed off until its browser regression, complete regression workflow and a fresh 1,095-day cross-phase stress test all pass on the same commit.
+Phase 8 is complete. Institutional holdings, policy controls, daily valuation, income accrual, ledger posting, audit and save persistence are covered by browser regression and the three-year cross-phase stress suite.
 
 
 ## Global geography and player travel expansion
@@ -69,3 +69,10 @@ The Phase 1 extension adds a shared global geography registry and the first play
 **Scope note:** This is the foundation, not a fully detailed street-level atlas. Capital names exist across the country registry, but route calculations are enabled only for mapped travel hubs with coordinates and (for flights) airport codes. Visa rules, fares, and durations are fictional game mechanics, not real-world travel information. Additional city, airport, district and neighborhood coverage can be added without changing the country/division IDs.
 
 Data provenance and licensing are documented in DATA_SOURCES.md.
+
+
+## Phase 9 — Global economy
+
+The global economy expands the existing entertainment-market macro model into eight linked regional economies. Regional GDP and industrial output, inflation, unemployment, consumer confidence, policy rates, fiscal balance, public debt and currency-strength indices evolve daily. Fifteen trade corridors calculate evolving trade-flow and tariff-friction indices. Ten commodity markets track supply, demand, inventory and price indices across energy, industrial materials, critical minerals, agriculture, timber and logistics.
+
+Players can adjust regional monetary/fiscal policy and establish time-limited trade agreements. The model writes global risk, demand, commodity and currency-volatility indicators into the existing market economy state, and the Phase 8 financial-empire valuation reads the global risk signal. Values are fictional simulation indices, not live economic data, exchange rates or forecasts. State is versioned and stored in the campaign save.

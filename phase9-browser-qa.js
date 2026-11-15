@@ -1,0 +1,21 @@
+const assert=require('assert');const {chromium}=require('playwright');
+(async()=>{
+ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});const page=await browser.newPage({viewport:{width:844,height:390}});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+ await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
+ await page.getByRole('button',{name:/New campaign/}).click();await page.getByRole('button',{name:/Create campaign/}).click();
+ for(const [id,value] of [['nfounder','Phase 9 QA Founder'],['ncompany','Global Economy Test Studios'],['ncountry','India'],['ncity','Mumbai']])await page.locator('#'+id).fill(value);
+ await page.getByRole('button',{name:/Create and save campaign/}).click();
+ const initial=await page.evaluate(()=>{const p=window.Phase9GlobalEconomy;if(!p)throw Error('Phase 9 engine failed to load');const g=p.ensure();return {version:p.version,regions:g.regions.length,commodities:g.commodities.length,routes:g.tradeRoutes.length,audit:p.audit()}});
+ assert.equal(initial.version,'9.0.0');assert.equal(initial.regions,8);assert.equal(initial.commodities,10);assert.equal(initial.routes,15);assert.equal(initial.audit.failed,0,JSON.stringify(initial.audit.tests.filter(x=>!x.ok)));
+ const setup=await page.evaluate(()=>{const p=window.Phase9GlobalEconomy,g=p.ensure();p.setPolicy('south-asia',{policyRateTargetPct:6.75,fiscalImpulsePct:1.2,tariffPct:3});const agreement=p.createAgreement({from:'south-asia',to:'east-asia',tariffReductionPct:1.5,durationDays:365});const first=p.stepDay(active.date),duplicate=p.stepDay(active.date);return {agreement,first,duplicate,policy:g.regions.find(r=>r.id==='south-asia').policy}});
+ assert(setup.agreement.id);assert(setup.first.processed);assert.equal(setup.duplicate.idempotent,true);assert.equal(setup.policy.policyRateTargetPct,6.75);
+ await page.evaluate(()=>window.advance(45));
+ const result=await page.evaluate(()=>{const p=window.Phase9GlobalEconomy,g=p.ensure(),audit=p.audit(),integration=window.StudioPhaseIntegration.audit();return {date:active.date,lastDate:g.lastProcessedDate,regionDates:g.regions.map(r=>r.lastProcessedDate),commodityDates:g.commodities.map(c=>c.lastProcessedDate),routeDates:g.tradeRoutes.map(t=>t.lastProcessedDate),metrics:p.metrics(),audit,integration,phase9Days:Object.values(active.integration.days).filter(d=>d.status==='completed'&&d.steps.some(s=>s.name==='phase9-global-economy')).length,serialized:JSON.stringify(active).length}});
+ assert.equal(result.lastDate,result.date);assert(result.regionDates.every(x=>x===result.date));assert(result.commodityDates.every(x=>x===result.date));assert(result.routeDates.every(x=>x===result.date));assert.equal(result.metrics.regions,8);assert.equal(result.metrics.activeAgreements,1);assert.equal(result.audit.failed,0,JSON.stringify(result.audit.tests.filter(x=>!x.ok)));assert.equal(result.integration.failed,0,JSON.stringify(result.integration.tests.filter(x=>!x.ok)));assert.equal(result.phase9Days,45);assert(result.serialized>10000);
+ await page.reload({waitUntil:'networkidle'});const reload=await page.evaluate(()=>({date:active.date,lastDate:window.Phase9GlobalEconomy.ensure().lastProcessedDate,audit:window.Phase9GlobalEconomy.audit(),integration:window.StudioPhaseIntegration.audit()}));
+ assert.equal(reload.lastDate,reload.date);assert.equal(reload.audit.failed,0);assert.equal(reload.integration.failed,0);assert.deepEqual(errors,[]);
+ const manifest=await page.evaluate(async()=>await(await fetch('./manifest.webmanifest')).json());assert.equal(manifest.orientation,'landscape');
+ await page.getByRole('button',{name:/Economy/}).click();await page.locator('#page-economy').waitFor();await page.getByText('Regional economies').waitFor();
+ await browser.close();console.log('PASS Phase 9 global economy: 8 regions, 10 commodities, 15 trade corridors, regional policy, trade agreement, idempotency, 45-day integration, save/reload, landscape PWA and audits',JSON.stringify({metrics:result.metrics,audit:result.audit.passed,integration:result.integration.passed,phase9Days:result.phase9Days}));
+})();
