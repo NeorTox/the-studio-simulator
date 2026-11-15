@@ -9,7 +9,7 @@ const CONTRACTS=[
 {id:3,key:'founder',name:'Founder & personal life',requires:['Phase3Founder.stepDay']},
 {id:4,key:'company',name:'Company management',requires:['Phase4Company.stepDay']},
 {id:5,key:'production',name:'Entertainment production',requires:['Phase5Production.audit']},
-{id:6,key:'ecosystem',name:'Entertainment ecosystem',requires:['Phase6Ecosystem.stepDay','Phase6Ecosystem.audit','Phase6Ecosystem.addFandom','Phase6Ecosystem.publishReview','Phase6Audience.processDay','Phase6Audience.audit','simulateMediaMonth','renderMedia','awardCatalog','submitForAward','processAwards','renderAwards']},
+{id:6,key:'ecosystem',name:'Entertainment ecosystem',requires:['Phase6Ecosystem.stepDay','Phase6Ecosystem.audit','Phase6Audience.addFandom','Phase6Audience.publishReview','Phase6Audience.processDay','Phase6Audience.audit','simulateMediaMonth','renderMedia','awardCatalog','submitForAward','processAwards','renderAwards']},
 {id:7,key:'smartphone',name:'Smartphone & media',requires:['Phase7Smartphone.processDay','Phase7Smartphone.audit','Phase7Smartphone.installApp','Phase7Smartphone.publishPost']},
 {id:8,key:'financial-empire',name:'Financial empire',requires:['Phase8FinancialEmpire.stepDay','Phase8FinancialEmpire.audit','Phase8FinancialEmpire.createFund','Phase8FinancialEmpire.buyAsset','Phase8FinancialEmpire.sellAsset']},
 {id:9,key:'global-economy',name:'Global economy',requires:[]},
