@@ -571,9 +571,10 @@ async function advanceInChunks(total,chunkSize=30){
  if(!active){toast('Create a campaign first.');return}
  if(active.clockFrozen){toast('Simulation clock is frozen. Use TIME UNFREEZE in Sandbox.');return}
  total=Math.max(1,Math.min(3650,Math.floor(Number(total)||1)));chunkSize=Math.max(1,Math.min(30,Math.floor(Number(chunkSize)||30)));
- window.__advanceBatchActive=true;let completed=0;
+ window.__advanceBatchActive=true;let completed=0;const clock=active.worldClock||null,wasRunning=!!clock?.running&&!active.clockFrozen;
+ if(wasRunning){clock.running=false;clock.lastWallMs=Date.now();saveClock()}
  try{while(completed<total){const step=Math.min(chunkSize,total-completed),before=active.date;advance(step,{silent:true,quiet:true});const elapsed=Math.max(0,Math.round((Date.parse(active.date+'T00:00:00Z')-Date.parse(before+'T00:00:00Z'))/86400000));completed+=elapsed;if(elapsed<step)break;await new Promise(resolve=>setTimeout(resolve,0));}}
- finally{window.__advanceBatchActive=false;toast(completed?'Advanced '+completed+' of '+total+' requested day(s).':'Clock did not advance.')}
+ finally{if(wasRunning&&active&&!active.clockFrozen){active.worldClock=active.worldClock||{};active.worldClock.running=true;active.worldClock.lastWallMs=Date.now();saveClock();persist()}window.__advanceBatchActive=false;toast(completed?'Advanced '+completed+' of '+total+' requested day(s).':'Clock did not advance.')}
 }
 function exportSave(){if(!active){toast('No active campaign to export.');return}download(active.id)}
 function download(id){let s=saves.find(x=>x.id===id);if(!s)return;let blob=new Blob([JSON.stringify(s,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='THE-STUDIO-'+s.id+'.json';a.click();URL.revokeObjectURL(url)}
