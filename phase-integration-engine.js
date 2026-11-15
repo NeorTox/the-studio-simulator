@@ -68,7 +68,7 @@ function audit(){
   add('No duplicate pipeline steps',!duplicate,'Each tracked daily stage appears once per date.');
   const required=['world-before-life','population-founder-company','phase6-ecosystem','phase6-audience','phase7-smartphone','phase8-financial-empire','phase9-global-economy','phase10-competitors'];
   const incompletePhase6=dates.filter(d=>d.status==='completed'&&required.some(step=>!d.steps.some(x=>x.name===step)));
-  add('Phase 6 is part of every completed daily pipeline',incompletePhase6.length===0,incompletePhase6.length?incompletePhase6.map(d=>d.date).join(', '):dates.length+' days include world, company and both ecosystem processors.');
+  add('All required daily pipeline stages are present',incompletePhase6.length===0,incompletePhase6.length?incompletePhase6.map(d=>d.date).join(', '):dates.length+' tracked days include all required world, company, ecosystem, smartphone, finance, economy and competitor stages.');
   add('Phase 7 is part of every completed daily pipeline',dates.filter(d=>d.status==='completed'&&!d.steps.some(x=>x.name==='phase7-smartphone')).length===0,'Every completed day includes smartphone and digital-media processing.');
   add('Phase 8 is part of every completed daily pipeline',dates.filter(d=>d.status==='completed'&&!d.steps.some(x=>x.name==='phase8-financial-empire')).length===0,'Every completed day includes financial-empire valuation and income processing.');
   const p9Start=active.market?.globalEconomy?.firstIntegratedDate||'9999-12-31';const p9Days=dates.filter(d=>d.status==='completed'&&d.date>=p9Start);

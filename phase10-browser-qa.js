@@ -1,0 +1,21 @@
+const {chromium}=require('playwright'),assert=require('assert');
+(async()=>{
+ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ const page=await browser.newPage({viewport:{width:844,height:390}});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+ await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
+ await page.getByRole('button',{name:/New campaign/}).click();await page.getByRole('button',{name:/Create campaign/}).click();
+ for(const [id,value] of [['nfounder','Phase 10 QA Founder'],['ncompany','Rivalry Test Studios'],['ncountry','India'],['ncity','Mumbai']])await page.locator('#'+id).fill(value);
+ await page.getByRole('button',{name:/Create and save campaign/}).click();
+ const initial=await page.evaluate(()=>{const a=window.Phase10Competitors;if(!a)throw Error('Phase 10 engine did not load');const s=a.ensure();return{version:a.version,companies:s.companies.length,audit:a.audit()}});
+ assert.equal(initial.version,'10.0.0');assert.equal(initial.companies,10);assert.equal(initial.audit.failed,0,JSON.stringify(initial.audit.tests.filter(x=>!x.ok)));
+ await page.getByRole('button',{name:/Competitors/}).click();await page.locator('#page-competitors').waitFor();
+ await page.locator('#cp-posture').selectOption('Innovation');await page.locator('#cp-invest').fill('18');await page.locator('#cp-retention').fill('75');await page.locator('#cp-marketing').fill('62');await page.locator('#cp-form button').click();
+ await page.evaluate(()=>window.advance(45));
+ const result=await page.evaluate(()=>{const s=window.Phase10Competitors.ensure(),audit=window.Phase10Competitors.audit(),integration=window.StudioPhaseIntegration.audit();return{date:active.date,lastDate:s.lastProcessedDate,companies:s.companies.length,active:s.companies.filter(c=>c.status==='Active').length,opportunities:s.opportunities.length,events:s.events.length,strategy:s.playerStrategy,market:s.market,audit,integration,days:Object.values(active.integration.days).filter(d=>d.status==='completed'&&d.steps.some(x=>x.name==='phase10-competitors')).length,serialized:JSON.stringify(active).length}});
+ assert.equal(result.lastDate,result.date);assert.equal(result.companies,10);assert.equal(result.strategy.posture,'Innovation');assert.equal(result.days,45);assert.equal(result.audit.failed,0,JSON.stringify(result.audit.tests.filter(x=>!x.ok)));assert.equal(result.integration.failed,0,JSON.stringify(result.integration.tests.filter(x=>!x.ok)));assert(result.opportunities>=1);assert(result.serialized>10000);
+ await page.reload({waitUntil:'networkidle'});
+ const reload=await page.evaluate(()=>({date:active.date,lastDate:window.Phase10Competitors.ensure().lastProcessedDate,audit:window.Phase10Competitors.audit(),strategy:window.Phase10Competitors.ensure().playerStrategy.posture}));
+ assert.equal(reload.lastDate,reload.date);assert.equal(reload.strategy,'Innovation');assert.equal(reload.audit.failed,0,JSON.stringify(reload.audit.tests.filter(x=>!x.ok)));assert.deepEqual(errors,[]);
+ await browser.close();console.log('PASS Phase 10 browser QA',JSON.stringify({companies:result.companies,active:result.active,opportunities:result.opportunities,events:result.events,days:result.days,audit:result.audit.passed,integration:result.integration.passed}));
+})();
