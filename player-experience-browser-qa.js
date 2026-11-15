@@ -16,6 +16,7 @@ const assert = require('node:assert/strict');
  await page.locator('[data-page="situations"]').click();
  assert.equal(await page.locator('#page-situations').evaluate(e=>e.classList.contains('active')),true);
  assert.equal(await page.locator('#studio-situation-feed').count(),1);
+ await page.locator('[data-page="overview"]').click();
  await page.getByRole('button',{name:/New campaign/}).click();
  await page.getByRole('button',{name:/Create campaign/}).click();
  for(const [id,value] of [['nfounder','Weather QA Founder'],['ncompany','Weather QA Studios'],['ncountry','India'],['ncity','Mumbai']])await page.locator('#'+id).fill(value);
