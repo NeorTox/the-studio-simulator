@@ -4,6 +4,7 @@
 const P=window.StudioPhase0;
 if(!P)throw new Error('THE STUDIO Phase 0 kernel is required before Phase 1.');
 const VERSION='1.0.0',MAX_HISTORY=720,TAU=Math.PI*2;
+const dailyWeatherCache=new Map();
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,Number(v)||0));
 const regions=[
 {id:'REG-0',key:'north-america',name:'North America',latitude:39.8,longitude:-98.6,hemisphere:'north',climate:'continental',baseTemp:12,seasonAmplitude:15,rainBase:38,windBase:17,timezone:-6,countries:['United States','Canada','Mexico'],cities:['New York','Los Angeles','Chicago','Toronto','Vancouver','Mexico City']},
@@ -51,7 +52,7 @@ function seasonFor(date,hemisphere='north'){const p=dateParts(date),key=p.month*
 function daylightHours(date,latitude){const p=dateParts(date),declination=23.44*Math.PI/180*Math.sin(TAU*(284+p.dayOfYear)/365.2425),lat=Math.max(-89.9,Math.min(89.9,Number(latitude)))*Math.PI/180,cosHour=-Math.tan(lat)*Math.tan(declination);if(cosHour<=-1)return 24;if(cosHour>=1)return 0;return Math.max(0,Math.min(24,24*Math.acos(cosHour)/Math.PI));}
 function regionFor(value){const s=String(value||'').toLowerCase();return regions.find(r=>r.id===value||r.key===value||r.name.toLowerCase()===s||r.cities.some(c=>c.toLowerCase()===s)||r.countries.some(c=>c.toLowerCase()===s))||window.StudioGeography?.regionFor(value)||null;}
 function weatherFor(date,regionValue,seed=0){
-const r=regionFor(regionValue);if(!r)throw Error('Unknown geography region or location: '+String(regionValue));const p=dateParts(date),profile=climateProfiles[r.climate],hemisphere=r.hemisphere,season=seasonFor(date,hemisphere),peak=hemisphere==='north'?200:20;
+const r=regionFor(regionValue);if(!r)throw Error('Unknown geography region or location: '+String(regionValue));const cacheKey=String(seed)+'|'+r.id+'|'+date,cached=dailyWeatherCache.get(cacheKey);if(cached)return cached;const p=dateParts(date),profile=climateProfiles[r.climate],hemisphere=r.hemisphere,season=seasonFor(date,hemisphere),peak=hemisphere==='north'?200:20;
 const seasonal=Math.cos(TAU*(p.dayOfYear-peak)/365.2425)*r.seasonAmplitude;
 const key=r.id+'|'+date,temperature=r.baseTemp+seasonal+Number(dnum(stableRange(seed,key+'|temp','-4.5','4.5')));
 const precipitation=Math.max(0,Math.min(100,profile.rain+Number(dnum(stableRange(seed,key+'|rain','-28','28')))+(r.climate==='monsoon'&&season==='Summer'?20:0)+(r.climate==='arid'&&season==='Summer'?-7:0)));
@@ -61,7 +62,7 @@ const wind=Math.max(0,Math.min(150,profile.wind+Number(dnum(stableRange(seed,key
 const stormRisk=Math.max(0,Math.min(85,(precipitation-62)*0.85+(wind-32)*0.7));
 const daylight=daylightHours(date,r.latitude);
 let condition='Clear';if(stormRisk>38)condition='Storm risk';else if(precipitation>65&&cloud>55)condition='Rain';else if(cloud>70)condition='Overcast';else if(precipitation>48)condition='Showers';else if(temperature<2)condition='Cold';else if(temperature>34)condition='Hot';
-return {date,regionId:r.id,region:r.name,climate:r.climate,season,condition,temperatureC:Number(temperature.toFixed(2)),precipitationProbability:Number(precipitation.toFixed(2)),humidity:Number(humidity.toFixed(2)),cloudCover:Number(cloud.toFixed(2)),windKph:Number(wind.toFixed(2)),stormRisk:Number(stormRisk.toFixed(2)),daylightHours:Number(daylight.toFixed(2)),hemisphere,modelVersion:VERSION,assumption:'Deterministic fictional climate scenario; not a real forecast or historical weather record.'};
+const result={date,regionId:r.id,region:r.name,climate:r.climate,season,condition,temperatureC:Number(temperature.toFixed(2)),precipitationProbability:Number(precipitation.toFixed(2)),humidity:Number(humidity.toFixed(2)),cloudCover:Number(cloud.toFixed(2)),windKph:Number(wind.toFixed(2)),stormRisk:Number(stormRisk.toFixed(2)),daylightHours:Number(daylight.toFixed(2)),hemisphere,modelVersion:VERSION,assumption:'Deterministic fictional climate scenario; not a real forecast or historical weather record.'};dailyWeatherCache.set(cacheKey,result);if(dailyWeatherCache.size>12000)dailyWeatherCache.delete(dailyWeatherCache.keys().next().value);return result;
 }
 function hourlyWeatherFor(date,regionValue,hour,seed=0,cityValue=null,cityRecord=null){
  const r=regionFor(regionValue);if(!r)throw Error('Unknown geography region or location: '+String(regionValue));
