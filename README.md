@@ -54,3 +54,18 @@ Phase 8 adds an institutional capital-management layer to the existing company f
 The daily financial-empire processor deterministically marks active holdings to market, accrues modeled investment income, and distributes accrued income at month end. Treasury reporting includes portfolio cost and market value, unrealized and realized gains, accrued income, liquidity, concentration, leverage and a simulated credit rating. Investment policy controls include risk profile, liquidity reserve target, maximum single exposure and target annual return. All state is stored in the campaign save and checked by the cross-phase integration gate.
 
 Phase 8 is under active development. It is not signed off until its browser regression, complete regression workflow and a fresh 1,095-day cross-phase stress test all pass on the same commit.
+
+
+## Global geography and player travel expansion
+
+The Phase 1 extension adds a shared global geography registry and the first playable worldwide mobility layer:
+
+- 252 country and territory identities with ISO alpha-2/alpha-3 codes where available, continent, capital, currency, languages, parent-territory links and one of the eight simulation macro-regions.
+- 5,000+ first-level administrative names sourced from an attributed open dataset. Countries without first-level divisions in that source are explicitly marked as country-level-only/pending rather than silently inventing subdivisions.
+- Stable IDs connect administrative divisions, seeded city hubs and campaign locations. The seeded travel hub list includes mapped coordinates and airport codes for flight routes, plus domestic rail/road estimates where supported.
+- The Travel page supports player location, passport nationality, simplified in-game entry permits, flight/rail/road route quotes, bookings, hotel tiers, trip expenses through the existing founder personal-finance ledger, transit and arrival processing, and persistent travel history.
+- Country geography now resolves into the Phase 1 climate engine. Unknown locations no longer silently default to South Asia.
+
+**Scope note:** This is the foundation, not a fully detailed street-level atlas. Capital names exist across the country registry, but route calculations are enabled only for mapped travel hubs with coordinates and (for flights) airport codes. Visa rules, fares, and durations are fictional game mechanics, not real-world travel information. Additional city, airport, district and neighborhood coverage can be added without changing the country/division IDs.
+
+Data provenance and licensing are documented in DATA_SOURCES.md.
