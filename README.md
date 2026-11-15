@@ -7,7 +7,7 @@ A film and entertainment company simulation game.
 - Game version: 4.19.0
 - Completed development phases: 0–3
 - Next roadmap phase: Phase 4 — Company Management
-- Production: https://the-studio-simulator.vercel.app/
+- Production: https://neortox.github.io/the-studio-simulator/
 
 ## Deployment
 
