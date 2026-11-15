@@ -26,7 +26,8 @@ const domains=[
 {id:'sustainability',name:'Sustainability',deps:['kernel','company','production','economy'],owns:['energy','emissions','water','waste','supply chain'],status:'partial'},
 {id:'risk',name:'Risk and resilience',deps:['kernel','company','finance','world'],owns:['insurance','crisis','fraud','disaster recovery','legal exposure'],status:'partial'},
 {id:'legacy',name:'Generations and succession',deps:['kernel','founder','population','company','finance'],owns:['family trees','heirs','inheritance','leadership succession'],status:'partial'},
-{id:'global-media-information',name:'Global media and information ecosystem',deps:['kernel','media','population','npc-social-networks','npc-memory-reputation','economy'],owns:['local to international newsrooms','editorial credibility and verification','event significance and news selection','regional news digests','NPC news exposure and public information','corrections and subscriptions'],status:'implemented'}
+{id:'global-media-information',name:'Global media and information ecosystem',deps:['kernel','media','population','npc-social-networks','npc-memory-reputation','economy'],owns:['local to international newsrooms','editorial credibility and verification','event significance and news selection','regional news digests','NPC news exposure and public information','corrections and subscriptions'],status:'implemented'},
+{id:'npc-digital-society',name:'NPC communication and digital society',deps:['kernel','population','npc-social-networks','npc-memory-reputation','smartphone-media','global-media-information'],owns:['private and group messaging','social accounts and posts','comments and reactions','online communities','digital footprints','bounded communication delivery'],status:'implemented'}
 ];
 const schema={
 version:SCHEMA_VERSION,name:'THE STUDIO campaign schema',
