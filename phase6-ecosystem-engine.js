@@ -3,6 +3,7 @@
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>Number(n||0);
+const clampPercent=n=>Math.max(0,Math.min(100,money(n)));
 const isoDate=d=>/^\d{4}-\d{2}-\d{2}$/.test(String(d));
 const uid=p=>p+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
 const CHANNELS=['Theatrical','Streaming SVOD','Streaming AVOD','Broadcast TV','Cable TV','TVOD / PVOD','Physical media','International sales','Music distribution','Game publishing'];
@@ -16,6 +17,22 @@ function ensure(){
  Object.keys(defaults).forEach(k=>{if(e[k]===undefined)e[k]=Array.isArray(defaults[k])?[]:defaults[k];});
  ['deals','offers','releases','campaigns','merchandise','royalties','revenueEvents','platforms','audienceSegments','fandoms','reviews','history'].forEach(k=>{if(!Array.isArray(e[k]))e[k]=[];});
  e.version='6.1.0';
+ if(active.distribution&&Array.isArray(active.distribution.deals)&&!e.legacyDistributionMigrated){
+  let migrated=0;
+  active.distribution.deals.forEach(old=>{
+   if(e.deals.some(d=>d.legacyId===old.id))return;
+   const channelMap={'Theatrical':'Theatrical','Streaming':'Streaming SVOD','Broadcast television':'Broadcast TV','Home entertainment':'TVOD / PVOD','Airline & non-theatrical':'International sales','Educational':'Broadcast TV','Merchandising':'Theatrical','Multi-platform':'International sales'};
+   const rightsMap={'Theatrical':'Theatrical exhibition','Streaming':'Streaming','Broadcast television':'Broadcast','Home entertainment':'Home video','Airline & non-theatrical':'All media','Educational':'Broadcast','Merchandising':'Merchandising','Multi-platform':'All media'};
+   const oldChannel=String(old.channel||'Streaming'),start=isoDate(old.startDate)?old.startDate:active.date,end=isoDate(old.endDate)?old.endDate:null;
+   const advance=Math.max(0,money(old.advance)),settled=Math.max(0,money(old.totalSettled));
+   const status=old.status==='Active'&&(!end||end>=active.date)?'Active':'Completed';
+   e.deals.push({id:'MIG-'+String(old.id||uid('LEGACY')),legacyId:old.id,projectId:old.projectId||'',projectTitle:old.title||old.projectTitle||'Legacy catalogue title',channel:channelMap[oldChannel]||'Streaming SVOD',licensee:String(old.partner||'Legacy distribution partner'),territory:String(old.territory||'Worldwide'),rights:rightsMap[oldChannel]||'Streaming',exclusive:true,startDate:start,endDate:end,upfrontFee:advance,revenueShare:clampPercent(old.royaltyRate),distributorFee:0,minimumGuarantee:advance,status,signedDate:start,paidToDate:advance+settled,reportedRevenue:0,legacySettled: settled,notes:'Migrated from the previous distribution ledger; prior settlements preserved.'});
+   if(old.status==='Active')old.status='Migrated';
+   old.migratedToEcosystemId=e.deals[e.deals.length-1].id;migrated++;
+  });
+  e.legacyDistributionMigrated=true;
+  if(migrated){e.history.unshift({id:uid('ECOLOG'),date:active.date,action:'Legacy distribution migrated',detail:migrated+' agreement(s) moved into the unified ecosystem ledger with prior settlements preserved.'});if(!e.lastMonthlyDate)e.lastMonthlyDate=active.date.slice(0,7);}
+ }
  if(!e.platforms.length)e.platforms.push(
   {id:'PLAT-ORBIT',name:'Orbit Stream',type:'SVOD',territory:'Worldwide',subscribers:1250000,monthlyRevenuePerSubscriber:8,active:true,reliability:88},
   {id:'PLAT-NORTHSTAR',name:'Northstar Broadcast',type:'Broadcast',territory:'North America',subscribers:0,monthlyRevenuePerSubscriber:0,active:true,reliability:82},
@@ -169,6 +186,14 @@ function processCampaignDay(c,date){
 function processMonth(date){
  const e=ensure(),month=date.slice(0,7);if(e.lastMonthlyDate===month)return;
  e.lastMonthlyDate=month;
+ const sentiment=Math.max(-100,Math.min(100,money(active.market?.media?.publicSentiment))),reputation=Math.max(0,Math.min(100,money(active.company?.reputation??50)));
+ e.platforms.filter(p=>p.active).forEach(p=>{
+  const subscribers=Math.max(0,Math.floor(money(p.subscribers))),catalog=e.deals.filter(d=>d.status==='Active'&&d.startDate<=date&&(!d.endDate||d.endDate>=date)&&String(d.licensee).toLowerCase()===String(p.name).toLowerCase()).length;
+  const acquisition=Math.max(0.001,Math.min(0.08,0.003+catalog*0.004+Math.max(0,sentiment)*0.00005+(reputation-50)*0.00002));
+  const churn=Math.max(0.002,Math.min(0.15,0.008+(100-money(p.reliability))*0.00015+Math.max(0,-sentiment)*0.00005));
+  const delta=Math.round(subscribers*(acquisition-churn));
+  p.subscribers=Math.max(0,subscribers+delta);p.monthlySubscriberDelta=delta;p.acquisitionRate=acquisition;p.churnRate=churn;p.lastSubscriberUpdate=date;
+ });
  e.deals.filter(d=>d.status==='Active'&&d.startDate<=date&&(!d.endDate||d.endDate>=date)&&['Streaming SVOD','Streaming AVOD','Broadcast TV','Cable TV'].includes(d.channel)).forEach(d=>{
   const desired=d.channel.includes('AVOD')?'avod':d.channel.includes('SVOD')?'svod':d.channel.includes('Broadcast')?'broadcast':d.channel.includes('Cable')?'cable':'stream';
   const platform=e.platforms.find(p=>p.active&&(String(p.type).toLowerCase().includes(desired)||String(p.name).toLowerCase().includes(desired)))||e.platforms.find(p=>p.active);
@@ -200,7 +225,7 @@ function audit(){
  add('Theatrical release economics are valid',e.releases.every(r=>r.id&&r.projectId&&isoDate(r.openingDate)&&r.screens>0&&r.averageTicket>0&&r.exhibitorShare>=0&&r.distributorFee>=0&&r.exhibitorShare+r.distributorFee<100&&r.daysRun>=0&&r.totalGross>=0),'Release schedules, shares and receipts are non-negative.');
  add('Marketing campaign metrics are finite',e.campaigns.every(c=>c.id&&c.projectId&&c.budget>=0&&c.impressions>=0&&c.engagements>=0&&c.conversions>=0&&Number.isFinite(c.brandLift)),'Marketing measurement remains finite.');
  add('Merchandise inventory and unit economics reconcile',e.merchandise.every(m=>m.inventory>=0&&m.unitsSold>=0&&m.unitCost>=0&&m.retailPrice>m.unitCost&&m.revenue>=0&&m.costOfGoods>=0),'Stock never becomes negative and unit economics remain positive.');
- add('Platform partner profiles are valid',e.platforms.every(p=>p.id&&p.name&&p.type&&p.territory&&p.subscribers>=0&&p.monthlyRevenuePerSubscriber>=0&&p.reliability>=0&&p.reliability<=100),'Partner audiences, unit economics and reliability scores are bounded.');
+ add('Platform partner profiles are valid',e.platforms.every(p=>p.id&&p.name&&p.type&&p.territory&&p.subscribers>=0&&p.monthlyRevenuePerSubscriber>=0&&p.reliability>=0&&p.reliability<=100&&(!p.monthlySubscriberDelta||Number.isFinite(p.monthlySubscriberDelta))),'Partner audiences, unit economics, reliability and subscriber movement are bounded.');
  add('Royalty balances are finite and non-negative',e.royalties.every(r=>r.rate>=0&&r.rate<=100&&r.accrued>=0&&r.paid>=0&&Number.isFinite(r.accrued+r.paid)),'Accrued and settled royalty balances reconcile.');
  add('Revenue event amounts are finite',e.revenueEvents.every(r=>r.id&&isoDate(r.date)&&Number.isFinite(r.amount)&&r.amount>0),'Revenue events are auditable and date-stamped.');
  add('Ecosystem checkpoint matches campaign clock',!e.lastProcessedDate||e.lastProcessedDate<=active.date,'Daily ecosystem processing cannot run ahead of campaign time.');
