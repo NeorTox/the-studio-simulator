@@ -17,7 +17,7 @@ const campaign=api.addCampaign({projectId:'P6-PROJECT',name:'Orbit launch',chann
 const royalty=api.addRoyalty({ipId:'IP-QA',payee:'A. Rao',rate:5,basis:'gross'});
 const merch=api.addMerchandise({ipId:'IP-QA',name:'Orbit collector edition',category:'Collectibles',initialStock:50,unitCost:4,retailPrice:12,royaltyRate:5});
 const sale=api.sellMerchandise(merch.id,5);assert.equal(sale.inventory,45);assert.equal(sale.revenue,60);assert.equal(merch.royaltyAccrued,3);
-const first=api.stepDay('2026-11-15');assert.equal(first.date,'2026-11-15');assert(release.totalGross>0);assert(campaign.impressions>0);assert(royalty.accrued>0);
+active.date='2026-11-15';const first=api.stepDay('2026-11-15');assert.equal(first.date,'2026-11-15');assert(release.totalGross>0);assert(campaign.impressions>0);assert(royalty.accrued>0);
 const snapshot=JSON.stringify(active.ecosystem);assert(snapshot.includes('Orbit Stream'));
 assert.equal(api.stepDay('2026-11-15').skipped,true,'same-day processing is idempotent');
 const settlement=api.settleRoyalties('2026-11-16');assert(settlement.paid>0);assert.equal(royalty.accrued,0);assert(royalty.paid>0);
