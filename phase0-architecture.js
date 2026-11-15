@@ -122,7 +122,7 @@ window.StudioPhase0.lastTestResults=results;return {passed,failed,total:results.
 }
 function runStructuralAudit(){
 const report=dependencyReport(),result=[
-{name:'Domain registry',ok:domains.length===17,detail:domains.length+' domains registered.'},
+{name:'Domain registry',ok:domains.length===20,detail:domains.length+' domains registered.'},
 {name:'Dependency graph',ok:report.invalidEdges.length===0,detail:report.edges+' dependency edges; '+report.invalidEdges.length+' invalid references.'},
 {name:'Campaign save collection',ok:typeof saves!=='undefined'&&Array.isArray(saves),detail:(typeof saves!=='undefined'?saves.length:0)+' local saves visible to this browser.'},
 {name:'Schema contract',ok:schema.required.every(k=>schema.fields[k]&&schema.fields[k].required),detail:schema.required.length+' required top-level fields documented.'},
