@@ -41,7 +41,7 @@ const {chromium}=require('playwright');
  assert.equal(result.integrity.failed,0,JSON.stringify(result.integrity.tests.filter(x=>!x.ok)));
  assert.deepEqual(errors,[]);
  await page.reload({waitUntil:'networkidle'});
- const restored=await page.evaluate(()=>{const health=window.StudioPhaseIntegration.audit();return {date:active.date,state:active.smartphone,audit:window.Phase7Smartphone.audit(),lifeAudit:window.Phase7DigitalLife.lifeExpansionAudit(),health,phase7:health.modules.find(x=>x.id===7)}});
+ const restored=await page.evaluate(()=>{const health=window.StudioPhaseIntegration.audit();return {date:active.date,state:active.smartphone,audit:window.Phase7Smartphone.audit(),lifeAudit:window.Phase7Smartphone.lifeExpansionAudit(),health,phase7:health.modules.find(x=>x.id===7)}});
  assert.equal(restored.state.lastProcessedDate,restored.date);
  assert.equal(restored.audit.failed,0,JSON.stringify(restored.audit.tests.filter(x=>!x.ok)));
  assert.equal(restored.lifeAudit.failed,0,JSON.stringify(restored.lifeAudit.tests.filter(x=>!x.ok)));
