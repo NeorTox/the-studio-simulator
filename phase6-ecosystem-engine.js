@@ -168,15 +168,32 @@ function settleRoyalties(date=active.date){
 function processReleaseDay(r,date){
  if(r.status==='Scheduled'&&r.openingDate<=date)r.status='Active';
  if(r.status!=='Active'||r.openingDate>date)return;
+ if(r.pendingReceipt){
+  const pending=r.pendingReceipt;
+  if(pending.studio>0&&!recordRevenue('Theatrical receipts — '+r.projectTitle+' — '+r.territory,pending.studio,pending.date,{projectId:r.projectId,releaseId:r.id,boxOfficeGross:pending.gross})){
+   r.receiptPending=true;return;
+  }
+  r.totalGross=Math.round((money(r.totalGross)+pending.gross)*100)/100;
+  r.studioReceipts=Math.round((money(r.studioReceipts)+pending.studio)*100)/100;
+  r.dailyGross=pending.gross;r.daysRun++;r.pendingReceipt=null;r.receiptPending=false;
+  if(r.daysRun>=r.expectedRunDays)r.status='Completed';
+  return;
+ }
  if(r.daysRun>=r.expectedRunDays){r.status='Completed';return;}
- const seed=active.worldSeed||hashSeed(active.id),day=new Date(date+'T00:00:00Z').getUTCDay(),market=active.market?.economy?.cinemaAttendance||'100',week=Math.floor(r.daysRun/7);
- const weekend=day===5||day===6?1.32:0.72,decay=Math.max(.12,1-week*.115),demand=.55+Number(stableUnit(seed,r.id+'|'+date))*0.9;
+ const seed=active.worldSeed||hashSeed(active.id),day=new Date(date+'T00:00:00Z').getUTCDay(),week=Math.floor(r.daysRun/7);
+ const weekend=day===5||day===6?1.32:0.72,decay=Math.max(.12,1-week*.115),demand=.55+Number(stableUnit(seed,r.id+'|'+date))*.9;
  const gross=Math.round(r.screens*money(r.averageTicket)*weekend*decay*demand*100)/100;
- const studio=gross*(1-r.exhibitorShare/100-r.distributorFee/100);
- r.dailyGross=gross;r.totalGross=Math.round((money(r.totalGross)+gross)*100)/100;r.studioReceipts=Math.round((money(r.studioReceipts)+studio)*100)/100;r.daysRun++;
- if(studio>0)recordRevenue('Theatrical receipts — '+r.projectTitle+' — '+r.territory,studio,date,{projectId:r.projectId,releaseId:r.id,boxOfficeGross:gross});
+ const studio=Math.round(gross*(1-r.exhibitorShare/100-r.distributorFee/100)*100)/100;
+ r.pendingReceipt={date,gross,studio};r.receiptPending=false;
+ if(studio>0&&!recordRevenue('Theatrical receipts — '+r.projectTitle+' — '+r.territory,studio,date,{projectId:r.projectId,releaseId:r.id,boxOfficeGross:gross})){
+  r.receiptPending=true;return;
+ }
+ r.totalGross=Math.round((money(r.totalGross)+gross)*100)/100;
+ r.studioReceipts=Math.round((money(r.studioReceipts)+studio)*100)/100;
+ r.dailyGross=gross;r.daysRun++;r.pendingReceipt=null;
  if(r.daysRun>=r.expectedRunDays)r.status='Completed';
 }
+
 function processCampaignDay(c,date){
  if(c.status!=='Active'||date<c.startDate)return;
  const seed=active.worldSeed||hashSeed(active.id),d=Number(stableUnit(seed,c.id+'|'+date)),reach=Math.max(0,c.budget/Math.max(1,c.durationDays)*d*16);
@@ -184,34 +201,67 @@ function processCampaignDay(c,date){
  if(date>=c.endDate)c.status='Completed';
 }
 function processMonth(date){
- const e=ensure(),month=date.slice(0,7);if(e.lastMonthlyDate===month)return;
- e.lastMonthlyDate=month;
- const sentiment=Math.max(-100,Math.min(100,money(active.market?.media?.publicSentiment))),reputation=Math.max(0,Math.min(100,money(active.company?.reputation??50)));
- e.platforms.filter(p=>p.active).forEach(p=>{
-  const subscribers=Math.max(0,Math.floor(money(p.subscribers))),catalog=e.deals.filter(d=>d.status==='Active'&&d.startDate<=date&&(!d.endDate||d.endDate>=date)&&String(d.licensee).toLowerCase()===String(p.name).toLowerCase()).length;
-  const acquisition=Math.max(0.001,Math.min(0.08,0.003+catalog*0.004+Math.max(0,sentiment)*0.00005+(reputation-50)*0.00002));
-  const churn=Math.max(0.002,Math.min(0.15,0.008+(100-money(p.reliability))*0.00015+Math.max(0,-sentiment)*0.00005));
-  const delta=Math.round(subscribers*(acquisition-churn));
-  p.subscribers=Math.max(0,subscribers+delta);p.monthlySubscriberDelta=delta;p.acquisitionRate=acquisition;p.churnRate=churn;p.lastSubscriberUpdate=date;
+ const e=ensure(),month=date.slice(0,7);
+ // Flush a previously failed platform statement before creating another month.
+ let pendingFailed=false;
+ e.deals.forEach(d=>{
+  if(!d.pendingStatement)return;
+  const q=d.pendingStatement;
+  if(q.amount>0){
+   const posted=recordRevenue('Platform statement — '+d.projectTitle+' — '+q.platformName,q.amount,q.date,{projectId:d.projectId,dealId:d.id,platformId:q.platformId});
+   if(!posted){pendingFailed=true;return;}
+   d.paidToDate=money(d.paidToDate)+posted;
+  }
+  d.reportedRevenue=money(d.reportedRevenue)+money(q.gross);
+  d.lastStatementMonth=q.month;d.pendingStatement=null;
  });
- e.deals.filter(d=>d.status==='Active'&&d.startDate<=date&&(!d.endDate||d.endDate>=date)&&['Streaming SVOD','Streaming AVOD','Broadcast TV','Cable TV'].includes(d.channel)).forEach(d=>{
-  const desired=d.channel.includes('AVOD')?'avod':d.channel.includes('SVOD')?'svod':d.channel.includes('Broadcast')?'broadcast':d.channel.includes('Cable')?'cable':'stream';
-  const platform=e.platforms.find(p=>p.active&&(String(p.type).toLowerCase().includes(desired)||String(p.name).toLowerCase().includes(desired)))||e.platforms.find(p=>p.active);
-  if(!platform)return;
-  const base=money(platform.subscribers||500000),views=Math.round(base*(.12+Number(stableUnit(active.worldSeed||hashSeed(active.id),d.id+'|'+month))*.42));
-  const gross=views*(money(platform.monthlyRevenuePerSubscriber)||4)/Math.max(1,base);
-  const net=Math.max(0,gross*d.revenueShare/100);
-  d.reportedRevenue=money(d.reportedRevenue)+gross;
-  if(net>0){const posted=recordRevenue('Platform statement — '+d.projectTitle+' — '+platform.name,net,date,{projectId:d.projectId,dealId:d.id,platformId:platform.id});d.paidToDate=money(d.paidToDate)+posted;}
- });
- if(Number(date.slice(8,10))===1){const result=settleRoyalties(date);if(result.failed)log('Royalty settlement delayed',result.failed+' payment(s) could not be posted.');}
+ if(pendingFailed)return false;
+ if(e.lastMonthlyDate!==month){
+  const sentiment=Math.max(-100,Math.min(100,money(active.market?.media?.publicSentiment))),reputation=Math.max(0,Math.min(100,money(active.company?.reputation??50)));
+  e.platforms.filter(p=>p.active&&p.lastSubscriberMonth!==month).forEach(p=>{
+   const subscribers=Math.max(0,Math.floor(money(p.subscribers))),catalog=e.deals.filter(d=>d.status==='Active'&&d.startDate<=date&&(!d.endDate||d.endDate>=date)&&String(d.licensee).toLowerCase()===String(p.name).toLowerCase()).length;
+   const acquisition=Math.max(.001,Math.min(.08,.003+catalog*.004+Math.max(0,sentiment)*.00005+(reputation-50)*.00002));
+   const churn=Math.max(.002,Math.min(.15,.008+(100-money(p.reliability))*.00015+Math.max(0,-sentiment)*.00005));
+   const delta=Math.round(subscribers*(acquisition-churn));
+   p.subscribers=Math.max(0,subscribers+delta);p.monthlySubscriberDelta=delta;p.acquisitionRate=acquisition;p.churnRate=churn;p.lastSubscriberUpdate=date;p.lastSubscriberMonth=month;
+  });
+  e.deals.filter(d=>d.status==='Active'&&d.startDate<=date&&(!d.endDate||d.endDate>=date)&&['Streaming SVOD','Streaming AVOD','Broadcast TV','Cable TV'].includes(d.channel)&&d.lastStatementMonth!==month&&!d.pendingStatement).forEach(d=>{
+   const desired=d.channel.includes('AVOD')?'avod':d.channel.includes('SVOD')?'svod':d.channel.includes('Broadcast')?'broadcast':d.channel.includes('Cable')?'cable':'stream';
+   const platform=e.platforms.find(p=>p.active&&(String(p.type).toLowerCase().includes(desired)||String(p.name).toLowerCase().includes(desired)))||e.platforms.find(p=>p.active);
+   if(!platform){d.lastStatementMonth=month;return;}
+   const base=money(platform.subscribers||500000),views=Math.round(base*(.12+Number(stableUnit(active.worldSeed||hashSeed(active.id),d.id+'|'+month))*.42));
+   const gross=views*(money(platform.monthlyRevenuePerSubscriber)||4)/Math.max(1,base);
+   const net=Math.max(0,gross*d.revenueShare/100);
+   d.pendingStatement={month,date,platformId:platform.id,platformName:platform.name,gross,amount:net};
+  });
+  e.deals.forEach(d=>{
+   if(!d.pendingStatement)return;
+   const q=d.pendingStatement;
+   if(q.amount>0){
+    const posted=recordRevenue('Platform statement — '+d.projectTitle+' — '+q.platformName,q.amount,q.date,{projectId:d.projectId,dealId:d.id,platformId:q.platformId});
+    if(!posted){pendingFailed=true;return;}
+    d.paidToDate=money(d.paidToDate)+posted;
+   }
+   d.reportedRevenue=money(d.reportedRevenue)+money(q.gross);
+   d.lastStatementMonth=q.month;d.pendingStatement=null;
+  });
+  if(pendingFailed)return false;
+  e.lastMonthlyDate=month;
+ }
+ // Royalty settlement is retried on later days if the finance ledger was unable to pay.
+ if(Number(date.slice(8,10))===1||e.royaltySettlementPending){
+  const result=settleRoyalties(date);e.royaltySettlementPending=result.failed>0;
+  if(result.failed)log('Royalty settlement delayed',result.failed+' payment(s) could not be posted.');
+ }
+ return !pendingFailed;
 }
+
 function stepDay(date){
  const e=ensure();if(!e||!isoDate(date)||e.lastProcessedDate===date)return {skipped:true};
  e.deals.forEach(d=>{if(d.status==='Active'&&d.endDate&&d.endDate<date){const topUp=Math.max(0,money(d.minimumGuarantee)-money(d.paidToDate));if(topUp>0){const posted=recordRevenue('Minimum guarantee settlement — '+d.projectTitle+' — '+d.licensee,topUp,date,{projectId:d.projectId,dealId:d.id});if(!posted){d.settlementPending=true;return;}d.paidToDate=money(d.paidToDate)+posted;}d.settlementPending=false;d.status='Completed';}});
  e.releases.forEach(r=>processReleaseDay(r,date));
  e.campaigns.forEach(c=>processCampaignDay(c,date));
- if(date.slice(8,10)==='01')processMonth(date);
+ processMonth(date);
  e.lastProcessedDate=date;return {date,releases:e.releases.length,campaigns:e.campaigns.length};
 }
 function audit(){
