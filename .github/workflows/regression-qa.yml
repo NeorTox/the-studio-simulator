@@ -46,6 +46,7 @@ jobs:
       - name: Validate Phase 6 ecosystem engine and finance tests
         run: |
           node --check phase6-ecosystem-engine.js
+          node --check phase6-audience-engine.js
           node test-phase6.js
           node test-phase6-audience.js
       - name: Run Phase 6 mobile browser regression
