@@ -6,7 +6,7 @@ function npc(id,age,status,familyId,cash,income,rent,region='south-asia'){
 }
 const people=[npc('A',35,'Employed','F1',2500,3000,900),npc('B',33,'Externally Employed','F1',1800,2000,900),npc('C',10,'Student','F1',0,0,900),npc('D',25,'Independent',null,600,1000,400,'north-america'),npc('E',42,'Unemployed',null,0,100,0,'south-asia')];
 people[4].finances.creditScore=650;
-const campaign={id:'household-qa',worldSeed:12345,date:'2026-02-01',company:{currency:'USD'},employees:[{npcId:'A',salary:3000}],world:{population:{npcs:people}},market:{globalEconomy:{regions:[
+const campaign={id:'household-qa',worldSeed:12345,date:'2026-02-01',company:{currency:'USD'},employees:[{npcId:'A',salary:1000}],world:{population:{npcs:people}},market:{globalEconomy:{regions:[
  {id:'south-asia',name:'South Asia',weight:.5,inflationPct:6,unemploymentPct:6.2,consumerConfidence:105},
  {id:'north-america',name:'North America',weight:.5,inflationPct:2.5,unemploymentPct:4.8,consumerConfidence:101}
 ]}}};
