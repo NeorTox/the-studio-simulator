@@ -12,7 +12,7 @@ function ensure(){
  active.world.travel=active.world.travel||{version:1,passport:{nationality:'IN',number:'STUDIO-PASSPORT-0001',issuedDate:active.date,expiryDate:'2036-12-31'},player:{cityId:'CITY-IN-001',countryId:'IN'},visas:[],bookings:[],stays:[],history:[],nextBooking:1,lastProcessedDate:null,preferences:{hotelTier:'standard'}};
  const t=active.world.travel;t.passport=t.passport||{nationality:'IN',number:'STUDIO-PASSPORT-0001',issuedDate:active.date,expiryDate:'2036-12-31'};
  t.player=t.player||{cityId:'CITY-IN-001',countryId:'IN'};t.visas=Array.isArray(t.visas)?t.visas:[];t.bookings=Array.isArray(t.bookings)?t.bookings:[];t.stays=Array.isArray(t.stays)?t.stays:[];t.history=Array.isArray(t.history)?t.history:[];
- if(!G.getCity(t.player.cityId)){const focus=active.world.geography||{};const c=G.cities.find(x=>x.countryId===(focus.focusCountry==='India'?'IN':focus.focusCountry)&&x.name===focus.focusCity)||G.getCity('CITY-IN-001');t.player.cityId=c.id;t.player.countryId=c.countryId;}
+ const focus=active.world.geography||{},focusCountry=G.getCountry(focus.focusCountry),focusCity=G.cities.find(x=>x.countryId===(focusCountry?.id||focus.focusCountry)&&x.name===focus.focusCity);if(!G.getCity(t.player.cityId)||(!t.bookings.length&&!t.history.length&&t.player.cityId==='CITY-IN-001'&&focusCity&&focusCity.id!==t.player.cityId)){const c=focusCity||G.getCity('CITY-IN-001');t.player.cityId=c.id;t.player.countryId=c.countryId;}
  return t;
 }
 function haversine(a,b){const rad=Math.PI/180,dLat=(b.latitude-a.latitude)*rad,dLon=(b.longitude-a.longitude)*rad,x=Math.sin(dLat/2)**2+Math.cos(a.latitude*rad)*Math.cos(b.latitude*rad)*Math.sin(dLon/2)**2;return 6371*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
