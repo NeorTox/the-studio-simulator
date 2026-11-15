@@ -17,6 +17,7 @@ const {chromium}=require('playwright'),assert=require('assert');
  await p.locator('[data-page="ecosystem"]').click();
  assert.equal(await p.locator('#page-ecosystem').count(),1);
  assert(await p.getByRole('heading',{name:/Distribution & ecosystem/}).count());
+ assert(await p.getByText('Audience behaviour & fandoms').count(),'Audience and fandom dashboard should render on the Phase 6 page.');
  const state=await p.evaluate(()=>{
   const api=Phase6Ecosystem;
   const fandom=api.addFandom({projectId:'P6-BROWSER',name:'Orbit Fan Collective',segment:'Genre fans',members:12000,engagement:74});
@@ -34,7 +35,7 @@ const {chromium}=require('playwright'),assert=require('assert');
  assert.deepEqual(state.counts,{platforms:4,offers:1,deals:2,releases:1,campaigns:1,merchandise:1,fandoms:1,reviews:1});
  assert.equal(state.sale.inventory,96);
  await p.evaluate(()=>{advance(1);Phase6Ecosystem.render();});
- const result=await p.evaluate(()=>({date:active.date,ecosystemDate:active.ecosystem.lastProcessedDate,boxOffice:active.ecosystem.releases[0].totalGross,impressions:active.ecosystem.campaigns[0].impressions,audit:Phase6Ecosystem.audit(),cash:active.company.cash}));
+ const result=await p.evaluate(()=>({date:active.date,ecosystemDate:active.ecosystem.lastProcessedDate,audienceDate:active.ecosystem.audienceLastProcessedDate,boxOffice:active.ecosystem.releases[0].totalGross,impressions:active.ecosystem.campaigns[0].impressions,audit:Phase6Ecosystem.audit(),cash:active.company.cash}));
  assert.equal(result.ecosystemDate,result.date);
  assert(result.boxOffice>0);assert(result.impressions>0);assert.equal(result.audit.failed,0,JSON.stringify(result.audit.tests.filter(x=>!x.ok)));
  await p.reload({waitUntil:'networkidle'});
