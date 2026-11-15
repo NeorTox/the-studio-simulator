@@ -21,26 +21,47 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Validate JavaScript engines
+      - name: Validate every local application engine
         run: |
-          set -e
-          for file in engine-primitives.js phase0-architecture.js phase0-registry.js phase1-world-engine.js phase2-population-engine.js phase3-founder-engine.js phase4-company-engine.js phase5-production-engine.js; do
-            test -s "$file"
-            node --check "$file"
-          done
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re, subprocess
+          html = pathlib.Path("index.html").read_text()
+          refs = re.findall(r'<script[^>]+src=["\'](\./[^"\']+\.js)["\']', html)
+          if not refs:
+              raise SystemExit("No local application engines were found in index.html")
+          missing = [ref for ref in refs if not pathlib.Path(ref[2:]).is_file()]
+          if missing:
+              raise SystemExit("Missing referenced application assets: " + ", ".join(missing))
+          for ref in refs:
+              subprocess.run(["node", "--check", ref[2:]], check=True)
+          print(f"Validated {len(refs)} local application engines.")
+          PY
+          node --check phase13-release-quality-qa.js
 
-      - name: Build static site
+      - name: Build complete static application
         run: |
-          set -e
+          set -euo pipefail
           mkdir -p dist
-          cp index.html engine-primitives.js phase0-architecture.js phase0-registry.js phase1-world-engine.js phase2-population-engine.js phase3-founder-engine.js phase4-company-engine.js phase5-production-engine.js manifest.webmanifest icon.svg sw.js dist/
-          test -s dist/index.html
-          test -s dist/manifest.webmanifest
-          test -s dist/icon.svg
-          test -s dist/sw.js
-          for file in engine-primitives.js phase0-architecture.js phase0-registry.js phase1-world-engine.js phase2-population-engine.js phase3-founder-engine.js phase4-company-engine.js phase5-production-engine.js; do
-            test -s "dist/$file"
-          done
+          cp index.html manifest.webmanifest icon.svg sw.js dist/
+          python3 - <<'PY'
+          import pathlib, re, shutil
+          html = pathlib.Path("index.html").read_text()
+          refs = re.findall(r'<script[^>]+src=["\'](\./[^"\']+\.js)["\']', html)
+          for ref in refs:
+              source = pathlib.Path(ref[2:])
+              if not source.is_file():
+                  raise SystemExit(f"Missing local engine: {source}")
+              shutil.copy2(source, pathlib.Path("dist") / source.name)
+          required = ["index.html", "manifest.webmanifest", "icon.svg", "sw.js"]
+          missing = [name for name in required if not (pathlib.Path("dist") / name).is_file()]
+          if missing:
+              raise SystemExit("Incomplete release artifact: " + ", ".join(missing))
+          for ref in refs:
+              if not (pathlib.Path("dist") / pathlib.Path(ref).name).is_file():
+                  raise SystemExit("Referenced engine missing from artifact: " + ref)
+          print(f"Built {len(refs)} engine assets plus the PWA shell.")
+          PY
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

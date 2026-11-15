@@ -1,0 +1,38 @@
+const {chromium}=require('playwright'),assert=require('assert');
+(async()=>{
+ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ const page=await browser.newPage({viewport:{width:1440,height:900}});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+ await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
+ const assets=await page.evaluate(async()=>{
+  const refs=[...document.scripts].map(s=>s.getAttribute('src')).filter(x=>x&&x.startsWith('./')&&x.endsWith('.js'));
+  const results=await Promise.all(refs.map(async src=>({src,ok:(await fetch(src,{cache:'no-store'})).ok})));
+  const manifest=await (await fetch('./manifest.webmanifest')).json();
+  const sw=await (await fetch('./sw.js')).text();
+  return {refs,results,manifest,sw,apis:{phase12:!!window.Phase12Generations?.audit,phase13:!!window.StudioReleaseQuality?.audit,integration:!!window.StudioPhaseIntegration}};
+ });
+ assert(assets.results.every(x=>x.ok),'Every local engine script must be reachable: '+JSON.stringify(assets.results.filter(x=>!x.ok)));
+ assert.equal(assets.manifest.orientation,'landscape');
+ assert(assets.sw.includes('phase12-generations-engine.js'));
+ assert(assets.sw.includes('phase13-release-quality-engine.js'));
+ assert(assets.apis.phase12&&assets.apis.phase13&&assets.apis.integration,JSON.stringify(assets.apis));
+ await page.getByRole('button',{name:/New campaign/}).click();
+ await page.getByRole('button',{name:/Create campaign/}).click();
+ for(const [id,value] of [['nfounder','Release QA Founder'],['ncompany','Release QA Studios'],['ncountry','India'],['ncity','Kochi']])await page.locator('#'+id).fill(value);
+ await page.getByRole('button',{name:/Create and save campaign/}).click();
+ const first=await page.evaluate(async()=>({id:active.id,date:active.date,report:await StudioReleaseQuality.audit(),integration:StudioPhaseIntegration.audit()}));
+ assert.equal(first.report.failed,0,JSON.stringify(first.report.tests.filter(x=>!x.ok)));
+ assert.equal(first.integration.modules.filter(x=>x.status==='connected').length,14,JSON.stringify(first.integration.modules));
+ assert.equal(first.integration.failed,0,JSON.stringify(first.integration.tests.filter(x=>!x.ok)));
+ await page.getByRole('button',{name:/Release QA/}).click();
+ await page.getByRole('button',{name:/Run release audit/}).click();
+ await page.waitForTimeout(150);
+ const roundTrip=await page.evaluate(()=>({id:active.id,releaseVersion:active.releaseQuality?.version,stored:active.releaseQuality?.lastAudit?.failed}));
+ assert.equal(roundTrip.id,first.id);assert.equal(roundTrip.releaseVersion,'13.0.0');assert.equal(roundTrip.stored,0);
+ await page.reload({waitUntil:'networkidle'});
+ const restored=await page.evaluate(()=>({id:active.id,date:active.date,releaseVersion:active.releaseQuality?.version}));
+ assert.deepEqual(restored,{id:first.id,date:first.date,releaseVersion:'13.0.0'});
+ assert.deepEqual(errors,[]);
+ console.log('PHASE 13 RELEASE QA',JSON.stringify({assets:assets.results.length,checks:first.report.passed,connected:first.integration.modules.filter(x=>x.status==='connected').length,releaseState:restored,errors}));
+ await browser.close();
+})();
