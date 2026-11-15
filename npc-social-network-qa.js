@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const source=fs.readFileSync('npc-social-network-engine.js','utf8'),tasks=new Map(),campaign={id:'social-qa',date:'2026-03-01',founder:{name:'Player Founder',personality:{empathy:60,loyalty:65,cautious:30}},world:{population:{npcs:[]}}};
-for(let i=0;i<2500;i++)campaign.world.population.npcs.push({id:'NPC-'+i,alive:true,status:'Independent',regionId:'REGION-'+(i%4),personality:{empathy:55},needs:{social:55}});
+for(let i=0;i<25000;i++)campaign.world.population.npcs.push({id:'NPC-'+i,alive:true,status:'Independent',regionId:'REGION-'+(i%4),personality:{empathy:55},needs:{social:55}});
 const controller={registerTask(spec){assert.ok(!tasks.has(spec.id));tasks.set(spec.id,spec);return{registered:true}}};
 const context={active:campaign,window:{StudioAutonomy:controller,StudioPhase0:{registerModule(){}}},document:{readyState:'complete',addEventListener(){}}};vm.createContext(context);vm.runInContext(source,context);
 const api=context.window.StudioSocialNetwork;assert.ok(api);assert.equal(api.relationTypes.length,10);assert.equal(tasks.size,1);
@@ -17,7 +17,7 @@ for(let i=0;i<4;i++)api.voteCollectiveAction('GROUP-01','ACTION-01','NPC-'+i,i<3
 const outcome=api.resolveCollectiveAction('GROUP-01','ACTION-01','2026-03-02');assert.equal(outcome.resolved,true);assert.equal(outcome.action.status,'approved');
 campaign.world.population.npcs[4].family={familyId:'FAM-1',partnerId:'NPC-5',parentIds:[],childIds:[],siblings:[]};campaign.world.population.npcs[5].family={familyId:'FAM-1',partnerId:'NPC-4',parentIds:[],childIds:[],siblings:[]};
 const autoAction=api.proposeCollectiveAction('GROUP-01',{id:'ACTION-AUTO',kind:'petition',description:'Ask for safer public facilities'});assert.equal(autoAction.created,true);
-const task=tasks.get('npc.social-networks'),ctx={date:'2026-03-03',state:{},random:key=>.5},tick=task.run(ctx);assert.equal(autoAction.action.status,'approved');assert.ok(api.metrics().autonomousVotes>=4);assert.ok(api.networkFor('NPC-4').relationships.some(r=>r.otherNpcId==='NPC-5'&&r.type==='romantic'));assert.equal(tick.processed,1200);assert.ok(tick.newRelationships>=0);assert.ok(api.metrics().edges<=100000);const groupTick=task.run({date:'2026-03-04',state:ctx.state,random:key=>.001});assert.ok(groupTick.autonomousGroupJoins>0);assert.ok(api.metrics().groups>=2);
+const task=tasks.get('npc.social-networks'),ctx={date:'2026-03-03',state:{},random:key=>.5},tick=task.run(ctx);assert.equal(autoAction.action.status,'approved');assert.ok(api.metrics().autonomousVotes>=4);assert.ok(api.networkFor('NPC-4').relationships.some(r=>r.otherNpcId==='NPC-5'&&r.type==='romantic'));assert.equal(tick.processed,1200);assert.ok(tick.newRelationships>=0);assert.ok(api.metrics().edges<=100000);const groupTick=task.run({date:'2026-03-04',state:ctx.state,random:key=>.001});assert.ok(groupTick.autonomousGroupJoins>0);assert.equal(groupTick.processed,1200);assert.equal(ctx.state.cursor,2400);assert.ok(api.metrics().groups>=2);
 const report=api.audit();assert.equal(report.failed,0,JSON.stringify(report.tests.filter(t=>!t.ok)));
 assert.ok(JSON.stringify(campaign).includes('Regional Film Workers Association'));
 console.log('NPC SOCIAL NETWORK QA PASSED: relationship graph, interaction dynamics, rumor propagation, group formation, collective voting, autonomous daily processing, bounded state and save serialization.');
