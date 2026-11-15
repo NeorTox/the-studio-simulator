@@ -98,6 +98,7 @@ function audit(){
   const ledger=Array.isArray(active.ledger)?active.ledger:[];
   add('Ledger entries have finite amounts',ledger.every(x=>Number.isFinite(Number(x.amount??x.value??0))),'All recorded ledger amounts are finite numbers.');
   const household=window.StudioHouseholdEconomics?.audit?.();add('Household & consumer economics integrity',!!household&&household.failed===0,household?(household.passed+' passed / '+household.failed+' failed'):'Household economics audit API unavailable.');
+  const householdDate=active.world?.householdEconomics?.lastProcessedDate;add('Household monthly checkpoint synchronized',active.date.slice(8,10)!=='01'||!active.population?.phase2||active.population.phase2.lastProcessedDate!==active.date||householdDate===active.date,'Household month '+String(householdDate||'not yet processed')+' · campaign '+active.date);
   add('Phase 2 date does not lead world date',!active.population?.phase2?.lastProcessedDate||!active.world?.time?.lastProcessedDate||active.population.phase2.lastProcessedDate<=active.world.time.lastProcessedDate,'Population processing must not run ahead of world time.');
  }
  const passed=results.filter(x=>x.ok).length,failed=results.length-passed;
