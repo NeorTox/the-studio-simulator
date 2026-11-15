@@ -64,7 +64,7 @@ const paidBeforeRetry=royalty.paid;active.company.cash=cashBeforeRoyaltyRetry;ac
 assert.equal(active.ecosystem.royaltySettlementPending,false,'Royalty settlement retry should clear pending state');
 assert(royalty.paid>paidBeforeRetry,'Outstanding royalties should be paid after finance recovers');
 
-const subscribersBefore=platform.subscribers;active.date='2026-12-01';api.stepDay('2026-12-01');assert.notEqual(platform.subscribers,subscribersBefore,'Platform subscriber base should respond to monthly churn/acquisition dynamics');assert.equal(platform.lastSubscriberUpdate,'2026-12-01');
+platform.active=true;const subscribersBefore=platform.subscribers;active.date='2027-02-01';api.stepDay('2027-02-01');assert.notEqual(platform.subscribers,subscribersBefore,'Platform subscriber base should respond to a new monthly churn/acquisition cycle');assert.equal(platform.lastSubscriberUpdate,'2027-02-01');
 const audit=api.audit();assert.equal(audit.failed,0,JSON.stringify(audit.tests.filter(x=>!x.ok)));
 assert(posts.some(x=>x.category==='Entertainment ecosystem revenue'));assert(posts.some(x=>x.category==='Talent & IP royalties'));
 console.log('PASS Phase 6 rights, negotiations, box office retry, marketing, merchandise rollback, platform statement retry, royalty retry, idempotency, save serialization and audit');
