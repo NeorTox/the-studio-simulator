@@ -1406,7 +1406,7 @@ advance=function(n){
  const before=active.date,dayBefore=Number(active.day||0);
  const result=baseAdvance(n);
  let cursor=before,guard=0;
- while(cursor<active.date&&guard++<4000){cursor=addDays(cursor,1);if(window.StudioPhaseIntegration)window.StudioPhaseIntegration.beginDay(cursor);if(window.StudioPhase0?.phase1?.processWorldDay)window.StudioPhase0.phase1.processWorldDay(cursor);window.simulateLifeDay(cursor);window.Phase3Founder?.stepDay(cursor);window.Phase4Company?.stepDay(cursor);if(window.StudioPhaseIntegration)window.StudioPhaseIntegration.endDay(cursor);active.worldClock=active.worldClock||{};active.worldClock.lastWorldDate=cursor;}
+ while(cursor<active.date&&guard++<4000){cursor=addDays(cursor,1);if(window.StudioPhaseIntegration)window.StudioPhaseIntegration.beginDay(cursor);if(window.StudioPhase0?.phase1?.processWorldDay)window.StudioPhase0.phase1.processWorldDay(cursor);window.simulateLifeDay(cursor);window.Phase3Founder?.stepDay(cursor);if(!window.Phase4Company?.stepDay)throw Error('Phase 4 daily processor is unavailable on '+cursor);const phase4Day=window.Phase4Company.stepDay(cursor);const phase4State=window.Phase4Company.ensure();if(!phase4State||phase4State.lastProcessedDate!==cursor)throw Error('Phase 4 daily processor did not commit '+cursor+' (result: '+JSON.stringify(phase4Day)+', state: '+String(phase4State?.lastProcessedDate)+')');if(window.StudioPhaseIntegration)window.StudioPhaseIntegration.endDay(cursor);active.worldClock=active.worldClock||{};active.worldClock.lastWorldDate=cursor;}
  if(active.date!==before){active.worldClock=active.worldClock||{};active.worldClock.lastSimDate=active.date;persist();}
  return result;
 };
