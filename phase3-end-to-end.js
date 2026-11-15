@@ -2,7 +2,7 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
 (async()=>{
  const b=await chromium.launch({headless:true,args:['--no-sandbox']});
  const p=await b.newPage({viewport:{width:1440,height:900},acceptDownloads:true});const errors=[];
- p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{const message=m.text();if(m.type()==='error')errors.push(message);if(message.includes('[STUDIO_BATCH_PROFILE]')||message.includes('[STUDIO_BATCH_PROGRESS]')||message.includes('[STUDIO_CORE_STAGE]')||message.includes('[STUDIO_WORLD_STAGE]'))console.log(message)});
+ const batchProgress=[];p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{const message=m.text();if(m.type()==='error')errors.push(message);if(message.includes('[STUDIO_BATCH_PROGRESS]')){const match=message.match(/\[STUDIO_BATCH_PROGRESS\]\s+(\{.*\})/);if(match){try{batchProgress.push(JSON.parse(match[1]))}catch(e){errors.push('Invalid batch progress telemetry: '+e.message)}}}if(message.includes('[STUDIO_BATCH_PROFILE]')||message.includes('[STUDIO_BATCH_PROGRESS]')||message.includes('[STUDIO_CORE_STAGE]')||message.includes('[STUDIO_WORLD_STAGE]'))console.log(message)});
  await p.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
  await p.getByRole('button',{name:/New campaign/}).click();await p.getByRole('button',{name:/Create campaign/}).click();
  for(const [id,v] of [['nfounder','End-to-End Founder'],['ncompany','E2E Pictures'],['ncountry','India'],['ncity','Kochi']])await p.locator('#'+id).fill(v);
@@ -33,6 +33,31 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
  const simulated=await p.evaluate(()=>({date:active.date,clockFrozen:active.clockFrozen,batchActive:!!window.__advanceBatchActive,toast:document.querySelector('#toast')?.textContent||''}));
  console.log('YEAR ADVANCE COMPLETION',JSON.stringify(simulated));
  assert.equal(simulated.date,'2027-11-14','Year advance stopped early; inspect clock, cash and toast diagnostics');
+ const dailyAudit=await p.evaluate(startDate=>{
+  const add=(date,n)=>new Date(Date.parse(date+'T00:00:00Z')+n*86400000).toISOString().slice(0,10);
+  const expected=Array.from({length:365},(_,i)=>add(startDate,i+1)),days=active.integration?.days||{};
+  const required=['world-before-life','population-founder-company','phase6-ecosystem','phase6-audience','phase7-smartphone','phase8-financial-empire','phase9-global-economy','phase10-competitors','phase11-technology-sustainability'];
+  const missing=expected.filter(date=>{const d=days[date];return !d||d.status!=='completed'||required.some(step=>!d.steps?.some(x=>x.name===step))});
+  const modules={
+   world:active.world?.time?.lastProcessedDate,
+   phase6:active.ecosystem?.lastProcessedDate,
+   audience:active.ecosystem?.audienceLastProcessedDate,
+   phase7:active.smartphone?.lastProcessedDate,
+   phase8:active.financialEmpire?.lastProcessedDate||active.financial?.lastProcessedDate||window.Phase8FinancialEmpire?.ensure?.()?.lastProcessedDate,
+   phase9:window.Phase9GlobalEconomy?.ensure?.()?.lastProcessedDate,
+   phase10:window.Phase10Competitors?.ensure?.()?.lastProcessedDate,
+   phase11:active.technology?.lastProcessedDate
+  };
+  return {expectedDays:expected.length,recordedDays:expected.filter(date=>days[date]?.status==='completed').length,missing:missing.slice(0,12),first:expected[0],last:expected.at(-1),modules};
+ },initial.date);
+ console.log('ONE-YEAR DAILY PIPELINE AUDIT',JSON.stringify(dailyAudit));
+ assert.equal(dailyAudit.expectedDays,365);
+ assert.equal(dailyAudit.recordedDays,365,'Every calendar day must complete the integration pipeline');
+ assert.deepEqual(dailyAudit.missing,[],'Every simulated day must include all required phase checkpoints');
+ for(const [module,date] of Object.entries(dailyAudit.modules))assert.equal(date,simulated.date,module+' did not commit the final simulated date');
+ assert.equal(batchProgress.length,13,'365 days at 30 days per chunk must execute 13 batches');
+ assert.equal(batchProgress.reduce((sum,x)=>sum+x.chunkDays,0),365,'Batch telemetry must account for every simulated day');
+ assert(batchProgress.every(x=>x.chunkDays>=1&&x.chunkDays<=30),'No batch may exceed 30 days or report zero progress');
  const after=await p.evaluate(()=>({date:active.date,cash:Number(active.founder.personalCash),entries:active.founder.personalFinance.ledger.filter(x=>x.source==='recurring').map(x=>({description:x.description,amount:x.amount,date:x.date})),lastDay:active.founder.phase3.lastDay}));
  console.log('LONG SIM',JSON.stringify({initial,before,after}));
  assert.equal(after.date,'2027-11-14');assert.equal(after.entries.filter(x=>x.description==='Monthly rent').length,12);assert.equal(after.entries.filter(x=>x.description==='Quarterly tax').length,4);assert.equal(after.entries.filter(x=>x.description==='Annual insurance').length,1);
