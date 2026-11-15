@@ -23,9 +23,9 @@ active.date='2027-01-01';api.stepDay('2027-01-01');assert.equal(active.generatio
 const coupleFamily={id:'F2',surname:'Birthtest',memberIds:['BIRTH-A-1099','BIRTH-B-1099'],formed:'2000-01-01'};pop.phase2.families.push(coupleFamily);pop.npcs.push({id:'BIRTH-A-1099',name:'Parent A',age:27,birthDate:'2000-01-01',alive:true,status:'Independent',family:{familyId:'F2',parentIds:[],childIds:[],partnerId:'BIRTH-B-1099'},finances:{cash:0,debt:0},skills:{leadership:50,communication:50,technical:50},career:{performance:50}},{id:'BIRTH-B-1099',name:'Parent B',age:27,birthDate:'2000-01-01',alive:true,status:'Independent',family:{familyId:'F2',parentIds:[],childIds:[],partnerId:'BIRTH-A-1099'},finances:{cash:0,debt:0},skills:{leadership:50,communication:50,technical:50},career:{performance:50}});active.date='2027-02-01';api.stepDay('2027-02-01');assert(s.births.some(x=>x.autonomous&&x.parentIds.includes('BIRTH-A-1099')));assert.equal(pop.npcs.find(n=>n.name==='Baby Morgan').generationIndex,2);
 const plan=api.planSuccessor('Chief Operating Officer','N2');assert.equal(plan.npcId,'N2');
 const appointed=api.appointSuccessor('Chief Operating Officer');assert.equal(appointed.ok,true);assert.equal(management.executives[0].npcId,'N2');
-active.date='2027-01-02';assert.equal(window.Phase6Ecosystem.stepDay('2027-01-02').date,'2027-01-02');assert.equal(active.generations.lastProcessedDate,'2027-01-02');
-active.integration.days['2027-01-02']={date:'2027-01-02',status:'started',steps:[]};
-integration.endDay('2027-01-02');assert(active.integration.days['2027-01-02'].steps.some(x=>x.name==='phase12-generations'));
+active.date='2027-02-02';assert.equal(window.Phase6Ecosystem.stepDay('2027-02-02').date,'2027-02-02');assert.equal(active.generations.lastProcessedDate,'2027-02-02');
+active.integration.days['2027-02-02']={date:'2027-02-02',status:'started',steps:[]};
+integration.endDay('2027-02-02');assert(active.integration.days['2027-02-02'].steps.some(x=>x.name==='phase12-generations'));
 const audit=api.audit();assert.equal(audit.failed,0,JSON.stringify(audit.tests.filter(x=>!x.ok)));
 const global=integration.audit();assert.equal(global.modules.find(x=>x.id===12).status,'connected');assert.equal(global.failed,0);
 assert.doesNotThrow(()=>JSON.parse(JSON.stringify(active)));
