@@ -15,7 +15,7 @@ const outcome=api.recordOutcome('NPC-0',{date:'2026-04-03',domain:'leadership',s
 for(let i=0;i<110;i++)api.recordMemory('NPC-2',{id:'LIMIT-'+i,date:'2026-04-01',content:'Memory '+i,importance:i/110});
 assert.equal(api.profile('NPC-2').memoryCount,100);
 api.recordMemory('NPC-3',{id:'DECAY-TEST',date:'2026-04-01',content:'An ordinary minor detail.',importance:.1});const task=tasks.get('npc.memory-reputation'),ctx={date:'2026-04-04',state:{},random:key=>.5},first=task.run(ctx);assert.equal(first.processed,1200);assert.equal(first.nextCursor,1200);assert.equal(campaign.world.population.npcs[3].memory.memories.find(x=>x.id==='DECAY-TEST').strength,.091);
-const second=task.run({date:'2026-04-05',state:ctx.state,random:key=>.5});assert.equal(second.processed,1200);assert.equal(second.nextCursor,2400);assert.equal(campaign.world.population.npcs[3].memory.memories.find(x=>x.id==='DECAY-TEST').strength,.088);
+const decayPass=task.run({date:'2026-04-05',state:{cursor:3},random:key=>.5});assert.equal(decayPass.processed,1200);assert.equal(campaign.world.population.npcs[3].memory.memories.find(x=>x.id==='DECAY-TEST').strength,.088);const second=task.run({date:'2026-04-05',state:ctx.state,random:key=>.5});assert.equal(second.processed,1200);assert.equal(second.nextCursor,2400);
 const report=api.audit();assert.equal(report.failed,0,JSON.stringify(report.tests.filter(x=>!x.ok)));
 assert.ok(JSON.stringify(campaign).includes('Become a respected production designer'));
 console.log('NPC MEMORY & REPUTATION QA PASSED: episodic memories, recall, forgetting, reputation bounds and drift, ambitions, outcome learning, save serialization and rotating 25,000-NPC batches.');
