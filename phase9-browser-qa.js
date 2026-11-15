@@ -16,6 +16,6 @@ const assert=require('assert');const {chromium}=require('playwright');
  await page.reload({waitUntil:'networkidle'});const reload=await page.evaluate(()=>({date:active.date,lastDate:window.Phase9GlobalEconomy.ensure().lastProcessedDate,audit:window.Phase9GlobalEconomy.audit(),integration:window.StudioPhaseIntegration.audit()}));
  assert.equal(reload.lastDate,reload.date);assert.equal(reload.audit.failed,0);assert.equal(reload.integration.failed,0);assert.deepEqual(errors,[]);
  const manifest=await page.evaluate(async()=>await(await fetch('./manifest.webmanifest')).json());assert.equal(manifest.orientation,'landscape');
- await page.getByRole('button',{name:/Economy/}).click();await page.locator('#page-economy').waitFor();await page.getByText('Regional economies').waitFor();
+ await page.getByRole('button',{name:/Economy/}).click();await page.locator('#page-economy').waitFor();await page.getByText('Regional economies',{exact:true}).waitFor();
  await browser.close();console.log('PASS Phase 9 global economy: 8 regions, 10 commodities, 15 trade corridors, regional policy, trade agreement, idempotency, 45-day integration, save/reload, landscape PWA and audits',JSON.stringify({metrics:result.metrics,audit:result.audit.passed,integration:result.integration.passed,phase9Days:result.phase9Days}));
 })();
