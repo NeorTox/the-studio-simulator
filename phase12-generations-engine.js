@@ -160,7 +160,7 @@ function appointSuccessor(role){
  const existing=m.executives.find(x=>String(x.role||'').toLowerCase()===plan.role.toLowerCase());
  if(existing){existing.name=n.name;existing.npcId=n.id;existing.status='Active';existing.appointedDate=active.date;existing.successorAppointed=true}
  else m.executives.push({id:'GEN-EXEC-'+plan.id,name:n.name,role:plan.role,department:'Executive Office',salary:0,status:'Active',npcId:n.id,appointedDate:active.date,successorAppointed:true});
- n.status='Employed';n.employer=active.company?.name||'The Studio';n.career.monthlyIncome=Number(n.career.monthlyIncome||0);
+ active.employees=Array.isArray(active.employees)?active.employees:[];if(!active.employees.some(e=>e.npcId===n.id||e.id==='EMP-'+n.id))active.employees.push({id:'EMP-'+n.id,npcId:n.id,name:n.name,role:plan.role,department:'Executive Office',salary:0,hired:active.date,status:'Active'});n.status='Employed';n.employer=active.company?.name||'The Studio';n.career.monthlyIncome=Number(n.career.monthlyIncome||0);
  plan.status='Appointed';plan.appointedDate=active.date;
  m.history.unshift({id:'GEN-LOG-'+plan.id,date:active.date,action:'Leadership succession',detail:n.name+' appointed as '+plan.role+'.'});
  s.leadershipHistory.unshift({date:active.date,companyName:active.company?.name||'The Studio',to:n.name,role:plan.role,playerControlled:true});
