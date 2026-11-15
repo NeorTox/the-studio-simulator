@@ -4,6 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const source=fs.readFileSync('autonomous-simulation-engine.js','utf8');
 let persisted=0,handled=0;
+const persist=()=>{persisted++};
 const campaign={id:'AUTONOMY-QA',date:'2026-01-01',worldSeed:741852,company:{cash:1000},ledger:[],events:[]};
 const integration={
  endDay(date){campaign.pipelineValidated=date;persist();return true;},
@@ -11,7 +12,7 @@ const integration={
 };
 const context={
  active:campaign,
- persist(){persisted++},
+ persist,
  render(){},
  toast(){},
  window:{StudioPhase0:{},StudioPhaseIntegration:integration},
