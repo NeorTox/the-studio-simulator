@@ -5,7 +5,7 @@ if(!P)throw new Error('THE STUDIO Phase 0 kernel is required before the integrat
 const CONTRACTS=[
 {id:0,key:'kernel',name:'Architecture & stability',requires:['StudioPhase0','StudioPhase0.createCampaignScheduler']},
 {id:1,key:'world',name:'World, time & geography',requires:['StudioPhase0.phase1.processWorldDay','StudioPhase0.phase1.processWorldRange']},
-{id:2,key:'population',name:'Population & NPC intelligence',requires:['StudioPopulationEngine.processDay','StudioHouseholdEconomics.prepareMonth','StudioHouseholdEconomics.processIndividualMonth','StudioHouseholdEconomics.audit']},
+{id:2,key:'population',name:'Population & NPC intelligence',requires:['StudioPopulationEngine.processDay','StudioHouseholdEconomics.prepareMonth','StudioHouseholdEconomics.processIndividualMonth','StudioHouseholdEconomics.finalizeMonth','StudioHouseholdEconomics.audit']},
 {id:3,key:'founder',name:'Founder & personal life',requires:['Phase3Founder.stepDay']},
 {id:4,key:'company',name:'Company management',requires:['Phase4Company.stepDay']},
 {id:5,key:'production',name:'Entertainment production',requires:['Phase5Production.audit']},
