@@ -22,7 +22,7 @@ const assert = require('node:assert/strict');
  for(const [id,value] of [['nfounder','Weather QA Founder'],['ncompany','Weather QA Studios'],['ncountry','India'],['ncity','Mumbai']])await page.locator('#'+id).fill(value);
  await page.getByRole('button',{name:/Create and save campaign/}).click();
  const depth=await page.evaluate(()=>{
-  const date=active.date,pop=active.world.population;pop.npcs=pop.npcs||[];
+  const date=active.date,pop=window.StudioPopulationEngine.ensure();pop.npcs=pop.npcs||[];
   const a={id:'QA-REL-A',name:'QA Person A',age:28,birthDate:'1998-01-01',alive:true,status:'Independent',country:'India',region:'South Asia',city:'Mumbai',socialLinks:[],needs:{health:70,energy:65,social:60,security:65,purpose:70},family:{partnerId:null},home:{monthlyRent:500,conditionIndex:70},finances:{monthlyIncome:2500,cash:5000},career:{performance:60,satisfaction:70,monthlyIncome:2500},skills:{creative:60,technical:65,leadership:50,communication:70,commercial:55},stress:20};
   const b={...JSON.parse(JSON.stringify(a)),id:'QA-REL-B',name:'QA Person B',socialLinks:[]};
   a.socialLinks=[{targetId:b.id,type:'Friend',quality:72,trust:68,tension:5,familiarity:35,since:date,lastInteraction:date}];
