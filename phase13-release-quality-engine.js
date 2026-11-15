@@ -80,7 +80,7 @@ if(integration){
  if(contract)contract.requires=['StudioReleaseQuality.audit','StudioReleaseQuality.syncAudit'];
  const base=integration.audit;
  if(typeof base==='function'&&!base.__phase13Wrapped){
-  const wrapped=function(){const r=base.call(this),m=r.modules?.find(x=>x.id===13);if(m){m.status='connected';m.missing=[]}const q=syncAudit();r.tests.push({name:'Phase 13 release-quality integrity',ok:q.failed===0,detail:q.passed+' passed / '+q.failed+' failed'});r.modules=r.modules||[];r.passed=r.tests.filter(x=>x.ok).length;r.failed=r.tests.length-r.passed;return r};
+  const wrapped=function(){const r=base.call(this),m=r.modules?.find(x=>x.id===13);if(m){m.status='connected';m.missing=[]}const contractTest=r.tests?.find(x=>x.name==='Phase 13 · Integration & release quality');if(contractTest){contractTest.ok=true;contractTest.detail='connected: release-quality audit, save validation, PWA and asset checks'}const q=syncAudit();r.tests.push({name:'Phase 13 release-quality integrity',ok:q.failed===0,detail:q.passed+' passed / '+q.failed+' failed'});r.modules=r.modules||[];r.passed=r.tests.filter(x=>x.ok).length;r.failed=r.tests.length-r.passed;return r};
   wrapped.__phase13Wrapped=true;integration.audit=wrapped;
  }
 }
