@@ -7,7 +7,7 @@ function npc(id,age,status,familyId,cash,income,rent,region='south-asia'){
 const owner=npc('G',40,'Employed',null,5000,2000,0,'north-america');owner.home={housing:'Owner',owner:true,propertyValue:250000,mortgageBalance:120000,monthlyMortgagePayment:800,mortgageRatePct:5};
 const people=[npc('A',35,'Employed','F1',2500,3000,900),npc('B',33,'Externally Employed','F1',1800,1000,900),npc('C',10,'Student','F1',0,0,900),npc('D',25,'Independent',null,600,1000,400,'north-america'),npc('E',42,'Unemployed',null,0,100,0,'south-asia'),npc('F',56,'Unemployed',null,0,0,0,'south-asia'),owner];
 people[4].finances.creditScore=650;people[5].finances.debt=2000;people[5].finances.creditScore=300;
-const campaign={id:'household-qa',worldSeed:12345,date:'2026-02-01',company:{currency:'USD'},employees:[{npcId:'A',salary:500}],world:{population:{npcs:people}},market:{globalEconomy:{regions:[
+const campaign={id:'household-qa',worldSeed:12345,date:'2026-02-01',company:{currency:'USD'},employees:[{npcId:'A',salary:500}],world:{population:{npcs:people,virtualResidents:100000000}},market:{globalEconomy:{regions:[
  {id:'south-asia',name:'South Asia',weight:.5,inflationPct:6,unemploymentPct:6.2,consumerConfidence:105},
  {id:'north-america',name:'North America',weight:.5,inflationPct:2.5,unemploymentPct:4.8,consumerConfidence:101}
 ]}}};
@@ -15,7 +15,7 @@ const registered=[];
 const context={active:campaign,window:{StudioPhase0:{registerModule:m=>registered.push(m)}},Math,Date,Number,String,Object,Array,Map,Set,JSON};
 vm.createContext(context);vm.runInContext(source,context);
 const api=context.window.StudioHouseholdEconomics;assert.ok(api);assert.equal(api.version,'1.1.0');
-const prepared=api.prepareMonth(campaign.date);assert.equal(prepared.processed,true);assert.equal(prepared.households,5);
+const prepared=api.prepareMonth(campaign.date);assert.equal(prepared.processed,true);assert.equal(prepared.households,5);assert.equal(prepared.virtualResidents,100000000);assert.ok(prepared.modeledHouseholds>40000000,'virtual population must contribute to aggregate household demand');
 assert.equal(api.prepareMonth(campaign.date).idempotent,true);
 for(const n of people)assert.equal(api.processIndividualMonth(n,campaign.date),true);
 assert.ok(people[0].finances.cash<2500,'cash reserves must pay expenses before debt is created');assert.equal(people[0].finances.debt,0,'cash-backed spending must not create artificial debt');
@@ -50,6 +50,6 @@ assert.equal(registered.length,1);
 const roundTrip=JSON.parse(JSON.stringify(campaign));assert.equal(roundTrip.world.householdEconomics.version,'1.1.0');
 const largePeople=[];for(let i=0;i<25000;i++)largePeople.push(npc('L'+i,30,'Independent',null,1000,1200,500,i%2?'north-america':'south-asia'));
 campaign.world.population.npcs=largePeople;campaign.world.householdEconomics=null;
-const large=api.prepareMonth('2027-03-01');assert.equal(large.households,25000);assert.equal(large.namedResidents,25000);
+const large=api.prepareMonth('2027-03-01');assert.equal(large.households,25000);assert.equal(large.namedResidents,25000);assert.equal(large.virtualResidents,100000000);
 assert.ok(api.metrics().households===25000);assert.equal(api.metrics().storedHouseholdSamples,500,'persisted household detail must be capped');assert.equal(Object.values(campaign.world.householdEconomics.pendingFinance).filter(entry=>entry.kind!=='housing').length,25000,'all named NPCs must have one monthly finance record');api.finalizeMonth('2027-03-01');assert.equal(Object.keys(campaign.world.householdEconomics.pendingFinance).length,0,'pending finance records must clear at month close');
 console.log('HOUSEHOLD ECONOMICS QA PASSED: household budgets, autonomous purchases, cash-first settlement, consumer credit, savings interest, mortgage amortization, housing appreciation, arrears, insolvency, bankruptcy filing, wealth inequality, regional demand, save safety and 25,000-NPC aggregation.');
