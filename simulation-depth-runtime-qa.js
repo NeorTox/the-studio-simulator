@@ -20,12 +20,13 @@ const assert=require('node:assert/strict');
    macroDate:economy?.deepMacro?.lastProcessedDate,phase9Date:economy?.lastProcessedDate,
    safetyDate:world.publicSafety?.lastProcessedDate,cyberDate:world.cybersecurity?.lastProcessedDate,
    relationshipsDate:world.relationshipDynamics?.lastProcessedDate,supplyDate:economy?.supplyChains?.lastProcessedDate,
-   liquidityDate:active.market?.equityLiquidity?.lastProcessedDate,depthAudit:{passed:depth.passed,failed:depth.failed,failedTests:depth.tests.filter(x=>!x.ok)}};
+   liquidityDate:active.market?.equityLiquidity?.lastProcessedDate,relationshipCohortCursor:world.relationshipDynamics?.cohortCursor??0,relationshipProcessedNpcs:(world.population?.npcs||[]).filter(n=>n.relationshipDynamics?.lastEvaluatedDate===target).length,depthAudit:{passed:depth.passed,failed:depth.failed,failedTests:depth.tests.filter(x=>!x.ok)}};
  });
  assert.equal(result.actual,result.target,'The real daily advance path must commit every requested day');
  assert.equal(result.weatherDate,result.target,'World and climate processing must run');
  assert(result.weatherRegions>=8,'Regional weather must update across the map');
  for(const key of ['macroDate','phase9Date','safetyDate','cyberDate','relationshipsDate','supplyDate','liquidityDate'])assert.equal(result[key],result.target,key+' must execute through the real daily pipeline');
+ assert(result.relationshipProcessedNpcs<=25000,'Relationship processing must be bounded to a 25,000-NPC daily cohort');
  assert.equal(result.depthAudit.failed,0,JSON.stringify(result.depthAudit.failedTests));
  assert.deepEqual(errors,[]);
  console.log('SIMULATION DEPTH RUNTIME QA PASSED',JSON.stringify(result));
