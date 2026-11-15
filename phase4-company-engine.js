@@ -7,7 +7,11 @@ function ensure(){
  if(!active)return null;
  active.company=active.company||{};
  const c=active.company;
- c.management=Object.assign({version:'4.1.0',approvalThreshold:25000,departments:[],executives:[],branches:[],subsidiaries:[],boardDecisions:[],contracts:[],compliance:[],history:[],lastProcessedDate:null},c.management||{});
+ const defaults={version:'4.1.0',approvalThreshold:25000,departments:[],executives:[],branches:[],subsidiaries:[],boardDecisions:[],contracts:[],compliance:[],history:[],lastProcessedDate:null};
+ if(!c.management||typeof c.management!=='object'||Array.isArray(c.management))c.management=defaults;
+ else Object.keys(defaults).forEach(k=>{if(c.management[k]===undefined)c.management[k]=Array.isArray(defaults[k])?[]:defaults[k];});
+ // Keep the management object identity stable. Nested processors call ensure()
+ // and must not invalidate references held by the daily orchestration pipeline.
  const m=c.management;
  for(const k of ['departments','executives','branches','subsidiaries','boardDecisions','contracts','compliance','history'])if(!Array.isArray(m[k]))m[k]=[];
  if(!m.departments.length){
