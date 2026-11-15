@@ -107,6 +107,8 @@ function renderAudience(){
 }
 const oldStep=api.stepDay;
 api.stepDay=function(date){const result=oldStep.call(api,date);if(!result?.skipped)processAudienceDay(date||active?.date);return result;};
+const oldLife=window.simulateLifeDay;
+if(typeof oldLife==='function'&&!oldLife.__p6AudienceWrapped){const wrapped=function(...args){const result=oldLife.apply(this,args);processAudienceDay(args[0]||active?.date);return result;};wrapped.__p6AudienceWrapped=true;window.simulateLifeDay=wrapped;}
 const oldRender=api.render;
 api.render=function(...args){const result=oldRender.apply(api,args);renderAudience();return result;};
 api.addFandom=addFandom;api.publishReview=publishReview;api.processAudienceDay=processAudienceDay;api.auditAudience=auditAudience;
