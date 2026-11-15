@@ -59,7 +59,7 @@ function addDistributionDeal(data){
 }
 function createOffer(data){
  const e=ensure(),p=project(data.projectId);if(!p)throw Error('Choose an existing production project.');
- const offer={id:uid('OFFER'),projectId:p.id,projectTitle:p.title,licensee:String(data.licensee||'').trim(),channel:data.channel||'Streaming SVOD',territory:String(data.territory||'Worldwide'),rights:data.rights||'Streaming',exclusive:data.exclusive!==false,upfrontFee:money(data.upfrontFee),revenueShare:money(data.revenueShare),distributorFee:money(data.distributorFee),minimumGuarantee:money(data.minimumGuarantee),startDate:data.startDate||active.date,endDate:data.endDate||null,status:'Negotiating',rounds:[],created:active.date};
+ const offer={id:uid('OFFER'),projectId:p.id,projectTitle:p.title,licensee:String(data.licensee||'').trim(),channel:data.channel||'Streaming SVOD',territory:String(data.territory||'Worldwide'),rights:data.rights||'Streaming',exclusive:data.exclusive!==false,upfrontFee:money(data.upfrontFee),revenueShare:money(data.revenueShare),distributorFee:money(data.distributorFee),minimumGuarantee:money(data.minimumGuarantee??data.upfrontFee),startDate:data.startDate||active.date,endDate:data.endDate||null,status:'Negotiating',rounds:[],created:active.date};
  if(!offer.licensee||offer.upfrontFee<0||offer.revenueShare<0||offer.revenueShare>100||offer.distributorFee<0||offer.distributorFee>100||offer.revenueShare+offer.distributorFee>100)throw Error('Offer terms are invalid.');
  if(!isoDate(offer.startDate)||(offer.endDate&&(!isoDate(offer.endDate)||offer.endDate<offer.startDate)))throw Error('Offer dates are invalid.');
  e.offers.unshift(offer);log('Distribution offer received',offer.licensee+' · '+offer.projectTitle);persist('Offer added to negotiations.');return offer;
@@ -68,7 +68,7 @@ function counterOffer(id,terms){
  const e=ensure(),o=e.offers.find(x=>x.id===id);if(!o||o.status!=='Negotiating')throw Error('Open negotiation not found.');
  const next={...o,...terms};next.upfrontFee=money(next.upfrontFee);next.revenueShare=money(next.revenueShare);next.distributorFee=money(next.distributorFee);
  if(next.upfrontFee<0||next.revenueShare<0||next.revenueShare>100||next.distributorFee<0||next.distributorFee>100||next.revenueShare+next.distributorFee>100)throw Error('Counter-offer financial terms are invalid.');
- o.rounds.push({date:active.date,upfrontFee:o.upfrontFee,revenueShare:o.revenueShare,distributorFee:o.distributorFee});Object.assign(o,{upfrontFee:next.upfrontFee,revenueShare:next.revenueShare,distributorFee:next.distributorFee});log('Counter-offer submitted',o.licensee+' · '+o.projectTitle);persist('Counter-offer recorded.');return o;
+ o.rounds.push({date:active.date,upfrontFee:o.upfrontFee,revenueShare:o.revenueShare,distributorFee:o.distributorFee});Object.assign(o,{upfrontFee:next.upfrontFee,minimumGuarantee:money(terms.minimumGuarantee??next.upfrontFee),revenueShare:next.revenueShare,distributorFee:next.distributorFee});log('Counter-offer submitted',o.licensee+' · '+o.projectTitle);persist('Counter-offer recorded.');return o;
 }
 function acceptOffer(id){
  const e=ensure(),o=e.offers.find(x=>x.id===id);if(!o||o.status!=='Negotiating')throw Error('Open offer not found.');
