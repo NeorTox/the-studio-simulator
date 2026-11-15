@@ -4,13 +4,14 @@ A film and entertainment company simulation game.
 
 ## Project baseline
 
-- Game version: 4.24.0
+- Game version: 4.25.0
 - Engine versions: Phase 6 Ecosystem 6.1.0; Phase 6 Audience version is reported by its runtime module
-- Completed development phases: 0–10; Phase 11 is active
+- Completed development phases: 0–11; Phase 12 is active
 - Phase 6: Entertainment ecosystem — complete; financial retries, media, awards and multi-year integration verified
 - Phase 7: Smartphone & media — complete; app catalog, social creators, personalized feeds, daily engagement, digital advertising and save persistence verified
 - Phase 10: Autonomous competitors — complete; ten rival studios, autonomous financial/production cycles, bids, acquisitions, market-share dynamics and strategy controls verified
-- Active development phase: Phase 11 — Technology & sustainability
+- Phase 11: Technology & sustainability — complete; 12-node technology tree, research labs, patents/licensing, sustainability operations and three-year integration verified
+- Active development phase: Phase 12 — Generations & world evolution
 - Production: https://neortox.github.io/the-studio-simulator/
 
 ## Phase 6 scope
@@ -103,4 +104,21 @@ Phase 10 verification:
 - Three-year cross-phase stress test: 1,095/1,095 daily pipelines include Phase 10; all phases 0–10 connected; synchronized competitor/world dates; zero pipeline errors.
 - Full integration audit: 46/46 checks passed.
 - GitHub Pages build and production deployment succeeded for the verified Phase 10 release candidate.
+
+
+
+## Phase 11 — Technology & sustainability (complete)
+
+The studio now operates a persistent research campus and technology portfolio. Twelve technologies span AI production orchestration, virtual production, cloud and real-time rendering, procedural animation, digital twins, secure distribution, immersive audio and sustainability systems. Research capacity depends on lab level and scientist headcount; funded projects progress deterministically, respect prerequisites and create patents when completed. Patents can be licensed to rival studios for upfront fees and recurring royalties.
+
+Sustainability operations model monthly energy consumption, emissions, water use, waste, renewable share, recycling, water efficiency, utility costs and an ESG score. Players can fund solar and battery infrastructure, efficient lighting/HVAC, water recovery, circular set construction and fleet electrification, and set renewable, recycling, water-efficiency and carbon-offset policies. Research breakthroughs improve environmental performance and publish technology/sustainability indicators into the global market state. Rival studios autonomously adopt technologies over time.
+
+Phase 11 verification:
+- Twelve-node technology catalogue, prerequisite unlocks, research budgets, lab upgrades, scientist recruitment and project-capacity controls.
+- Patent creation, licensing to rival studios, upfront licence revenue and recurring royalties.
+- Five sustainability investment programmes, environmental policy controls and monthly energy/emissions/water/waste/ESG accounting.
+- Dedicated Node regression: 12/12 integrity checks passed; three technologies researched, three patents filed, two sustainability programmes completed, one rival licence and royalties settled.
+- Playwright browser QA passed: research funding, sustainability investment, policy submission, 45-day simulation, save/reload and landscape PWA verification; Phase 11 audit 12/12 and global integration audit 50/50.
+- Three-year cross-phase stress test passed: 1,095/1,095 daily pipelines include Phase 11; all phases 0–11 connected; technology/world dates synchronized; Phase 11 audit 12/12; global integration audit 50/50; zero browser errors.
+- GitHub Pages build and production deployment succeeded for the signed-off Phase 11 candidate.
 

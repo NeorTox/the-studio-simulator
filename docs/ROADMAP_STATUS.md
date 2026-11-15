@@ -15,7 +15,7 @@ One complete phase is delivered and signed off before starting the next. Phases 
 | 8 | Financial empire | COMPLETE — institutional funds, private assets, portfolio valuation, treasury policy, credit metrics, browser QA and three-year integration passed |
 | 9 | Global economy | COMPLETE — 8 regional economies, 15 trade corridors, 10 commodity markets, policy controls, browser QA and 1,095-day integration passed |
 | 10 | Autonomous competitors | COMPLETE — ten rival studios, autonomous monthly operations, browser QA and 1,095-day integration passed |
-| 11 | Technology & sustainability | NOT STARTED |
+| 11 | Technology & sustainability | COMPLETE — 12-node technology tree, R&D, patents/licensing, sustainability systems, browser QA and 1,095-day integration passed |
 | 12 | Generations & world evolution | NOT STARTED |
 | 13 | Integration & release quality | NOT STARTED |
 
@@ -29,7 +29,7 @@ One complete phase is delivered and signed off before starting the next. Phases 
 - Department restructuring and closure controls
 - Persistent company-management state, audit and simulation integration
 
-Current phase: Phase 11 — Technology & sustainability.\n\n## Phase 5 completion\n- Script room with logline, synopsis and screenplay draft persistence.\n- Revision snapshots with dated notes and word counts.\n- Script review decisions and quality scoring.\n- Studio greenlight with approved budget, originality and feasibility scoring.\n- Pre-production readiness checklist covering director, producer, budget, cast, locations and schedule.\n- Stage progression gates prevent advancing without the required creative and production approvals.\n- Production continuity: script supervisor, footage backup and daily production reporting are mandatory before production wrap.\n- Safety incident reporting, severity classification and resolution records; unresolved high/critical incidents block wrap and delivery.\n- Production insurance policies with coverage dates, premiums, limits and claim validation, including exact-limit and invalid-amount tests.\n- Post-production gates for picture edit, sound, VFX, colour, mix and master/QC.\n- Final delivery approval with quality score, approver and notes before release.\n- Budget forecasting and alerts; stage allocations now use the approved greenlight budget rather than the larger initial project budget.\n- Browser regression validates a $1,000,000 greenlight against a $4,000,000 project budget, insurance boundaries, serious-incident blocks, full stage progression to Released, audit and save/reload.\n- Regression QA passed on commit `831ea18fc9972fbced0a6dbe45d0b82566aba2c6`; GitHub Pages deployment workflow build passed for the same commit.
+Current phase: Phase 12 — Generations & world evolution.\n\n## Phase 5 completion\n- Script room with logline, synopsis and screenplay draft persistence.\n- Revision snapshots with dated notes and word counts.\n- Script review decisions and quality scoring.\n- Studio greenlight with approved budget, originality and feasibility scoring.\n- Pre-production readiness checklist covering director, producer, budget, cast, locations and schedule.\n- Stage progression gates prevent advancing without the required creative and production approvals.\n- Production continuity: script supervisor, footage backup and daily production reporting are mandatory before production wrap.\n- Safety incident reporting, severity classification and resolution records; unresolved high/critical incidents block wrap and delivery.\n- Production insurance policies with coverage dates, premiums, limits and claim validation, including exact-limit and invalid-amount tests.\n- Post-production gates for picture edit, sound, VFX, colour, mix and master/QC.\n- Final delivery approval with quality score, approver and notes before release.\n- Budget forecasting and alerts; stage allocations now use the approved greenlight budget rather than the larger initial project budget.\n- Browser regression validates a $1,000,000 greenlight against a $4,000,000 project budget, insurance boundaries, serious-incident blocks, full stage progression to Released, audit and save/reload.\n- Regression QA passed on commit `831ea18fc9972fbced0a6dbe45d0b82566aba2c6`; GitHub Pages deployment workflow build passed for the same commit.
 
 ## Phase 4 completion evidence
 - Department budgets and actual expenditure post to the company cash ledger; spending is constrained by available cash, annual budget and board approval threshold.
@@ -105,4 +105,18 @@ Current phase: Phase 11 — Technology & sustainability.\n\n## Phase 5 completio
 - Dedicated Node regression and Playwright browser QA passed; Phase 10 integrity audit 10/10.
 - Three-year cross-phase stress test passed: 1,095/1,095 daily pipelines include Phase 10; 11/11 phases 0–10 connected; competitor and world dates synchronized; 46/46 global integration checks passed; zero pipeline errors.
 - GitHub Pages build and deployment succeeded for the Phase 10 candidate.
+
+
+
+## Phase 11 — Technology & sustainability (complete)
+- Twelve-node technology tree covering AI production orchestration, virtual production, cloud rendering, secure distribution, real-time rendering, procedural animation, digital twin studio operations, immersive audio, carbon-aware scheduling, renewable microgrids, water reclamation and circular materials.
+- Research campus with five levels, scientist recruitment, concurrent project capacity, funded R&D budgets, deterministic daily progress, prerequisite unlocks and completed-research patents.
+- Patent portfolio with rival-studio licensing, upfront licence fees and recurring royalty revenue posted through the company ledger.
+- Five sustainability investment programmes: solar campus and battery storage, efficient lighting/HVAC, water recovery, circular set construction and electric production fleet.
+- Monthly operating model for energy use/cost, emissions, water use, waste, renewable share, recycling, water efficiency, carbon offsets and ESG score; player policies persist in campaign state.
+- Research breakthroughs improve environmental performance; rival studios adopt technology over time; technology and sustainability indicators are exposed to the global market state.
+- Versioned campaign persistence, daily idempotency, integration end-of-day requirement, central health audit and landscape dashboard.
+- Dedicated Node regression passed with 12/12 Phase 11 integrity checks; browser QA passed with a 45-day run, save/reload and 50/50 integration checks.
+- Three-year cross-phase stress test passed: 1,095/1,095 Phase 11 daily pipeline markers; 12/12 phases 0–11 connected; synchronized technology/world dates; 12/12 Phase 11 integrity checks; 50/50 global integration checks; zero errors.
+- GitHub Pages build and production deployment succeeded for commit d2f2d6e745557bdc1331c152cbd24412b4209ef1.
 
