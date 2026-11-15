@@ -564,7 +564,7 @@ if(day===daysInMonth){if(payroll>0){post('Month-end payroll — '+next,'Payroll'
 if(day===1){addLog('New month begins. Review cash, payroll, outstanding obligations and production commitments.');simulateMarketMonth();processFXRevaluation(next);}
 }
 if(advanced>0&&!options.silent)addLog('Simulation advanced from '+old+' to '+active.date+' ('+advanced+' days).');
-persist();if(!options.quiet)toast(advanced?'Advanced '+advanced+' day(s).':'Clock did not advance.');
+if(!options.deferPersist)persist();if(!options.quiet)toast(advanced?'Advanced '+advanced+' day(s).':'Clock did not advance.');
 }
 async function advanceInChunks(total,chunkSize=30){
  if(window.__advanceBatchActive){toast('A time-advance operation is already running.');return}
@@ -573,8 +573,8 @@ async function advanceInChunks(total,chunkSize=30){
  total=Math.max(1,Math.min(3650,Math.floor(Number(total)||1)));chunkSize=Math.max(1,Math.min(5,Math.floor(Number(chunkSize)||5)));
  window.__advanceBatchActive=true;let completed=0;const clock=active.worldClock||null,wasRunning=!!clock?.running&&!active.clockFrozen;
  if(wasRunning){clock.running=false;clock.lastWallMs=Date.now();saveClock()}
- try{while(completed<total){const step=Math.min(chunkSize,total-completed),before=active.date;advance(step,{silent:true,quiet:true});const elapsed=Math.max(0,Math.round((Date.parse(active.date+'T00:00:00Z')-Date.parse(before+'T00:00:00Z'))/86400000));completed+=elapsed;if(elapsed<step)break;await new Promise(resolve=>setTimeout(resolve,0));}}
- finally{if(wasRunning&&active&&!active.clockFrozen){active.worldClock=active.worldClock||{};active.worldClock.running=true;active.worldClock.lastWallMs=Date.now();saveClock();persist()}window.__advanceBatchActive=false;toast(completed?'Advanced '+completed+' of '+total+' requested day(s).':'Clock did not advance.')}
+ try{while(completed<total){const step=Math.min(chunkSize,total-completed),before=active.date;advance(step,{silent:true,quiet:true,deferPersist:true});const elapsed=Math.max(0,Math.round((Date.parse(active.date+'T00:00:00Z')-Date.parse(before+'T00:00:00Z'))/86400000));completed+=elapsed;if(elapsed<step)break;await new Promise(resolve=>setTimeout(resolve,0));}}
+ finally{if(wasRunning&&active&&!active.clockFrozen){active.worldClock=active.worldClock||{};active.worldClock.running=true;active.worldClock.lastWallMs=Date.now();saveClock()}if(active)persist();window.__advanceBatchActive=false;toast(completed?'Advanced '+completed+' of '+total+' requested day(s).':'Clock did not advance.')}
 }
 function exportSave(){if(!active){toast('No active campaign to export.');return}download(active.id)}
 function download(id){let s=saves.find(x=>x.id===id);if(!s)return;let blob=new Blob([JSON.stringify(s,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='THE-STUDIO-'+s.id+'.json';a.click();URL.revokeObjectURL(url)}
