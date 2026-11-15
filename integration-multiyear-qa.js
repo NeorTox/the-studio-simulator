@@ -14,7 +14,7 @@ const {chromium}=require('playwright'),assert=require('assert');
   if(!p?.phase1?.processWorldDay||!window.StudioPopulationEngine?.processDay||!window.Phase3Founder?.stepDay||!window.Phase4Company?.stepDay||!window.Phase5Production?.audit||!window.Phase6Ecosystem?.stepDay||!window.Phase6Ecosystem?.audit||!window.Phase7Smartphone?.stepDay&&!window.Phase7Smartphone?.processDay||!window.Phase9GlobalEconomy?.stepDay||!window.Phase10Competitors?.stepDay||!window.Phase11Technology?.stepDay||!window.Phase12Generations?.stepDay)throw Error('Required Phase 0–12 API is missing');
   const scheduler=p.createCampaignScheduler();
   scheduler.schedule('world:story',addDays(active.date,45),{title:'Integration stress scheduled event'});
-  return {date:active.date,npcs:active.npcs?.length||0};
+  return {date:active.date,npcs:active.npcs?.length||0,clockRunning:active.worldClock?.running};
  });
  // 1,095 simulated days, advanced in 30-day chunks to exercise the real public advance path.
  for(let i=0;i<37;i++)await page.evaluate(days=>window.advance(Math.min(days,1095-(window.__stressDays||0))),30).then(()=>page.evaluate(()=>{window.__stressDays=(window.__stressDays||0)+30;})).catch(e=>{throw e;});
