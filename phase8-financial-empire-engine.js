@@ -45,8 +45,8 @@ function updatePolicy(x={}){
 }
 function metrics(){
  const a=ensure();if(!a)return null;const hs=a.holdings.filter(h=>h.status==='Active'),cost=hs.reduce((s,h)=>s+h.costBasis,0),value=hs.reduce((s,h)=>s+h.marketValue,0),income=hs.reduce((s,h)=>s+h.accruedIncome,0),cash=Number(active.company.cash)||0,total=cash+value,largest=hs.reduce((m,h)=>Math.max(m,h.marketValue),0),debt=Math.max(0,Number(active.company.debt)||0),leverage=total>0?debt/total*100:0;
- const rating=cash<0?'D':leverage>75?'CCC':leverage>55?'B':leverage>35?'BB':leverage>20?'BBB':leverage>8?'A':'AA';
- return {asOf:active.date,cash,portfolioCost:cost,portfolioValue:value,unrealizedGain:value-cost,accruedIncome:income,realizedGain:a.realizedGain,totalTreasury:total,liquidityPct:total?cash/total*100:100,largestExposurePct:total?largest/total*100:0,leveragePct:leverage,creditRating:rating,activeHoldings:hs.length,activeFunds:a.funds.filter(f=>f.status==='Active').length};
+ const rating=cash<0?'D':leverage>75?'CCC':leverage>55?'B':leverage>35?'BB':leverage>20?'BBB':leverage>8?'A':'AA',sectorValues={};hs.forEach(h=>{const k=String(h.assetClass||'Other');sectorValues[k]=(sectorValues[k]||0)+Number(h.marketValue||0)});const largestSectorPct=total?Math.max(0,...Object.values(sectorValues))/total*100:0,weightedRisk=value?hs.reduce((v,h)=>v+Number(h.marketValue||0)*Number(h.riskScore||3),0)/value:0;
+ return {asOf:active.date,cash,portfolioCost:cost,portfolioValue:value,unrealizedGain:value-cost,accruedIncome:income,realizedGain:a.realizedGain,totalTreasury:total,liquidityPct:total?cash/total*100:100,largestExposurePct:total?largest/total*100:0,largestSectorExposurePct:largestSectorPct,weightedRiskScore:weightedRisk,sectorExposure:sectorValues,leveragePct:leverage,creditRating:rating,activeHoldings:hs.length,activeFunds:a.funds.filter(f=>f.status==='Active').length};
 }
 function stepDay(date){
  const a=ensure();if(!a)return {processed:false};if(a.lastProcessedDate===date)return {processed:false,idempotent:true};
