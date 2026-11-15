@@ -4,6 +4,7 @@
 const P=window.StudioPhase0;
 if(!P)throw new Error('THE STUDIO Phase 0 kernel is required before Phase 1.');
 const VERSION='1.0.0',MAX_HISTORY=720,TAU=Math.PI*2;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,Number(v)||0));
 const regions=[
 {id:'REG-0',key:'north-america',name:'North America',latitude:39.8,longitude:-98.6,hemisphere:'north',climate:'continental',baseTemp:12,seasonAmplitude:15,rainBase:38,windBase:17,timezone:-6,countries:['United States','Canada','Mexico'],cities:['New York','Los Angeles','Chicago','Toronto','Vancouver','Mexico City']},
 {id:'REG-1',key:'uk-ireland',name:'United Kingdom & Ireland',latitude:54.5,longitude:-3.2,hemisphere:'north',climate:'oceanic',baseTemp:10,seasonAmplitude:8,rainBase:64,windBase:21,timezone:0,countries:['United Kingdom','Ireland'],cities:['London','Manchester','Edinburgh','Dublin']},
