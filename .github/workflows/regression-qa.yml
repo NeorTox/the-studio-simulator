@@ -71,6 +71,8 @@ jobs:
         run: node --check phase8-financial-empire-engine.js && node --check phase8-browser-qa.js && node phase8-browser-qa.js
       - name: Run Phase 9 global economy browser regression
         run: node --check phase9-global-economy-engine.js && node --check phase9-browser-qa.js && node phase9-browser-qa.js
+      - name: Validate and run Phase 10 autonomous competitor regression
+        run: node --check phase10-autonomous-competitors-engine.js && node --check phase10-autonomous-competitors-qa.js && node phase10-autonomous-competitors-qa.js
       - name: Run global geography and travel browser regression
         run: node phase1-global-geography-travel-qa.js
       - name: Run three-year cross-phase integration stress test
