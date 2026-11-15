@@ -1,0 +1,47 @@
+const assert=require('assert');const {chromium}=require('playwright');
+(async()=>{
+ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
+ await page.getByRole('button',{name:/New campaign/}).click();
+ await page.getByRole('button',{name:/Create campaign/}).click();
+ for(const [id,value] of [['nfounder','Global Travel QA'],['ncompany','World Studio QA'],['ncountry','India'],['ncity','Mumbai']])await page.locator('#'+id).fill(value);
+ await page.getByRole('button',{name:/Create and save campaign/}).click();
+ const result=await page.evaluate(()=>{
+  const G=window.StudioGeography,T=window.StudioGlobalTravel;
+  if(!G||!T)throw Error('Global geography or travel engine did not load');
+  const ga=G.audit();if(ga.failed)throw Error('Geography audit failed: '+JSON.stringify(ga.tests.filter(x=>!x.ok)));
+  if(G.countries.length<240)throw Error('Expected global country and territory coverage');
+  if(G.divisions.length<150)throw Error('Administrative division registry incomplete: '+G.divisions.length);
+  const india=G.getCountry('IN'),kerala=G.getDivision('ADM1-IN-KL'),edathua=G.cities.find(x=>x.name==='Edathua');
+  if(!india||!kerala||!edathua||edathua.divisionId!==kerala.id)throw Error('India/Kerala/city hierarchy failed');
+  if(G.regionFor('India')?.id!=='REG-3'||G.regionFor('Japan')?.id!=='REG-4')throw Error('Country-to-simulation-region mapping failed');
+  let travel=T.ensure();if(G.getCity(travel.player.cityId)?.name!=='Mumbai')throw Error('New campaign did not initialize at selected Mumbai headquarters');
+  Phase3Founder.record('Income',250000,'QA funding','Travel regression funding',active.date,'global-travel-qa');
+  T.passportNationality('IN');
+  const bangalore=G.cities.find(x=>x.countryId==='IN'&&x.name==='Bengaluru');
+  const domestic=T.quote(bangalore.id,'train');if(!domestic.domestic||domestic.distanceKm<=0)throw Error('Domestic rail quote invalid');
+  const first=T.planTrip(bangalore.id,'train',active.date,2,'budget');
+  if(first.status!=='In transit'||first.hotel.total<=0)throw Error('Domestic trip did not book transport and accommodation');
+  advance(2);
+  if(G.getCity(T.ensure().player.cityId)?.name!=='Bengaluru')throw Error('Domestic arrival did not update player location');
+  const tokyo=G.cities.find(x=>x.countryId==='JP'&&x.name==='Tokyo');
+  let blocked=false;try{T.planTrip(tokyo.id,'flight',active.date,2,'standard')}catch(e){blocked=/entry permit/i.test(e.message)}
+  if(!blocked)throw Error('International travel should require an in-game entry permit');
+  const visa=T.applyForEntryPermit('JP');if(visa.status!=='valid')throw Error('Entry permit was not issued');
+  const international=T.planTrip(tokyo.id,'flight',active.date,3,'standard');
+  if(international.status!=='In transit'||international.mode!=='flight')throw Error('International flight did not enter transit');
+  advance(2);
+  if(G.getCity(T.ensure().player.cityId)?.name!=='Tokyo')throw Error('International arrival did not update player location');
+  const audit=T.audit();if(audit.failed)throw Error('Travel audit failed: '+JSON.stringify(audit.tests.filter(x=>!x.ok)));
+  const worldWeather=StudioPhase0.phase1.weatherFor(active.date,'India',active.worldSeed||0);
+  if(worldWeather.regionId!=='REG-3')throw Error('World climate did not resolve country geography');
+  const serial=JSON.stringify(active),restored=JSON.parse(serial);
+  if(!restored.world.travel||restored.world.travel.player.countryId!=='JP')throw Error('Travel state did not survive save serialization');
+  return {countries:G.countries.length,divisions:G.divisions.length,cities:G.cities.length,geographyAudit:ga.passed,domesticArrival:G.getCity(T.ensure().player.cityId).name,internationalArrival:G.getCity(restored.world.travel.player.cityId).name,bookings:T.ensure().bookings.length,travelAudit:audit.passed,worldRegion:worldWeather.region};
+ });
+ assert(result.countries>=240);assert(result.divisions>=150);assert.equal(result.domesticArrival,'Tokyo');assert.equal(result.internationalArrival,'Tokyo');assert(result.bookings>=2);assert.deepEqual(errors,[]);
+ await page.locator('[data-page="globaltravel"]').click();await page.locator('#globaltravel-content').waitFor();await page.getByText('Travel the world').waitFor();
+ await browser.close();console.log('PASS Global geography hierarchy, country/territory assignment, city links, domestic rail, international flight, entry permits, accommodation, arrival, climate integration, UI and save serialization',JSON.stringify(result));
+})().catch(e=>{console.error(e);process.exit(1)});
