@@ -1,0 +1,103 @@
+/* THE STUDIO · player experience, tutorial and world risk layer */
+(function(){
+'use strict';
+const VERSION='1.0.0',STORE_KEY='the-studio-onboarding-v1';
+const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const campaign=()=>typeof active!=='undefined'&&active?active:null;
+const persistSafe=()=>{try{if(typeof persist==='function')persist()}catch(e){console.error('[StudioExperience] persist failed',e)}};
+const notice=t=>{try{if(typeof toast==='function')toast(t)}catch(e){}};
+const tutorialSteps=[
+ {title:'Your studio starts here',body:'THE STUDIO is a living entertainment-business simulation. You control the founder and the company; the rest of the industry continues to move around you.',page:'overview',target:'.top'},
+ {title:'Create your campaign',body:'Choose a starting date, founder profile, headquarters, company structure and opening capital. The date determines the technology and entertainment era available to you.',page:'campaign',target:'#page-campaign'},
+ {title:'Your command centre',body:'The overview tracks cash, active productions, employees, campaign time and recent events. Use the quick actions to advance time deliberately.',page:'overview',target:'#page-overview .stats'},
+ {title:'Time is a resource',body:'Advancing a day triggers payroll, bills, production schedules, markets, NPC lives and the world. Review obligations before taking long jumps.',page:'time',target:'#page-time'},
+ {title:'Build the company',body:'Incorporate, organize departments, hire executives and employees, acquire facilities, manage contracts and keep compliance current.',page:'company',target:'#page-company'},
+ {title:'Make films and shows',body:'Develop a project, review scripts, greenlight it, prepare cast and crew, shoot, finish post-production and plan its release.',page:'projects',target:'#page-projects'},
+ {title:'Protect the money',body:'Company cash and founder cash are separate. Use the finance tools to track ledgers, debt, investments, taxes, invoices and cash commitments.',page:'finance',target:'#page-finance'},
+ {title:'Explore the world',body:'The world engine tracks regional climates, history, geography, travel and events. Your location and the campaign era affect available options.',page:'worldengine',target:'#page-worldengine'},
+ {title:'Your phone and the media',body:'Use the smartphone ecosystem for apps, news, social publishing, creator activity, mobile data, charging and entertainment.',page:'phone',target:'#page-phone'},
+ {title:'People have their own lives',body:'NPCs form relationships, remember experiences, develop ambitions, communicate, make decisions and react to events. Not every event asks for your attention.',page:'population',target:'#page-population'},
+ {title:'Save and protect your campaign',body:'Campaigns are stored locally in this browser. Export a backup regularly, especially before major updates or long simulation runs.',page:'campaign',target:'#page-campaign'}
+];
+let tour={open:false,index:0,highlight:null};
+function showTutorial(index=0){
+ tour.open=true;tour.index=Math.max(0,Math.min(tutorialSteps.length-1,index));renderTutorial();
+}
+function closeTutorial(done=false){
+ tour.open=false;if(tour.highlight){tour.highlight.classList.remove('studio-highlight');tour.highlight=null}
+ const el=$('studio-tutorial-overlay');if(el)el.remove();
+ if(done){try{localStorage.setItem(STORE_KEY,'completed')}catch(e){}notice('Tutorial completed. You can replay it from Help at any time.')}
+}
+function renderTutorial(){
+ const step=tutorialSteps[tour.index];if(!step)return;
+ if(tour.highlight){tour.highlight.classList.remove('studio-highlight');tour.highlight=null}
+ const overlay=$('studio-tutorial-overlay');if(!overlay){document.body.insertAdjacentHTML('beforeend','<div class="studio-overlay" id="studio-tutorial-overlay" role="dialog" aria-modal="true" aria-label="Guided tutorial"><div class="studio-dialog" id="studio-tutorial-dialog"></div></div>')}
+ const root=$('studio-tutorial-dialog');if(!root)return;
+ root.innerHTML='<div class="eyebrow">THE STUDIO · STARTER GUIDE · '+String(tour.index+1).padStart(2,'0')+' / '+tutorialSteps.length+'</div><h2>'+esc(step.title)+'</h2><p>'+esc(step.body)+'</p><div class="studio-step"><span style="font-size:23px">✦</span><div><b>Quick tip</b><div class="tiny">You can reopen this guided tour at any time using the Help button.</div></div></div><div class="studio-progress"><i style="width:'+((tour.index+1)/tutorialSteps.length*100)+'%"></i></div><div class="actions"><button class="btn" id="studio-tour-skip">Skip tour</button><button class="btn" id="studio-tour-back" '+(tour.index===0?'disabled':'')+'>Back</button><button class="btn primary" id="studio-tour-next">'+(tour.index===tutorialSteps.length-1?'Finish':'Continue')+'</button></div>';
+ $('studio-tour-skip').onclick=()=>closeTutorial(false);
+ $('studio-tour-back').onclick=()=>{if(tour.index>0){tour.index--;navigateTourStep()}};
+ $('studio-tour-next').onclick=()=>{if(tour.index===tutorialSteps.length-1){closeTutorial(true);return}tour.index++;navigateTourStep()};
+}
+function navigateTourStep(){
+ const s=tutorialSteps[tour.index];try{if(s.page&&typeof nav==='function'&&$('page-'+s.page))nav(s.page)}catch(e){}
+ renderTutorial();
+ requestAnimationFrame(()=>{const target=document.querySelector(s.target);if(target){target.scrollIntoView({behavior:'smooth',block:'center'});target.classList.add('studio-highlight');tour.highlight=target}});
+}
+function installHelp(){
+ const top=document.querySelector('.topright');if(!top||$('studio-help-button'))return;
+ const b=document.createElement('button');b.id='studio-help-button';b.className='btn';b.type='button';b.textContent='? Help';b.title='Open the guided tutorial';b.onclick=()=>showTutorial(0);top.insertBefore(b,top.firstChild);
+}
+function installExperiencePages(){
+ const navRoot=document.querySelector('.nav'),content=document.querySelector('.content');if(!navRoot||!content)return;
+ if(!$('page-situations')){const b=document.createElement('button');b.dataset.page='situations';b.innerHTML='<span>✧</span>Life & Events';b.onclick=()=>nav('situations');navRoot.appendChild(b);
+ const page=document.createElement('section');page.className='page';page.id='page-situations';page.innerHTML='<div class="hero"><div><div class="eyebrow">WORLD STORIES · PLAYER AGENCY</div><h1 class="h1">Life & events</h1><p class="sub">A filtered window into a world that keeps moving. Some situations are visible, some are resolved by the people involved, and many never reach you.</p></div><button class="btn" id="studio-refresh-situations">Refresh feed</button></div><div class="grid stats" id="studio-situation-stats"></div><div class="grid cols"><div class="card"><div class="cardhead"><b class="cardtitle">Situations you may notice</b><span class="tag gold">OPTIONAL INTERVENTION</span></div><div id="studio-situation-feed"></div></div><div class="card"><div class="cardhead"><b class="cardtitle">Recent consequences</b><span class="tiny">WORLD RIPPLE LOG</span></div><div id="studio-consequence-history"></div></div></div>';
+ content.appendChild(page);
+ $('studio-refresh-situations').onclick=renderSituations;}
+}
+function renderSituations(){
+ const root=$('studio-situation-feed'),stats=$('studio-situation-stats'),hist=$('studio-consequence-history');if(!root||!stats||!hist)return;
+ const api=window.StudioNPCDecisionConsequences,c=campaign();
+ if(!c||!api){root.innerHTML='<div class="empty">Create a campaign to begin seeing the world unfold.</div>';stats.innerHTML='';hist.innerHTML='';return}
+ const m=api.metrics()||{},items=api.observe(c.date)||[];
+ stats.innerHTML=[['Visible situations',items.length],['All recorded',m.situations||0],['Pending consequences',m.pending||0],['Player decisions',m.playerChoices||0]].map(x=>'<div class="card"><div class="statlabel">'+x[0]+'</div><div class="statvalue">'+x[1]+'</div></div>').join('');
+ if(!items.length)root.innerHTML='<div class="empty"><b>Nothing demanding your attention.</b>The world is not a queue of mandatory quests. Check again later; people continue making their own decisions.</div>';
+ else root.innerHTML=items.slice().reverse().map(item=>{const full=c.world?.npcDecisionConsequences?.situations?.find(x=>x.id===item.id),opts=full?.playerCanIntervene&&full.status==='open'?api.responseStyles:[];return '<article class="situation-card"><div class="situation-meta">'+esc(item.type)+' · '+esc(item.date)+' · '+(item.playerCanIntervene?'YOU MAY INTERVENE':'OBSERVATION ONLY')+'</div><h3 style="margin:6px 0 0;font-size:16px">'+esc(item.title)+'</h3><p class="situation-desc">'+esc(item.description||'A situation is unfolding in someone’s life.')+'</p>'+(full?.status==='open'&&opts.length?'<div class="tiny">Choose a response, or leave them to handle it themselves.</div><div class="choices">'+opts.map(o=>'<button class="btn" data-situation="'+esc(item.id)+'" data-response="'+esc(o.id)+'">'+esc(o.label)+'</button>').join('')+'<button class="btn" data-ignore="'+esc(item.id)+'">Leave it alone</button></div>':'<span class="tag">'+esc(item.status==='resolved'?'Resolved':'No action required')+'</span>')+'</article>'}).join('');
+ root.querySelectorAll('[data-situation]').forEach(b=>b.onclick=()=>{try{const r=api.intervene(b.dataset.situation,b.dataset.response);if(r.resolved){persistSafe();renderSituations();notice('Your decision has been recorded. Consequences may unfold later.')}}catch(e){notice(e.message)}});
+ root.querySelectorAll('[data-ignore]').forEach(b=>b.onclick=()=>{b.closest('.situation-card')?.remove();notice('You chose not to intervene. The world continues.')});
+ const history=c.world?.npcDecisionConsequences?.history||[];
+ hist.innerHTML=history.slice(-12).reverse().map(x=>'<div class="rowitem"><span><b>'+esc(x.response)+'</b><div class="tiny">'+esc(x.resolvedBy)+' · '+esc(x.date)+'</div></span><span class="tag">'+(x.consequences?.length||0)+' ripples</span></div>').join('')||'<div class="empty">No player decisions yet. Many NPC decisions happen without you.</div>';
+}
+function installWorldRisk(){
+ const P=window.StudioPhase0?.phase1,A=window.StudioAutonomy;if(!P||!A||window.StudioWorldRisk)return;
+ const regions=P.regions||[],VERSION_R='1.0.0',TASK='world.regional-risk-events';
+ const state=()=>{const c=campaign();if(!c)return null;c.world=c.world||{};c.world.environment=c.world.environment||{};const e=c.world.environment;e.hazards=Array.isArray(e.hazards)?e.hazards:[];e.hazardHistory=Array.isArray(e.hazardHistory)?e.hazardHistory:[];e.mitigation=e.mitigation||{};return e};
+ const key=(seed,s)=>{let h=(Number(seed)||1)>>>0;for(const ch of String(s)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0};
+ const rand=(seed,s)=>{let x=key(seed,s);x^=x<<13;x^=x>>>17;x^=x<<5;return(x>>>0)/4294967296};
+ const clamp=(x,a,b)=>Math.max(a,Math.min(b,Number(x)||0));
+ function forecast(date,regionId){const r=regions.find(x=>x.id===regionId);if(!r)return null;const seed=Number(campaign()?.worldSeed||1);return Array.from({length:7},(_,i)=>{const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+i);const day=d.toISOString().slice(0,10),w=P.weatherFor(day,regionId,seed),hazard=w.stormRisk>55?'Severe storm watch':w.temperatureC>39?'Extreme heat watch':w.temperatureC< -12?'Extreme cold watch':w.precipitationProbability<9&&w.temperatureC>31?'Drought watch':'No major hazard signal';return{date:day,weather:w,hazard}})}
+ function tick(ctx){const e=state();if(!e)return{processed:0};const seed=Number(campaign()?.worldSeed||1),activeHazards=e.hazards.filter(h=>h.status==='active');for(const h of activeHazards){if(h.endsOn<=ctx.date){h.status='recovered';h.recoveredOn=ctx.date;e.hazardHistory.unshift({...h});}}
+ let created=0;for(const r of regions){const wx=P.weatherFor(ctx.date,r.id,seed),risk=wx.stormRisk>55?Math.min(.16,(wx.stormRisk-50)/220):wx.temperatureC>39?.025:wx.temperatureC< -12?.018:wx.precipitationProbability<9&&wx.temperatureC>31?.012:0;if(risk<=0||rand(seed,r.id+'|hazard|'+ctx.date)>risk)continue;if(e.hazards.some(h=>h.regionId===r.id&&h.status==='active'))continue;
+ const kind=wx.stormRisk>55?'Severe storm':wx.temperatureC>39?'Heatwave':wx.temperatureC< -12?'Cold wave':'Drought';const severity=Number(clamp(35+rand(seed,r.id+'|severity|'+ctx.date)*55,20,90).toFixed(1)),duration=2+Math.floor(rand(seed,r.id+'|duration|'+ctx.date)*5),ends=new Date(ctx.date+'T12:00:00Z');ends.setUTCDate(ends.getUTCDate()+duration);const hazard={id:'HAZ-'+key(seed,r.id+'|'+ctx.date).toString(16),kind,regionId:r.id,region:r.name,date:ctx.date,severity,durationDays:duration,endsOn:ends.toISOString().slice(0,10),status:'active',description:kind+' conditions are affecting '+r.name+'. Local services, travel and outdoor production may be disrupted.'};e.hazards.unshift(hazard);created++;
+ const event={id:hazard.id,date:ctx.date,title:kind+' affecting '+r.name,detail:hazard.description,category:'Environmental risk',region:r.name,source:'regional-risk-engine',impact:'regional-disruption'};campaign().world.events.unshift(event);campaign().world.events=campaign().world.events.slice(0,200);campaign().events.unshift({date:ctx.date,text:event.title+' — '+event.detail});campaign().events=campaign().events.slice(0,120);
+ const npcList=campaign().world?.population?.npcs||[],person=npcList.find(n=>String(n.region||n.city||'').toLowerCase().includes(r.name.toLowerCase().split(' ')[0]));if(person)window.StudioNPCDecisionConsequences?.createSituation?.({id:'HAZ-SIT-'+hazard.id,npcId:person.id,date:ctx.date,type:'environmental-emergency',title:kind+' disrupts everyday life',description:'Local conditions are worsening. People may need assistance, supplies or a safe place to stay.',severity,visibility:.8,relevance:.85,createdBy:'world-risk-engine'});
+ }
+ e.hazards=e.hazards.slice(0,80);e.hazardHistory=e.hazardHistory.slice(0,120);e.lastRiskDate=ctx.date;return{processed:regions.length,created,active:e.hazards.filter(h=>h.status==='active').length}}
+ function mitigate(id){const e=state(),c=campaign(),h=e?.hazards.find(x=>x.id===id&&x.status==='active');if(!h||!c)return{ok:false};const cost=Math.max(500,Math.round(h.severity*100));if(typeof post!=='function'||!post('Regional emergency response: '+h.kind,'World emergency response',-cost,c.date,'expense',{worldHazardId:id}))return{ok:false,reason:'insufficient-funds'};h.severity=Number(Math.max(5,h.severity-18).toFixed(1));h.endsOn=c.date;h.status='recovery-funded';h.fundedOn=c.date;h.responseCost=cost;persistSafe();return{ok:true,cost,hazard:h}}
+ function metrics(){const e=state();return e?{active:e.hazards.filter(h=>h.status==='active').length,total:e.hazards.length,recovered:e.hazardHistory.length,lastDate:e.lastRiskDate||null}:null}
+ function audit(){const e=state(),tests=[['Regional registry available',regions.length>=8],['Hazard records bounded',!e||e.hazards.length<=80],['Unique hazard IDs',!e||new Set(e.hazards.map(h=>h.id)).size===e.hazards.length],['Severity bounds',!e||e.hazards.every(h=>h.severity>=0&&h.severity<=100)],['Recovery dates valid',!e||e.hazards.every(h=>/^\d{4}-\d{2}-\d{2}$/.test(h.endsOn))],['Save serialization',!e||(()=>{try{JSON.stringify(e);return true}catch(x){return false}})()]];return{passed:tests.filter(x=>x[1]).length,failed:tests.filter(x=>!x[1]).length,tests:tests.map(x=>({name:x[0],ok:x[1]}))}}
+ function renderRisk(){const host=$('studio-world-risk');if(!host)return;const c=campaign(),e=state();if(!c){host.innerHTML='<div class="empty">Create a campaign to activate regional risk monitoring.</div>';return}const seed=Number(c.worldSeed||1),items=e.hazards.filter(h=>h.status==='active');const metricsNow=metrics();host.innerHTML='<div class="grid stats"><div class="card"><div class="statlabel">ACTIVE HAZARDS</div><div class="statvalue">'+metricsNow.active+'</div></div><div class="card"><div class="statlabel">RECOVERED</div><div class="statvalue">'+metricsNow.recovered+'</div></div><div class="card"><div class="statlabel">REGIONS MONITORED</div><div class="statvalue">'+regions.length+'</div></div><div class="card"><div class="statlabel">MODEL</div><div class="statvalue">1.0</div></div></div>'+items.map(h=>'<article class="situation-card"><div class="situation-meta">'+esc(h.region)+' · '+esc(h.date)+' · '+h.durationDays+' days</div><h3>'+esc(h.kind)+' · Severity '+h.severity+'/100</h3><p class="situation-desc">'+esc(h.description)+'</p><button class="btn primary" data-mitigate="'+esc(h.id)+'">Fund emergency response · '+(Math.max(500,Math.round(h.severity*100))).toLocaleString('en-US')+'</button></article>').join('')+'<div class="card" style="margin-top:12px"><b class="cardtitle">Seven-day regional outlook</b><div class="formgrid" style="margin-top:12px"><div class="field"><label for="studio-risk-region">Region</label><select id="studio-risk-region">'+regions.map(r=>'<option value="'+r.id+'">'+esc(r.name)+'</option>').join('')+'</select></div><div class="field"><label>Forecast</label><button class="btn" id="studio-risk-forecast">Generate outlook</button></div></div><div id="studio-risk-forecast-output"></div></div>';
+ host.querySelectorAll('[data-mitigate]').forEach(b=>b.onclick=()=>{const r=mitigate(b.dataset.mitigate);notice(r.ok?'Emergency response funded. Regional risk reduced.':r.reason==='insufficient-funds'?'Not enough company cash to fund this response.':'Hazard is no longer active.');renderRisk()});
+ $('studio-risk-forecast').onclick=()=>{const list=forecast(c.date,$('studio-risk-region').value);$('studio-risk-forecast-output').innerHTML=list.map(x=>'<div class="rowitem"><span><b>'+esc(x.date)+'</b><div class="tiny">'+esc(x.weather.condition)+' · '+esc(x.hazard)+'</div></span><span>'+x.weather.temperatureC.toFixed(1)+'°C</span></div>').join('')};
+ }
+ function attachPage(){const page=$('page-worldengine');if(!page||$('studio-world-risk'))return;const section=document.createElement('div');section.className='card';section.style.marginTop='14px';section.innerHTML='<div class="cardhead"><b class="cardtitle">Regional climate risk & emergency response</b><span class="tag gold">AUTONOMOUS WORLD</span></div><div id="studio-world-risk"></div>';page.appendChild(section);renderRisk()}
+ function register(){try{A.registerTask({id:TASK,name:'Regional environmental hazards and recovery',cadenceDays:1,priority:24,deps:[],run:tick})}catch(e){if(!/already registered/.test(String(e.message)))throw e}}
+ window.StudioWorldRisk={version:VERSION_R,forecast,metrics,audit,tick,mitigate,render:renderRisk};register();attachPage();const oldRender=render; if(typeof oldRender==='function'&&!oldRender.__worldRiskWrapped){const wrapped=function(){const x=oldRender.apply(this,arguments);attachPage();renderRisk();return x};wrapped.__worldRiskWrapped=true;window.render=wrapped}
+ }
+function boot(){
+ installHelp();installExperiencePages();installWorldRisk();
+ const oldRender=window.render;if(typeof oldRender==='function'&&!oldRender.__experienceWrapped){const wrapped=function(){const out=oldRender.apply(this,arguments);renderSituations();installHelp();return out};wrapped.__experienceWrapped=true;window.render=wrapped}
+ if(!$('studio-tutorial-overlay')){let done=false;try{done=localStorage.getItem(STORE_KEY)==='completed'||localStorage.getItem(STORE_KEY)==='skipped'}catch(e){}if(!done)setTimeout(()=>{if(!$('studio-tutorial-overlay')){tour.open=true;tour.index=0;renderTutorial()}},900)}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+window.StudioTutorial={start:()=>showTutorial(0),close:()=>closeTutorial(false),steps:tutorialSteps};
+})();
