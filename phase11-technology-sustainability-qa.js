@@ -9,13 +9,12 @@ const context={window,document,active,persist(){},toast(){},console,Date,Math,Nu
 vm.runInNewContext(src,context,{filename:'phase11-technology-sustainability-engine.js'});
 const api=window.Phase11Technology;assert(api);const s=api.ensure();
 assert.equal(api.version,'11.0.0');assert.equal(s.technologies.length,12);
-api.upgradeLab();assert.equal(s.lab.level,2);assert.equal(s.lab.capacity,2);
+api.upgradeLab();assert.equal(s.lab.level,2);assert.equal(s.lab.capacity,2);assert.throws(()=>api.startResearch('ai-production',1),/budget/);
 api.startResearch('ai-production',6500000);api.startResearch('cloud-rendering',5400000);
 api.startInitiative('solar-campus',4500000);api.startInitiative('water-reuse',1800000);
 api.setSustainabilityPolicy({renewableTargetPct:65,recyclingTargetPct:70,waterEfficiencyTargetPct:55,carbonOffsetPct:15});
 assert.throws(()=>api.startResearch('real-time-rendering',9800000),/prerequisites/);
 assert.throws(()=>api.setSustainabilityPolicy({renewableTargetPct:120}),/ranges/);
-assert.throws(()=>api.startResearch('ai-production',1),/budget/);
 assert.equal(api.stepDay('2026-01-01').processed,true);assert.equal(api.stepDay('2026-01-01').idempotent,true);
 let tier2Started=false;
 for(let d=2;d<=365;d++){
