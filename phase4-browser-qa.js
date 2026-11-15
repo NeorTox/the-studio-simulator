@@ -9,7 +9,7 @@ const {chromium}=require('playwright'),assert=require('assert');
  for(const [id,v] of [['nfounder','Phase Four QA'],['ncompany','QA Studios'],['ncountry','India'],['ncity','Kochi']])await p.locator('#'+id).fill(v);
  await p.getByRole('button',{name:/Create and save campaign/}).click();
  await p.locator('[data-page="company"]').click();
- await p.evaluate(()=>{Phase4Company.ensure();Phase4Company.render()});
+ await p.evaluate(()=>{const first=Phase4Company.ensure(),second=Phase4Company.ensure();if(first!==second)throw Error('Phase 4 ensure replaced the management object identity');Phase4Company.render()});
  assert.equal(await p.locator('#phase4-company').count(),1,'Phase 4 dashboard mounts on Company page');
  await p.evaluate(()=>Phase4Company.addDepartment());
  await p.locator('#p4name').fill('Research & Development');await p.locator('#p4head').fill('A. Rao');const financeId=await p.evaluate(()=>active.company.management.departments.find(x=>x.name==='Finance').id);await p.locator('#p4parent').selectOption(financeId);await p.locator('#p4budget').fill('250000');await p.locator('#p4staff').fill('12');await p.locator('#p4form button').click();
@@ -56,7 +56,7 @@ const {chromium}=require('playwright'),assert=require('assert');
  await p.evaluate(id=>Phase4Company.postApprovedCapital(id,'QA approved prototype',active.company.management.departments.find(x=>x.name==='Research & Development').id),vote.id);
  const complianceId=await p.evaluate(()=>{const x=active.company.management.compliance[0];x.dueDate='2026-11-13';x.penaltyAmount=250;return x.id;});
 
- await p.evaluate(()=>Phase4Company.stepDay('2026-11-14'));
+ await p.evaluate(()=>{Phase4Company.stepDay('2026-11-14');if(Phase4Company.ensure().lastProcessedDate!=='2026-11-14')throw Error('Phase 4 daily processor did not persist its date checkpoint')});
  const paymentStatus=await p.evaluate(id=>active.company.management.contracts.find(x=>x.id===id).payments[0].status,financeContract);
  assert.equal(paymentStatus,'Paid','Due contract milestone is paid by simulation day advancement');
  await p.evaluate(()=>Phase4Company.stepDay('2026-11-15'));
