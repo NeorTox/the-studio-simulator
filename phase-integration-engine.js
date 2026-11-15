@@ -49,7 +49,7 @@ function endDay(date){
  if(active.world?.travel)d.steps.push({name:'global-travel',at:new Date().toISOString()});
  d.status='completed';d.completedAt=new Date().toISOString();s.days[date]=d;
  s.history.unshift({date,status:'completed',phases:['world','population','founder','company','ecosystem','audience','smartphone','financial-empire','global-economy','competitors','technology-sustainability','travel']});s.history=s.history.slice(0,90);
- if(typeof persist==='function')persist();return true;
+ if(typeof persist==='function'&&!window.__deferDailyPersist)persist();return true;
 }
 function audit(){
  const s=state(),results=[],add=(name,ok,detail)=>results.push({name,ok:!!ok,detail:String(detail||'')});
