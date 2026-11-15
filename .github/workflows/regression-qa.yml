@@ -54,5 +54,9 @@ jobs:
           node test-phase6-audience.js
       - name: Run Phase 6 mobile browser regression
         run: node phase6-browser-qa.js
+      - name: Validate Phase 7 smartphone engine
+        run: node --check phase7-smartphone-engine.js && node --check phase7-browser-qa.js
+      - name: Run Phase 7 smartphone browser regression
+        run: node phase7-browser-qa.js
       - name: Run three-year cross-phase integration stress test
         run: node integration-multiyear-qa.js
