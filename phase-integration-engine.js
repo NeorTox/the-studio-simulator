@@ -9,7 +9,7 @@ const CONTRACTS=[
 {id:3,key:'founder',name:'Founder & personal life',requires:['Phase3Founder.stepDay']},
 {id:4,key:'company',name:'Company management',requires:['Phase4Company.stepDay']},
 {id:5,key:'production',name:'Entertainment production',requires:['Phase5Production.audit']},
-{id:6,key:'ecosystem',name:'Entertainment ecosystem',requires:['Phase6Ecosystem.stepDay','Phase6Ecosystem.audit','Phase6Ecosystem.addFandom','Phase6Ecosystem.publishReview']},
+{id:6,key:'ecosystem',name:'Entertainment ecosystem',requires:['Phase6Ecosystem.stepDay','Phase6Ecosystem.audit','Phase6Ecosystem.addFandom','Phase6Ecosystem.publishReview','Phase6Audience.processDay','Phase6Audience.audit']},
 {id:7,key:'smartphone',name:'Smartphone & media',requires:[]},
 {id:8,key:'financial-empire',name:'Financial empire',requires:[]},
 {id:9,key:'global-economy',name:'Global economy',requires:[]},
@@ -30,9 +30,14 @@ function beginDay(date){
 function endDay(date){
  const s=state();if(!s)return false;
  const d=s.days[date]||{date,status:'started',steps:[]};
+ const ecosystem=active.ecosystem;
+ if(!ecosystem||ecosystem.lastProcessedDate!==date)throw Error('Cannot complete integration day '+date+': Phase 6 ecosystem did not commit.');
+ if(ecosystem.audienceLastProcessedDate!==date)throw Error('Cannot complete integration day '+date+': Phase 6 audience model did not commit.');
  d.steps.push({name:'population-founder-company',at:new Date().toISOString()});
+ d.steps.push({name:'phase6-ecosystem',at:new Date().toISOString()});
+ d.steps.push({name:'phase6-audience',at:new Date().toISOString()});
  d.status='completed';d.completedAt=new Date().toISOString();s.days[date]=d;
- s.history.unshift({date,status:'completed'});s.history=s.history.slice(0,90);
+ s.history.unshift({date,status:'completed',phases:['world','population','founder','company','ecosystem','audience']});s.history=s.history.slice(0,90);
  if(typeof persist==='function')persist();return true;
 }
 function audit(){
@@ -52,6 +57,13 @@ function audit(){
   add('No incomplete daily pipelines',incomplete.length===0,incomplete.length?incomplete.map(d=>d.date).join(', '):dates.length+' completed day records.');
   const duplicate=dates.some(d=>new Set(d.steps.map(x=>x.name)).size!==d.steps.length);
   add('No duplicate pipeline steps',!duplicate,'Each tracked daily stage appears once per date.');
+  const required=['world-before-life','population-founder-company','phase6-ecosystem','phase6-audience'];
+  const incompletePhase6=dates.filter(d=>d.status==='completed'&&required.some(step=>!d.steps.some(x=>x.name===step)));
+  add('Phase 6 is part of every completed daily pipeline',incompletePhase6.length===0,incompletePhase6.length?incompletePhase6.map(d=>d.date).join(', '):dates.length+' days include world, company and both ecosystem processors.');
+  const p6=window.Phase6Ecosystem?.audit?.();
+  add('Phase 6 internal integrity audit',!!p6&&p6.failed===0,p6?(p6.passed+' passed / '+p6.failed+' failed'): 'Phase 6 audit API unavailable.');
+  const p6Date=active.ecosystem?.lastProcessedDate,audienceDate=active.ecosystem?.audienceLastProcessedDate;
+  add('Phase 6 daily checkpoints synchronized',dates.length===0||(p6Date===active.date&&audienceDate===active.date),'Campaign '+active.date+' · ecosystem '+String(p6Date||'not run')+' · audience '+String(audienceDate||'not run'));
   const ledger=Array.isArray(active.ledger)?active.ledger:[];
   add('Ledger entries have finite amounts',ledger.every(x=>Number.isFinite(Number(x.amount??x.value??0))),'All recorded ledger amounts are finite numbers.');
   add('Phase 2 date does not lead world date',!active.population?.phase2?.lastProcessedDate||!active.world?.time?.lastProcessedDate||active.population.phase2.lastProcessedDate<=active.world.time.lastProcessedDate,'Population processing must not run ahead of world time.');
