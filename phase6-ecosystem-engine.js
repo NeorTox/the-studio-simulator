@@ -287,8 +287,6 @@ function install(){
  }
  const prior=window.render;
  if(typeof prior==='function'&&!prior.__p6Wrapped){const wrapped=function(...args){const out=prior.apply(this,args);render();return out;};wrapped.__p6Wrapped=true;window.render=wrapped;}
- const priorDay=window.simulateLifeDay;
- if(typeof priorDay==='function'&&!priorDay.__p6Wrapped){const wrapped=function(...args){const out=priorDay.apply(this,args);stepDay(args[0]||active?.date);return out;};wrapped.__p6Wrapped=true;window.simulateLifeDay=wrapped;}
  render();
 }
 window.Phase6Ecosystem={version:'6.1.0',ensure,addPlatform,addDistributionDeal,createOffer,counterOffer,acceptOffer,rejectOffer,addRelease,addCampaign,addMerchandise,sellMerchandise,addRoyalty,settleRoyalties,stepDay,audit,render,hasConflict};
