@@ -106,7 +106,7 @@ function prepareMonth(date){
   }
   const household={
    id:key,regionId,members:memberRows.map(x=>x.id),memberCount:members.length,adultCount:adults,childCount:children,
-   equivalentAdults:round(equivalent),currency:active.company?.currency||'USD',housingTenure:tenure,propertyValue:round(propertyValue),mortgageBalance:round(mortgageBalance),homeEquity:round(Math.max(0,propertyValue-mortgageBalance)),mortgagePayment:round(mortgage),
+   equivalentAdults:round(equivalent),currency:mr?.currency||active.company?.currency||'USD',housingTenure:tenure,propertyValue:round(propertyValue),mortgageBalance:round(mortgageBalance),homeEquity:round(Math.max(0,propertyValue-mortgageBalance)),mortgagePayment:round(mortgage),
    income:round(totalIncome),expenses:Object.fromEntries(Object.entries(expenses).map(([k,v])=>[k,round(v)])),
    purchases:Object.fromEntries(Object.entries(purchases).map(([k,v])=>[k,round(v)])),
    plannedDiscretionary:round(plannedDiscretionary),spendingPropensity:round(spendingPropensity),
@@ -128,7 +128,8 @@ function prepareMonth(date){
   bucket.categoryPlan.discretionary=(bucket.categoryPlan.discretionary||0)+plannedDiscretionary;
  }
  s.households=householdRecords;s.pendingFinance=pendingFinance;s.preparedDate=date;
- s.metrics={date,households:groups.size,namedResidents:people.filter(alive).length,regional};
+ const virtualResidents=Math.max(0,Number(active.world?.population?.virtualResidents)||0),virtualHouseholds=virtualResidents/2.4;
+ s.metrics={date,households:groups.size,namedResidents:people.filter(alive).length,virtualResidents,virtualHouseholds,modeledHouseholds:groups.size+virtualHouseholds,regional};
  const macroRegions=macro?.regions||[],regionalDemand={};let weightedDemand=0,totalWeight=0;
  const categoryTotals={food:0,energy:0,utilities:0,transport:0,housing:0,discretionary:0};
  const ratio=(actual,plan)=>plan>0?clamp(actual/plan*100,20,160):100;
@@ -137,6 +138,7 @@ function prepareMonth(date){
   const inflation=Number(r.inflationPct)||2.5,unemployment=Number(r.unemploymentPct)||5,confidence=Number(r.consumerConfidence)||100;
   const baseDemand=clamp(100+(confidence-100)*.55-(inflation-2.5)*1.1-(unemployment-5)*.8,35,160);
   const bucket=regional[r.id]||{households:0,income:0,spending:0,stress:0,essentialCoverage:0,categoryActual:{},categoryPlan:{}};
+  bucket.virtualHouseholds=virtualHouseholds*Math.max(0,Number(r.weight)||0);bucket.modeledHouseholds=bucket.households+bucket.virtualHouseholds;
   const food=ratio(bucket.categoryActual.food||0,bucket.categoryPlan.food||0);
   const energy=ratio((bucket.categoryActual.utilities||0)+(bucket.categoryActual.transport||0),(bucket.categoryPlan.utilities||0)+(bucket.categoryPlan.transport||0));
   const utilities=ratio(bucket.categoryActual.utilities||0,bucket.categoryPlan.utilities||0);
@@ -144,10 +146,11 @@ function prepareMonth(date){
   const housingDemand=ratio(bucket.categoryActual.housing||0,bucket.categoryPlan.housing||0);
   const discretionary=ratio((bucket.categoryActual.entertainment||0)+(bucket.categoryActual.clothing||0)+(bucket.categoryActual.dining||0)+(bucket.categoryActual.durableGoods||0)+(bucket.categoryActual.subscriptions||0)+(bucket.categoryActual.personalServices||0),bucket.categoryPlan.discretionary||0);
   const actualRatio=bucket.spending>0?clamp(bucket.spending/Math.max(1,bucket.income),0,1.5):.75;
-  const demand=clamp(baseDemand*(.9+actualRatio*.1),25,170);
+  const sampleCoverage=clamp(bucket.households/Math.max(1,bucket.modeledHouseholds),0,1);
+  const demand=clamp(baseDemand*(1+(actualRatio-.75)*.05*sampleCoverage),25,170);
   const essential=clamp(100+(100-confidence)*.10+Math.max(0,inflation-2.5)*.35,80,125);
   const stress=clamp(30+Math.max(0,inflation-2.5)*2.2+Math.max(0,unemployment-5)*3+(100-confidence)*.45+(100-(bucket.households?bucket.essentialCoverage/bucket.households:100))*.12,0,100);
-  regionalDemand[r.id]={consumerDemandIndex:round(demand),essentialDemandIndex:round(essential),discretionaryDemandIndex:round(discretionary),householdStressIndex:round(stress),priceIndex:round(rs.priceIndex),foodDemandIndex:round(food),energyDemandIndex:round(energy),utilitiesDemandIndex:round(utilities),transportDemandIndex:round(transport),housingDemandIndex:round(housingDemand),households:bucket.households};
+  regionalDemand[r.id]={consumerDemandIndex:round(demand),essentialDemandIndex:round(essential),discretionaryDemandIndex:round(discretionary),householdStressIndex:round(stress),priceIndex:round(rs.priceIndex),foodDemandIndex:round(food),energyDemandIndex:round(energy),utilitiesDemandIndex:round(utilities),transportDemandIndex:round(transport),housingDemandIndex:round(housingDemand),housingPriceIndex:round(rs.housingPriceIndex||100),households:bucket.households,virtualHouseholds:round(bucket.virtualHouseholds||0),modeledHouseholds:round(bucket.modeledHouseholds||bucket.households)};
   const w=Math.max(0,Number(r.weight)||0);weightedDemand+=demand*w;totalWeight+=w;
   categoryTotals.food+=food*w;categoryTotals.energy+=energy*w;categoryTotals.utilities+=utilities*w;categoryTotals.transport+=transport*w;categoryTotals.housing+=housingDemand*w;categoryTotals.discretionary+=discretionary*w;
  }
@@ -156,7 +159,7 @@ function prepareMonth(date){
  active.market=active.market||{};active.market.economy=active.market.economy||{};
  Object.assign(active.market.economy,{householdDemandIndex:round(globalDemand),consumerCategoryDemand:globalCategories,regionalConsumerDemand:regionalDemand,householdEconomicsDate:date});
  s.lastPreparedDate=date;
- return {processed:true,date,households:groups.size,namedResidents:s.metrics.namedResidents,householdDemandIndex:round(globalDemand),consumerCategoryDemand:globalCategories};
+ return {processed:true,date,households:groups.size,namedResidents:s.metrics.namedResidents,virtualResidents,modeledHouseholds:s.metrics.modeledHouseholds,householdDemandIndex:round(globalDemand),consumerCategoryDemand:globalCategories};
 }
 function processIndividualMonth(n,date){
  const s=getState();if(!s||!n||!alive(n))return false;
@@ -261,7 +264,7 @@ function audit(){
  add('Finite non-negative household budgets',hs.every(h=>Number.isFinite(h.totalExpenses)&&h.totalExpenses>=0&&Number.isFinite(h.income)&&h.income>=0),'Income and expense totals are finite and non-negative.');
  add('Expense allocation reconciles',hs.every(h=>h.allocatedExpenses<=h.totalExpenses+.1&&h.allocatedExpenses>=0),'Shared household costs are allocated to adult earners only.');
  add('Autonomous purchase budgets reconcile',hs.every(h=>Object.values(h.purchases||{}).every(v=>Number.isFinite(v)&&v>=0)&&Math.abs(Object.values(h.purchases||{}).reduce((a,b)=>a+b,0)-h.totalExpenses)<.15),'Purchase categories reconcile to household expenses.');
- add('Regional consumer indices bounded',Object.values(active.market?.economy?.regionalConsumerDemand||{}).every(r=>['consumerDemandIndex','essentialDemandIndex','discretionaryDemandIndex','householdStressIndex','priceIndex','foodDemandIndex','energyDemandIndex','utilitiesDemandIndex','transportDemandIndex','housingDemandIndex'].every(k=>Number.isFinite(r[k])&&r[k]>=0&&r[k]<=300)),'Regional demand, stress and price indices remain finite and bounded.');
+ add('Regional consumer indices bounded',Object.values(active.market?.economy?.regionalConsumerDemand||{}).every(r=>['consumerDemandIndex','essentialDemandIndex','discretionaryDemandIndex','householdStressIndex','priceIndex','foodDemandIndex','energyDemandIndex','utilitiesDemandIndex','transportDemandIndex','housingDemandIndex','housingPriceIndex'].every(k=>Number.isFinite(r[k])&&r[k]>=0&&r[k]<=300)),'Regional demand, stress and price indices remain finite and bounded.');
  add('Global category demand bounded',Object.values(active.market?.economy?.consumerCategoryDemand||{}).every(v=>Number.isFinite(v)&&v>=0&&v<=300),'Consumer category demand indices remain finite and bounded.');
  const people=population().slice(0,MAX_NPCS);
  add('Individual finance balances valid',people.every(n=>!n.finances||[n.finances.cash,n.finances.debt,n.finances.monthlyIncome,n.finances.monthlyExpenses,n.finances.creditScore].every(v=>Number.isFinite(Number(v))&&Number(v)>=0)),'NPC cash, debt, income, expenses and credit scores remain finite and non-negative.');
