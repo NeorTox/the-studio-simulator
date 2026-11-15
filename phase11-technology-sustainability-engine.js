@@ -32,7 +32,7 @@ function post(description,category,amount,date,meta={}){
 function ensure(){
  if(typeof active==='undefined'||!active)return null;
  const s=active.technology||(active.technology={});
- s.version=VERSION;s.lastProcessedDate=s.lastProcessedDate||null;s.lastMonthProcessed=s.lastMonthProcessed||null;
+ s.version=VERSION;s.lastProcessedDate=s.lastProcessedDate||null;s.lastMonthProcessed=s.lastMonthProcessed||null;s.firstIntegratedDate=s.firstIntegratedDate||null;s.technologyBenefits=Object.assign({productionEfficiencyPct:0,renderCostReductionPct:0,distributionSecurityPct:0,postProductionEfficiencyPct:0},s.technologyBenefits||{});
  s.technologies=Array.isArray(s.technologies)?s.technologies:CATALOG.map(t=>({id:t.id,status:t.requires.length?'Locked':'Available',unlockedDate:null,completedDate:null}));
  s.researchProjects=Array.isArray(s.researchProjects)?s.researchProjects:[];
  s.patents=Array.isArray(s.patents)?s.patents:[];s.licenses=Array.isArray(s.licenses)?s.licenses:[];
@@ -90,6 +90,7 @@ function licensePatent(technologyId,companyId,royaltyPct=4){
  if(s.licenses.some(x=>x.technologyId===technologyId&&x.companyId===companyId&&x.status==='Active'))throw Error('This rival already has an active licence.');
  if(s.licenses.filter(x=>x.technologyId===technologyId&&x.status==='Active').length>=5)throw Error('A patent can have at most five active licences.');
  const fee=Math.max(150000,Math.round(t.cost*.035));if(!post('Technology licence — '+t.name,'Intellectual property licensing',fee,active.date,{technologyId,companyId,licenseFee:true}))throw Error('Unable to post licensing revenue.');
+ const adoption=s.rivalAdoption.find(x=>x.companyId===companyId)||{companyId,adoptionIndex:0,technologies:[]};if(!s.rivalAdoption.includes(adoption))s.rivalAdoption.push(adoption);if(!adoption.technologies.includes(technologyId))adoption.technologies.push(technologyId);adoption.adoptionIndex=clamp(adoption.adoptionIndex+12,0,100);
  const l={id:'LIC-'+technologyId+'-'+s.licenses.length,technologyId,companyId,companyName:rival.name,royaltyPct:pct,licenseFee:fee,status:'Active',startDate:active.date,royaltiesPaid:0};s.licenses.unshift(l);patent.licensedCount++;event(s,active.date,'patent-licensed',t.name+' licensed to '+rival.name+'.',{licenseId:l.id});persist();render();return l;
 }
 function completeResearch(s,p,date){
@@ -97,6 +98,18 @@ function completeResearch(s,p,date){
  p.status='Completed';p.progress=100;p.completionDate=date;state.status='Researched';state.completedDate=date;
  const patent={id:'PAT-'+t.id.toUpperCase(),technologyId:t.id,name:t.name,filingDate:date,status:'Active',estimatedValue:Math.round(p.budget*.42),licensedCount:0};s.patents.unshift(patent);
  active.company=active.company||{};active.company.technologyScore=round(num(active.company.technologyScore)+t.impact/10);
+ const x=s.sustainability,b=s.technologyBenefits;
+ if(t.id==='cloud-rendering')x.energyEfficiencyPct=clamp(num(x.energyEfficiencyPct)+4,0,70);
+ if(t.id==='digital-twin'){x.energyEfficiencyPct=clamp(num(x.energyEfficiencyPct)+6,0,70);x.waterEfficiencyPct=clamp(x.waterEfficiencyPct+3,0,90)}
+ if(t.id==='carbon-scheduling')x.carbonOffsetPct=clamp(x.carbonOffsetPct+5,0,80);
+ if(t.id==='renewable-microgrid')x.renewableSharePct=clamp(x.renewableSharePct+12,0,95);
+ if(t.id==='water-reclamation')x.waterEfficiencyPct=clamp(x.waterEfficiencyPct+16,0,90);
+ if(t.id==='circular-materials')x.recyclingPct=clamp(x.recyclingPct+14,0,95);
+ if(t.id==='virtual-production')b.productionEfficiencyPct=clamp(b.productionEfficiencyPct+4,0,50);
+ if(t.id==='procedural-animation')b.productionEfficiencyPct=clamp(b.productionEfficiencyPct+5,0,50);
+ if(t.id==='real-time-rendering')b.renderCostReductionPct=clamp(b.renderCostReductionPct+8,0,50);
+ if(t.id==='secure-distribution')b.distributionSecurityPct=clamp(b.distributionSecurityPct+8,0,50);
+ if(t.id==='immersive-audio')b.postProductionEfficiencyPct=clamp(b.postProductionEfficiencyPct+4,0,50);
  event(s,date,'research-completed','Breakthrough achieved: '+t.name+'. Patent filed.',{technologyId:t.id,patentId:patent.id});unlock(s,date);
 }
 function completeInitiative(s,p,date){
@@ -127,6 +140,7 @@ function monthClose(s,date){
 }
 function processDay(date){
  const s=ensure();if(!s)return{processed:false};
+ if(!s.firstIntegratedDate)s.firstIntegratedDate=date;
  if(s.lastProcessedDate===date)return{processed:false,idempotent:true,date};
  if(s.lastProcessedDate&&date<s.lastProcessedDate)return{processed:false,stale:true,date};
  s.researchProjects.filter(p=>p.status==='Active').forEach(p=>{const speed=clamp(.72+s.lab.level*.18+s.lab.scientists/110,0.8,2.4);p.points=round(p.points+speed);p.progress=round(clamp(p.points/p.durationDays*100,0,100));if(p.progress>=100)completeResearch(s,p,date)});
