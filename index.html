@@ -1406,7 +1406,7 @@ advance=function(n){
  const before=active.date,dayBefore=Number(active.day||0);
  const result=baseAdvance(n);
  let cursor=before,guard=0;
- while(cursor<active.date&&guard++<4000){cursor=addDays(cursor,1);window.simulateLifeDay(cursor);}
+ while(cursor<active.date&&guard++<4000){cursor=addDays(cursor,1);if(window.StudioPhase0?.phase1?.processWorldDay)window.StudioPhase0.phase1.processWorldDay(cursor);if(window.StudioPhaseIntegration)window.StudioPhaseIntegration.beginDay(cursor);window.simulateLifeDay(cursor);if(window.StudioPhaseIntegration)window.StudioPhaseIntegration.endDay(cursor);}
  if(active.date!==before){active.worldClock=active.worldClock||{};active.worldClock.lastSimDate=active.date;persist();}
  return result;
 };
@@ -1601,4 +1601,5 @@ renderLife();
 <script src="./phase3-founder-engine.js"></script>
 <script src="./phase4-company-engine.js"></script>
 <script src="./phase5-production-engine.js"></script>
+<script src="./phase-integration-engine.js"></script>
 </body><script async data-explicit-opt-in="true" data-deployment-id="dpl_ATvKSj7pHnDPZnTDZzJ81sNKCWPc" src="https://vercel.live/_next-live/feedback/feedback.js"></script>
