@@ -29,6 +29,8 @@ assert.match(depth,/hazardPenalty/);
 assert.match(depth,/energyDemandIndex/);
 assert.match(app,/getRegionalImpact/);
 assert.match(app,/Regional hazard disruption/);
+assert.match(js,/function renderCommandPulse/);
+assert.match(js,/studio-command-pulse/);
 assert.match(js,/function showTutorial/);
 assert.match(js,/STORE_KEY/);
 assert.match(html,/studio-overhaul\.css/);
