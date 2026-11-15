@@ -6,12 +6,12 @@ A film and entertainment company simulation game.
 
 - Game version: 4.25.0
 - Engine versions: Phase 6 Ecosystem 6.1.0; Phase 6 Audience version is reported by its runtime module
-- Completed development phases: 0–11; Phase 12 is active
+- Completed development phases: 0–12; Phase 13 is active
 - Phase 6: Entertainment ecosystem — complete; financial retries, media, awards and multi-year integration verified
 - Phase 7: Smartphone & media — complete; app catalog, social creators, personalized feeds, daily engagement, digital advertising and save persistence verified
 - Phase 10: Autonomous competitors — complete; ten rival studios, autonomous financial/production cycles, bids, acquisitions, market-share dynamics and strategy controls verified
 - Phase 11: Technology & sustainability — complete; 12-node technology tree, research labs, patents/licensing, sustainability operations and three-year integration verified
-- Active development phase: Phase 12 — Generations & world evolution
+- Active development phase: Phase 13 — Integration & release quality
 - Production: https://neortox.github.io/the-studio-simulator/
 
 ## Phase 6 scope
@@ -122,3 +122,16 @@ Phase 11 verification:
 - Three-year cross-phase stress test passed: 1,095/1,095 daily pipelines include Phase 11; all phases 0–11 connected; technology/world dates synchronized; Phase 11 audit 12/12; global integration audit 50/50; zero browser errors.
 - GitHub Pages build and production deployment succeeded for the signed-off Phase 11 candidate.
 
+
+
+## Phase 12 — Generations & world evolution (complete)
+
+Phase 12 connects long-term family history to the existing Phase 2 population graph. Named NPCs receive bounded generation indices; family records track lineage depth, living members, family heads and legacy scores. When a named NPC dies, the estate system settles their net assets once, distributes inheritance to eligible spouse/children and records a reconciled inheritance ledger. Monthly autonomous family events can create the next generation using deterministic campaign-seeded decisions while respecting the 25,000 named-NPC materialization cap.
+
+Company succession plans score adult NPC candidates using leadership, communication, technical and performance capabilities. Approved appointments update the Phase 4 executive register and company governance history. Rival studios can also change chief executives over long tenures, with leadership transitions recorded. Annual world evolution updates six entertainment-industry indices—globalization, streaming, production technology, audience fragmentation, sustainability and franchise nostalgia—and publishes persistent era/trend snapshots into market state.
+
+Phase 12 verification:
+- Dedicated Node regression passed, including inheritance reconciliation, autonomous births, family generation depth, annual world evolution, executive succession, idempotency, integration and save serialization.
+- Playwright browser QA passed for the Generations dashboard, successor planning and appointment, 45-day daily processing, integration audit and save/reload; Phase 12 audit 14/14 and global integration audit 53/53.
+- Three-year cross-phase stress test passed: 1,095/1,095 daily pipelines include Phase 12; three annual evolution updates completed; campaign, population and generation dates synchronized; all 13 implemented phases connected; zero browser/simulation errors.
+- Full regression workflow succeeded on commit `5674497a4104a7caa1fe98142669726854983a43` (run [43701468068](https://github.com/NeorTox/the-studio-simulator/actions/runs/43701468068)); GitHub Pages build and deployment succeeded (run [43701468113](https://github.com/NeorTox/the-studio-simulator/actions/runs/43701468113)).
