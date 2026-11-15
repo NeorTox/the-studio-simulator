@@ -13,7 +13,7 @@ function ensure(){
  let s=active.generations;
  if(!s||s.version!==VERSION){
   const old=s||{};
-  s={version:VERSION,firstIntegratedDate:old.firstIntegratedDate||active.date,lastProcessedDate:old.lastProcessedDate||null,
+  s={version:VERSION,firstIntegratedDate:old.firstIntegratedDate||active.startDate||active.date,lastProcessedDate:old.lastProcessedDate||null,
    dailyTicks:Number(old.dailyTicks||0),monthlyTicks:Number(old.monthlyTicks||0),annualTicks:Number(old.annualTicks||0),
    births:Array.isArray(old.births)?old.births:[],deaths:Array.isArray(old.deaths)?old.deaths:[],inheritances:Array.isArray(old.inheritances)?old.inheritances:[],
    familyLedger:Array.isArray(old.familyLedger)?old.familyLedger:[],leadershipHistory:Array.isArray(old.leadershipHistory)?old.leadershipHistory:[],
