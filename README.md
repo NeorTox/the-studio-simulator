@@ -6,10 +6,10 @@ A film and entertainment company simulation game.
 
 - Game version: 4.23.0
 - Engine versions: Phase 6 Ecosystem 6.1.0; Phase 6 Audience version is reported by its runtime module
-- Completed development phases: 0–8; Phase 9 is active
+- Completed development phases: 0–9; Phase 10 is active
 - Phase 6: Entertainment ecosystem — complete; financial retries, media, awards and multi-year integration verified
 - Phase 7: Smartphone & media — complete; app catalog, social creators, personalized feeds, daily engagement, digital advertising and save persistence verified
-- Active development phase: Phase 9 — Global economy
+- Active development phase: Phase 10 — Autonomous competitors
 - Production: https://neortox.github.io/the-studio-simulator/
 
 ## Phase 6 scope
@@ -75,4 +75,15 @@ Data provenance and licensing are documented in DATA_SOURCES.md.
 
 The global economy expands the existing entertainment-market macro model into eight linked regional economies. Regional GDP and industrial output, inflation, unemployment, consumer confidence, policy rates, fiscal balance, public debt and currency-strength indices evolve daily. Fifteen trade corridors calculate evolving trade-flow and tariff-friction indices. Ten commodity markets track supply, demand, inventory and price indices across energy, industrial materials, critical minerals, agriculture, timber and logistics.
 
-Players can adjust regional monetary/fiscal policy and establish time-limited trade agreements. The model writes global risk, demand, commodity and currency-volatility indicators into the existing market economy state, and the Phase 8 financial-empire valuation reads the global risk signal. Values are fictional simulation indices, not live economic data, exchange rates or forecasts. State is versioned and stored in the campaign save.
+Players can adjust regional monetary/fiscal policy and establish time-limited trade agreements. The model writes global risk, demand, commodity and currency-volatility indicators into the existing market economy state, and the Phase 8 financial-empire valuation reads the global risk signal. Values are fictional simulation indices, not live economic data, exchange rates or forecasts. State is versioned and stored in the campaign save. Phase 9 is complete: its 11-point integrity audit, 45-day browser test, full regression and fresh 1,095-day cross-phase stress test passed on commit 4a252cba879c87877d793b2a5dc4320f30f3a2cd, with all 42 integration checks passing.
+
+
+## Landscape orientation
+The installable app requests landscape orientation. On narrow mobile screens in portrait orientation, the game displays a rotate-device prompt. The complete visual and interaction redesign remains a post-simulation milestone, after Phases 10–13 and their integration are complete.
+
+## Phase 9 verification
+- 8 regional economies, 15 trade corridors and 10 commodity markets.
+- Regional monetary/fiscal policy and time-limited trade agreements.
+- 11/11 Phase 9 integrity checks and 42/42 full integration checks passed.
+- Three-year simulation: 1,095/1,095 completed daily pipelines with synchronized global economy and world dates.
+- GitHub Pages build and deployment succeeded for the verified code commit.
