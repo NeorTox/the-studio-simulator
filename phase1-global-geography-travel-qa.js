@@ -25,7 +25,7 @@ const assert=require('assert');const {chromium}=require('playwright');
   const bangalore=G.cities.find(x=>x.countryId==='IN'&&x.name==='Bengaluru');
   const domestic=T.quote(bangalore.id,'train');if(!domestic.domestic||domestic.distanceKm<=0)throw Error('Domestic rail quote invalid');
   const first=T.planTrip(bangalore.id,'train',active.date,2,'budget');
-  if(first.status!=='In transit'||first.hotel.total<=0)throw Error('Domestic trip did not book transport and accommodation');const dayOne=T.processDay(active.date),duplicateDay=T.processDay(active.date);if(!dayOne||duplicateDay)throw Error('Travel daily processing is not idempotent');
+  if(first.status!=='In transit'||first.hotel.total<=0)throw Error('Domestic trip did not book transport and accommodation');const nextTravelDate=new Date(Date.parse(active.date+'T00:00:00Z')+86400000).toISOString().slice(0,10),dayOne=T.processDay(nextTravelDate),duplicateDay=T.processDay(nextTravelDate);if(!dayOne||duplicateDay)throw Error('Travel daily processing is not idempotent');
   advance(2);
   if(G.getCity(T.ensure().player.cityId)?.name!=='Bengaluru')throw Error('Domestic arrival did not update player location');const domesticArrival=G.getCity(T.ensure().player.cityId).name;
   const tokyo=G.cities.find(x=>x.countryId==='JP'&&x.name==='Tokyo');
