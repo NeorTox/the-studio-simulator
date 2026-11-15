@@ -5,7 +5,7 @@ if(!P)throw new Error('THE STUDIO Phase 0 kernel is required before the integrat
 const CONTRACTS=[
 {id:0,key:'kernel',name:'Architecture & stability',requires:['StudioPhase0','StudioPhase0.createCampaignScheduler']},
 {id:1,key:'world',name:'World, time & geography',requires:['StudioPhase0.phase1.processWorldDay','StudioPhase0.phase1.processWorldRange']},
-{id:2,key:'population',name:'Population & NPC intelligence',requires:['StudioPopulationEngine.processDay']},
+{id:2,key:'population',name:'Population & NPC intelligence',requires:['StudioPopulationEngine.processDay','StudioHouseholdEconomics.prepareMonth','StudioHouseholdEconomics.processIndividualMonth','StudioHouseholdEconomics.audit']},
 {id:3,key:'founder',name:'Founder & personal life',requires:['Phase3Founder.stepDay']},
 {id:4,key:'company',name:'Company management',requires:['Phase4Company.stepDay']},
 {id:5,key:'production',name:'Entertainment production',requires:['Phase5Production.audit']},
@@ -97,6 +97,7 @@ function audit(){
   add('Phase 6 daily checkpoints synchronized',dates.length===0||(p6Date===active.date&&audienceDate===active.date),'Campaign '+active.date+' · ecosystem '+String(p6Date||'not run')+' · audience '+String(audienceDate||'not run'));
   const ledger=Array.isArray(active.ledger)?active.ledger:[];
   add('Ledger entries have finite amounts',ledger.every(x=>Number.isFinite(Number(x.amount??x.value??0))),'All recorded ledger amounts are finite numbers.');
+  const household=window.StudioHouseholdEconomics?.audit?.();add('Household & consumer economics integrity',!!household&&household.failed===0,household?(household.passed+' passed / '+household.failed+' failed'):'Household economics audit API unavailable.');
   add('Phase 2 date does not lead world date',!active.population?.phase2?.lastProcessedDate||!active.world?.time?.lastProcessedDate||active.population.phase2.lastProcessedDate<=active.world.time.lastProcessedDate,'Population processing must not run ahead of world time.');
  }
  const passed=results.filter(x=>x.ok).length,failed=results.length-passed;
