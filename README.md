@@ -62,7 +62,7 @@ The Phase 1 extension adds a shared global geography registry and the first play
 
 - 252 country and territory identities with ISO alpha-2/alpha-3 codes where available, continent, capital, currency, languages, parent-territory links and one of the eight simulation macro-regions.
 - 5,000+ first-level administrative names sourced from an attributed open dataset. Countries without first-level divisions in that source are explicitly marked as country-level-only/pending rather than silently inventing subdivisions.
-- Stable IDs connect administrative divisions, seeded city hubs and campaign locations. The seeded travel hub list includes mapped coordinates and airport codes for flight routes, plus domestic rail/road estimates where supported.
+- Stable IDs connect administrative divisions, seeded city hubs and campaign locations. The seeded travel network currently includes 126 mapped city hubs with airport codes across 92 countries, plus domestic rail/road estimates where supported.
 - The Travel page supports player location, passport nationality, simplified in-game entry permits, flight/rail/road route quotes, bookings, hotel tiers, trip expenses through the existing founder personal-finance ledger, transit and arrival processing, and persistent travel history.
 - Country geography now resolves into the Phase 1 climate engine. Unknown locations no longer silently default to South Asia.
 
