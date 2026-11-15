@@ -9,7 +9,7 @@ const CONTRACTS=[
 {id:3,key:'founder',name:'Founder & personal life',requires:['Phase3Founder.stepDay']},
 {id:4,key:'company',name:'Company management',requires:['Phase4Company.stepDay']},
 {id:5,key:'production',name:'Entertainment production',requires:['Phase5Production.audit']},
-{id:6,key:'ecosystem',name:'Entertainment ecosystem',requires:[]},
+{id:6,key:'ecosystem',name:'Entertainment ecosystem',requires:['Phase6Ecosystem.stepDay','Phase6Ecosystem.audit']},
 {id:7,key:'smartphone',name:'Smartphone & media',requires:[]},
 {id:8,key:'financial-empire',name:'Financial empire',requires:[]},
 {id:9,key:'global-economy',name:'Global economy',requires:[]},
@@ -40,8 +40,8 @@ function audit(){
  add('Active campaign exists',!!active,'Integration checks require an active campaign.');
  const modules=CONTRACTS.map(c=>{
   const missing=c.requires.filter(r=>!path(r));
-  const implemented=c.id<=5&&missing.length===0;
-  return {...c,status:c.id<=5?(missing.length?'degraded':'connected'):'not-built',missing};
+  const implemented=c.id<=6&&missing.length===0;
+  return {...c,status:c.id<=6?(missing.length?'degraded':'connected'):'not-built',missing};
  });
  modules.forEach(m=>add('Phase '+m.id+' · '+m.name,m.status==='connected'||m.status==='not-built',m.status+(m.missing.length?': '+m.missing.join(', '):'')));
  const dep=P.dependencyReport();add('Architecture dependency graph',dep.invalidEdges.length===0,dep.invalidEdges.length?dep.invalidEdges.join('; '):dep.domains+' domains / '+dep.edges+' declared edges');
