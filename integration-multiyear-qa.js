@@ -19,13 +19,13 @@ const {chromium}=require('playwright'),assert=require('assert');
  // 1,095 simulated days, advanced in 30-day chunks to exercise the real public advance path.
  for(let i=0;i<37;i++)await page.evaluate(days=>window.advance(Math.min(days,1095-(window.__stressDays||0))),30).then(()=>page.evaluate(()=>{window.__stressDays=(window.__stressDays||0)+30;})).catch(e=>{throw e;});
  const result=await page.evaluate(()=>{
-  const w=active.world?.time,pop=active.population?.phase2,founder=active.founder?.phase3,company=window.Phase4Company.ensure(),telemetry=active.integration;
+  const w=active.world?.time,pop=active.world?.population?.phase2,founder=active.founder?.phase3,company=window.Phase4Company.ensure(),telemetry=active.integration;
   const worldDate=w?.lastProcessedDate,popDate=pop?.lastProcessedDate,founderDate=founder?.lastDay,companyDate=company?.lastProcessedDate;
   const report=window.StudioPhaseIntegration.audit();
   return {date:active.date,start:active.startDate,worldDate,worldDays:w?.processedDays,popDate,popDays:pop?.dailyTicks,founderDate,companyDate,companyDays:company?.processedDays,trackedDays:Object.keys(telemetry?.days||{}).length,completedDays:Object.values(telemetry?.days||{}).filter(x=>x.status==='completed').length,schedulerHistory:active.simulationKernel?.history?.length,schedulerQueue:active.simulationKernel?.queue?.length,audit:{passed:report.passed,failed:report.failed,tests:report.tests},phase5:window.Phase5Production.audit()};
  });
  console.log('MULTIYEAR CROSS-PHASE STRESS',JSON.stringify({setup,result,errors}));
- assert.equal(result.date,addDays(start,1110)); // 37 x 30-day advances
+ assert.equal(result.date,addDays(start,1095)); // 37 x 30-day advances
  assert.equal(result.worldDate,result.date);
  assert.equal(result.popDate,result.date);
  assert.equal(result.founderDate,result.date);
