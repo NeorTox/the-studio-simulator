@@ -5,7 +5,7 @@ One complete phase is delivered and signed off before starting the next. Phases 
 | Phase | Scope | Status |
 |---:|---|---|
 | 0 | Architecture & stability | COMPLETE — regression rechecked |
-| 1 | World, time & geography | COMPLETE — boot and navigation rechecked |
+| 1 | World, time & geography | COMPLETE — global geography and travel extension added; expanded regression in progress |
 | 2 | Population & NPC intelligence | COMPLETE — population audit and active-campaign regression passed |
 | 3 | Founder & personal life | COMPLETE — browser forms, finance integrity, one-year simulation, export/import/reload and legacy migration passed in CI |
 | 4 | Company management | COMPLETE — branch economics, contract settlements, board capital approvals, compliance penalties, management accounts, audit and mobile browser regression passed |
