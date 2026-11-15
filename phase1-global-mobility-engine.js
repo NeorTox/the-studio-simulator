@@ -49,7 +49,7 @@ function planTrip(destinationId,mode,departureDate,nights=2,hotelTier='standard'
  const t=ensure();if(!t)throw Error('Create a campaign first.');
  if(!dateValid(departureDate)||departureDate<active.date)throw Error('Departure date must be today or a future simulation date.');
  const q=quote(destinationId,mode),n=Math.max(1,Math.min(30,Math.floor(Number(nights)||1)));
- const conflict=t.bookings.find(b=>['Booked','In transit'].includes(b.status)&&b.arrivalDate>=departureDate);if(conflict)throw Error('You already have a booking that overlaps this departure. Complete or cancel that trip first.');
+ const conflict=t.bookings.find(b=>['Booked','In transit'].includes(b.status)&&b.arrivalDate>=departureDate);if(conflict)throw Error('You already have a booking that overlaps this departure. Complete that trip before booking another.');
  if(!q.domestic&&!hasEntryPermit(q.to.countryId,departureDate))throw Error('An in-game entry permit is required. Apply for one before booking.');
  const hotelRates={budget:45,standard:110,premium:260,luxury:650},rate=hotelRates[hotelTier]||hotelRates.standard,hotelCost=round(rate*n),total=round(q.fare+hotelCost);
  if(!active.founder||Number(active.founder.personalCash||0)<total)throw Error('Insufficient personal cash. Trip total is '+total.toFixed(2)+'.');
