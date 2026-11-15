@@ -17,7 +17,7 @@ assert.match(js,/function mitigate/);
 assert.match(js,/function regionalImpact/);
 assert.match(js,/function applyHazardConsequences/);
 assert.match(js,/function npcBelongsToRegion/);
-assert.match(js,/phase1\\?\.regionFor/);
+assert.match(js,/phase1\?\.regionFor/);
 assert.match(js,/transportReliabilityPct/);
 assert.match(js,/productionCapacityPct/);
 assert.match(js,/localBusinessActivityPct/);
