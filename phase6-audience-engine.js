@@ -117,4 +117,9 @@ api.audit=function(){const base=oldAudit.call(api),extra=auditAudience();return 
 ensure();
 try{window.StudioPhase0?.registerModule({id:'ecosystem-audience',name:'Audience behaviour and fandom intelligence',deps:['ecosystem','population','media','production'],owns:['audience segment profiles','fan communities','critic review aggregation'],status:'implemented'});}catch(e){}
 api.render();
+const globalRender=window.render;
+if(typeof globalRender==='function'&&!globalRender.__p6AudienceWrapped){
+ const wrapped=function(...args){const result=globalRender.apply(this,args);renderAudience();return result;};
+ wrapped.__p6AudienceWrapped=true;window.render=wrapped;
+}
 })();
