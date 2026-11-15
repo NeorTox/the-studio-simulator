@@ -24,6 +24,8 @@ const assert = require('node:assert/strict');
  assert.deepEqual(errors,[],'No uncaught page errors: '+errors.join('; '));
  const metrics=await page.evaluate(()=>({layout:getComputedStyle(document.querySelector('.shell')).gridTemplateColumns,css:!![...document.styleSheets].some(s=>s.href&&s.href.includes('studio-overhaul.css')),risk:!!window.StudioWorldRisk,tutorial:!!window.StudioTutorial}));
  assert.equal(metrics.css,true);assert.equal(metrics.risk,true);assert.equal(metrics.tutorial,true);
+ const engines=await page.evaluate(()=>({responses:window.StudioNPCDecisionConsequences?.responseStyles?.length,templates:window.StudioNPCDecisionConsequences?.catalog?.length,riskAudit:window.StudioWorldRisk?.audit?.().failed}));
+ assert.equal(engines.responses,12);assert.equal(engines.templates,100);assert.equal(engines.riskAudit,0);
  console.log('PLAYER EXPERIENCE BROWSER QA PASSED',JSON.stringify(metrics));
  await browser.close();
 })().catch(e=>{console.error(e);process.exit(1)});
