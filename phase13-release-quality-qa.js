@@ -3,7 +3,7 @@ const {chromium}=require('playwright'),assert=require('assert');
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  const page=await browser.newPage({viewport:{width:1440,height:900}});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
- await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
+ await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});await page.evaluate(()=>window.StudioTutorial?.close?.());
  const assets=await page.evaluate(async()=>{
   const refs=[...document.scripts].map(s=>s.getAttribute('src')).filter(x=>x&&x.startsWith('./')&&x.endsWith('.js'));
   const results=await Promise.all(refs.map(async src=>({src,ok:(await fetch(src,{cache:'no-store'})).ok})));
