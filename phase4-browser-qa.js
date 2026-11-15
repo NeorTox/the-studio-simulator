@@ -9,7 +9,7 @@ const {chromium}=require('playwright'),assert=require('assert');
  await p.getByRole('button',{name:/Create campaign/}).evaluate(el=>el.click());
  for(const [id,v] of [['nfounder','Phase Four QA'],['ncompany','QA Studios'],['ncountry','India'],['ncity','Kochi']])await p.locator('#'+id).fill(v);
  await p.getByRole('button',{name:/Create and save campaign/}).evaluate(el=>el.click());
- await p.locator('[data-page="company"]').click();
+ await p.locator('[data-page="company"]').evaluate(el=>el.click());
  await p.evaluate(()=>{const first=Phase4Company.ensure(),second=Phase4Company.ensure();if(first!==second)throw Error('Phase 4 ensure replaced the management object identity');Phase4Company.render()});
  assert.equal(await p.locator('#phase4-company').count(),1,'Phase 4 dashboard mounts on Company page');
  await p.evaluate(()=>Phase4Company.addDepartment());
