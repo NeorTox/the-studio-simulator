@@ -25,7 +25,7 @@ const {chromium}=require('playwright'),assert=require('assert');
   return {date:active.date,start:active.startDate,worldDate,worldDays:w?.processedDays,popDate,popDays:pop?.dailyTicks,founderDate,companyDate,companyDays:company?.processedDays,trackedDays:Object.keys(telemetry?.days||{}).length,completedDays:Object.values(telemetry?.days||{}).filter(x=>x.status==='completed').length,schedulerHistory:active.simulationKernel?.history?.length,schedulerQueue:active.simulationKernel?.queue?.length,audit:{passed:report.passed,failed:report.failed,tests:report.tests},phase5:window.Phase5Production.audit()};
  });
  console.log('MULTIYEAR CROSS-PHASE STRESS',JSON.stringify({setup,result,errors}));
- assert.equal(result.date,addDays(start,1095)); // 37 x 30-day advances
+ const expectedDate=new Date(start+'T00:00:00Z');expectedDate.setUTCDate(expectedDate.getUTCDate()+1095);assert.equal(result.date,expectedDate.toISOString().slice(0,10)); // exactly 1,095 simulated days
  assert.equal(result.worldDate,result.date);
  assert.equal(result.popDate,result.date);
  assert.equal(result.founderDate,result.date);
