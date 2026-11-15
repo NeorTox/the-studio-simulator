@@ -4,6 +4,7 @@ The global geography registry uses the following public datasets:
 
 - **Country and territory identities, ISO alpha-2 keys, capitals, continents, currencies and languages:** [Annexare Countries](https://github.com/annexare/Countries), distributed under the MIT License. Copyright © 2014 Annexare Studio. The upstream MIT notice is retained here by attribution.
 - **First-level administrative division names:** [dr5hn/countries-states-cities-database](https://github.com/dr5hn/countries-states-cities-database), distributed under the Open Database License (ODbL) 1.0. Attribution: dr5hn and contributors. The project reports coverage of approximately 250 country/territory records and more than 5,000 first-level administrative units. The derived names in THE STUDIO are attributed to this source; consult the upstream ODbL terms for database redistribution and share-alike obligations.
+- **Curated city hubs and route coordinates:** manually curated gameplay records in `phase1-global-geography-engine.js`; airport codes are IATA codes where explicitly supplied. Non-airport mapped locations use clearly simulated gateway IDs and must not be treated as real airports.
 
 ## Modeling notes
 
