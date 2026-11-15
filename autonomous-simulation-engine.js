@@ -61,7 +61,7 @@ function orderedTasks(){
  }
  selected.forEach(visit);return out;
 }
-function runTick(date){
+function runTick(date,options={}){
  const c=campaign(),s=ensure();if(!c||!s)return {processed:false,reason:'no-campaign'};
  if(!validDate(date))throw Error('Autonomous tick requires YYYY-MM-DD.');
  if(s.lastTickDate===date)return {processed:false,idempotent:true,date};
@@ -91,7 +91,7 @@ function runTick(date){
  s.deadLetters=s.deadLetters.slice(-MAX_EVENTS);s.lastTickDate=date;s.ticks++;s.metrics.lastDurationMs=Math.max(0,Date.now()-started);
  const record={date,tasksDue:dueList.length,tasksRun:ran.length,failed:failed.length,skipped:skipped.length,eventsHandled:handled,eventsPending:s.events.length,durationMs:s.metrics.lastDurationMs};
  s.history.unshift(record);s.history=s.history.slice(0,MAX_HISTORY);
- if(typeof persist==='function')persist();
+ if(options.persist!==false&&typeof persist==='function')persist();
  return {processed:true,...record,ran,failed,skipped};
 }
 function metrics(){const s=ensure();return s?{version:VERSION,stateVersion:s.version,lastTickDate:s.lastTickDate,ticks:s.ticks,registeredTasks:tasks.size,queuedEvents:s.events.length,deadLetters:s.deadLetters.length,...s.metrics}:null}
@@ -133,7 +133,7 @@ function attach(){
  const integration=window.StudioPhaseIntegration;
  if(integration&&!integration.__autonomyWrapped){
   const oldEnd=integration.endDay;
-  integration.endDay=function(date){const out=oldEnd.call(this,date);const result=runTick(date);return {autonomy:result,integration:out};};
+  integration.endDay=function(date){const out=oldEnd.call(this,date);const result=runTick(date,{persist:false});return {autonomy:result,integration:out};};
   const oldAudit=integration.audit;
   integration.audit=function(){const report=oldAudit.call(this),a=audit();report.tests.push({name:'Autonomous simulation controller',ok:a.failed===0,detail:a.passed+'/'+(a.passed+a.failed)+' checks passed'});report.passed=report.tests.filter(x=>x.ok).length;report.failed=report.tests.length-report.passed;return report;};
   integration.__autonomyWrapped=true;
