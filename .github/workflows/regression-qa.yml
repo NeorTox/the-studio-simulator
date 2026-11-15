@@ -39,6 +39,8 @@ jobs:
           done
       - name: Run player experience browser smoke test
         run: node player-experience-browser-qa.js
+      - name: Verify all seven world systems execute on real simulation days
+        run: node simulation-depth-runtime-qa.js
       - name: Validate global geography and travel engines
         run: |
           node --check phase1-global-geography-engine.js
