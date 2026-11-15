@@ -3,7 +3,7 @@ const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const src=fs.readFileSync(__dirname+'/phase10-autonomous-competitors-engine.js','utf8');
 const active={id:'phase10-qa',date:'2026-01-01',worldSeed:123456,company:{cash:25e6,currency:'USD',reputation:68},employees:[],projects:[],market:{news:[]}};
 const nav={appendChild(){},querySelector(){return null}},content={appendChild(){}};
-const document={readyState:'complete',querySelector(s){return s==='.nav'?nav:s==='.content'?content:null},getElementById(){return null},addEventListener(){}};
+const document={readyState:'complete',querySelector(s){return s==='.nav'?nav:s==='.content'?content:null},getElementById(){return null},createElement(tag){return{tag,dataset:{},classList:{contains(){return false}},appendChild(){},setAttribute(){}}},addEventListener(){}};
 const window={Phase6Ecosystem:{stepDay(date){return{date}}},StudioPhaseIntegration:{audit(){return{tests:[],passed:0,failed:0}}},nav(){},render(){}};
 const context={window,document,active,persist(){},toast(){},console,Date,Math,Number,String,Array,Object,JSON,Set,Map};
 vm.runInNewContext(src,context,{filename:'phase10-autonomous-competitors-engine.js'});
