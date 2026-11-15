@@ -47,6 +47,9 @@ jobs:
         run: |
           node --check phase6-ecosystem-engine.js
           node --check phase6-audience-engine.js
+          node --check phase-integration-engine.js
+          node --check integration-multiyear-qa.js
+          node --check phase6-browser-qa.js
           node test-phase6.js
           node test-phase6-audience.js
       - name: Run Phase 6 mobile browser regression
