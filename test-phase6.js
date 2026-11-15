@@ -13,6 +13,7 @@ assert.equal(deal.status,'Active');assert.equal(active.company.cash,101000);
 assert.throws(()=>api.addDistributionDeal({projectId:'P6-PROJECT',licensee:'Second Distributor',channel:'Theatrical',territory:'India',rights:'Theatrical exhibition',startDate:'2026-12-01',endDate:'2027-01-01',upfrontFee:0,revenueShare:70,distributorFee:10,exclusive:true}),/conflict/i);
 const offer=api.createOffer({projectId:'P6-PROJECT',licensee:'Orbit Stream',channel:'Streaming SVOD',territory:'Worldwide',rights:'Streaming',startDate:'2027-01-01',endDate:'2028-01-01',upfrontFee:500,revenueShare:65,distributorFee:10});
 api.counterOffer(offer.id,{upfrontFee:750,revenueShare:70,distributorFee:8});const accepted=api.acceptOffer(offer.id);assert.equal(accepted.upfrontFee,750);assert.equal(offer.status,'Accepted');
+const guaranteeOffer=api.createOffer({projectId:'P6-PROJECT',licensee:'Regional Broadcaster',channel:'Broadcast TV',territory:'United Kingdom',rights:'Broadcast',startDate:'2026-11-14',endDate:'2026-11-15',upfrontFee:500,minimumGuarantee:2000,revenueShare:65,distributorFee:10});const guaranteeDeal=api.acceptOffer(guaranteeOffer.id);assert.equal(guaranteeDeal.minimumGuarantee,2000);
 const release=api.addRelease({projectId:'P6-PROJECT',territory:'India',openingDate:'2026-11-14',screens:200,averageTicket:10,exhibitorShare:50,distributorFee:10,expectedRunDays:28});
 const campaign=api.addCampaign({projectId:'P6-PROJECT',name:'Orbit launch',channel:'Trailer / video',segment:'Science fiction fans',budget:2000,durationDays:14});
 const royalty=api.addRoyalty({ipId:'IP-QA',payee:'A. Rao',rate:5,basis:'gross'});
@@ -22,6 +23,7 @@ active.date='2026-11-15';const first=api.stepDay('2026-11-15');assert.equal(firs
 const snapshot=JSON.stringify(active.ecosystem);assert(snapshot.includes('Orbit Stream'));
 assert.equal(api.stepDay('2026-11-15').skipped,true,'same-day processing is idempotent');
 const settlement=api.settleRoyalties('2026-11-16');assert(settlement.paid>0);assert.equal(royalty.accrued,0);assert(royalty.paid>0);
+active.date='2026-11-17';api.stepDay('2026-11-17');assert.equal(guaranteeDeal.status,'Completed');assert.equal(guaranteeDeal.paidToDate,2000,'Minimum guarantee is topped up at the end of the rights window');
 const audit=api.audit();assert.equal(audit.failed,0,JSON.stringify(audit.tests.filter(x=>!x.ok)));
 assert(posts.some(x=>x.category==='Entertainment ecosystem revenue'));assert(posts.some(x=>x.category==='Talent & IP royalties'));
 console.log('PASS Phase 6 distribution rights conflicts, negotiations, theatrical box office, marketing analytics, merchandise inventory, royalty accrual/settlement, daily idempotency, save serialization and audit');
