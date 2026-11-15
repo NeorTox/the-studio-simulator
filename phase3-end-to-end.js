@@ -42,7 +42,7 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
  const dl=await dlPromise;
  const file=await dl.path();const exported=JSON.parse(fs.readFileSync(file,'utf8'));
  assert.equal(exported.founder.personalFinance.recurring.length,3);
- assert.equal(exported.founder.phase3.version,'3.0.2');
+ assert.equal(exported.founder.phase3.version,'3.0.3');
  console.log('EXPORT PASS',dl.suggestedFilename(),fs.statSync(file).size,'bytes');
  // Re-import the actual exported campaign through the application's file input.
  await p.locator('#importfile').setInputFiles(file);await p.waitForTimeout(150);
@@ -50,14 +50,14 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
  await p.reload({waitUntil:'networkidle'});
  const reloaded=await p.evaluate(()=>({date:active.date,version:active.founder.phase3.version,recurring:active.founder.personalFinance.recurring.length,ledger:active.founder.personalFinance.ledger.filter(x=>x.source==='recurring').length}));
  console.log('IMPORT/RELOAD PASS',JSON.stringify(reloaded));
- assert.deepEqual(reloaded,{date:'2027-11-14',version:'3.0.2',recurring:3,ledger:17});
+ assert.deepEqual(reloaded,{date:'2027-11-14',version:'3.0.3',recurring:3,ledger:17});
  // Legacy migration: remove Phase 3 additions and import a valid old-format campaign.
  const legacy=JSON.parse(JSON.stringify(exported));legacy.id='LEGACY-PHASE3-QA';legacy.founder.personalCash=5000;delete legacy.founder.phase3;delete legacy.founder.personalFinance;delete legacy.founder.dailyRoutine;delete legacy.founder.personalCalendar;delete legacy.founder.reputation;delete legacy.founder.succession;delete legacy.founder.wellbeing;
  const legacyPath=path.join(os.tmpdir(),'legacy-phase3-qa.json');fs.writeFileSync(legacyPath,JSON.stringify(legacy));
  await p.locator('#importfile').setInputFiles(legacyPath);await p.waitForTimeout(150);
  const migrated=await p.evaluate(()=>({id:active.id,cash:active.founder.personalCash,version:active.founder.phase3?.version,cashAccount:active.founder.personalFinance.accounts.find(x=>x.id==='cash')?.balance}));
  console.log('LEGACY MIGRATION',JSON.stringify(migrated));
- assert.equal(migrated.id,'LEGACY-PHASE3-QA');assert.equal(migrated.cash,5000);assert.equal(migrated.version,'3.0.2');assert.equal(migrated.cashAccount,5000);
+ assert.equal(migrated.id,'LEGACY-PHASE3-QA');assert.equal(migrated.cash,5000);assert.equal(migrated.version,'3.0.3');assert.equal(migrated.cashAccount,5000);
  assert.deepEqual(errors,[]);
  console.log('PASS full Phase 3 actual campaign long-horizon + export/import + legacy migration');
  await b.close();
