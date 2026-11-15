@@ -16,7 +16,7 @@ One complete phase is delivered and signed off before starting the next. Phases 
 | 9 | Global economy | COMPLETE — 8 regional economies, 15 trade corridors, 10 commodity markets, policy controls, browser QA and 1,095-day integration passed |
 | 10 | Autonomous competitors | COMPLETE — ten rival studios, autonomous monthly operations, browser QA and 1,095-day integration passed |
 | 11 | Technology & sustainability | COMPLETE — 12-node technology tree, R&D, patents/licensing, sustainability systems, browser QA and 1,095-day integration passed |
-| 12 | Generations & world evolution | NOT STARTED |
+| 12 | Generations & world evolution | COMPLETE — family lineage, inheritance, succession, annual world evolution, browser QA and 1,095-day integration passed |
 | 13 | Integration & release quality | NOT STARTED |
 
 ## Phase 4 scope
@@ -29,7 +29,7 @@ One complete phase is delivered and signed off before starting the next. Phases 
 - Department restructuring and closure controls
 - Persistent company-management state, audit and simulation integration
 
-Current phase: Phase 12 — Generations & world evolution.\n\n## Phase 5 completion\n- Script room with logline, synopsis and screenplay draft persistence.\n- Revision snapshots with dated notes and word counts.\n- Script review decisions and quality scoring.\n- Studio greenlight with approved budget, originality and feasibility scoring.\n- Pre-production readiness checklist covering director, producer, budget, cast, locations and schedule.\n- Stage progression gates prevent advancing without the required creative and production approvals.\n- Production continuity: script supervisor, footage backup and daily production reporting are mandatory before production wrap.\n- Safety incident reporting, severity classification and resolution records; unresolved high/critical incidents block wrap and delivery.\n- Production insurance policies with coverage dates, premiums, limits and claim validation, including exact-limit and invalid-amount tests.\n- Post-production gates for picture edit, sound, VFX, colour, mix and master/QC.\n- Final delivery approval with quality score, approver and notes before release.\n- Budget forecasting and alerts; stage allocations now use the approved greenlight budget rather than the larger initial project budget.\n- Browser regression validates a $1,000,000 greenlight against a $4,000,000 project budget, insurance boundaries, serious-incident blocks, full stage progression to Released, audit and save/reload.\n- Regression QA passed on commit `831ea18fc9972fbced0a6dbe45d0b82566aba2c6`; GitHub Pages deployment workflow build passed for the same commit.
+Current phase: Phase 13 — Integration & release quality.\n\n## Phase 5 completion\n- Script room with logline, synopsis and screenplay draft persistence.\n- Revision snapshots with dated notes and word counts.\n- Script review decisions and quality scoring.\n- Studio greenlight with approved budget, originality and feasibility scoring.\n- Pre-production readiness checklist covering director, producer, budget, cast, locations and schedule.\n- Stage progression gates prevent advancing without the required creative and production approvals.\n- Production continuity: script supervisor, footage backup and daily production reporting are mandatory before production wrap.\n- Safety incident reporting, severity classification and resolution records; unresolved high/critical incidents block wrap and delivery.\n- Production insurance policies with coverage dates, premiums, limits and claim validation, including exact-limit and invalid-amount tests.\n- Post-production gates for picture edit, sound, VFX, colour, mix and master/QC.\n- Final delivery approval with quality score, approver and notes before release.\n- Budget forecasting and alerts; stage allocations now use the approved greenlight budget rather than the larger initial project budget.\n- Browser regression validates a $1,000,000 greenlight against a $4,000,000 project budget, insurance boundaries, serious-incident blocks, full stage progression to Released, audit and save/reload.\n- Regression QA passed on commit `831ea18fc9972fbced0a6dbe45d0b82566aba2c6`; GitHub Pages deployment workflow build passed for the same commit.
 
 ## Phase 4 completion evidence
 - Department budgets and actual expenditure post to the company cash ledger; spending is constrained by available cash, annual budget and board approval threshold.
@@ -120,3 +120,14 @@ Current phase: Phase 12 — Generations & world evolution.\n\n## Phase 5 complet
 - Three-year cross-phase stress test passed: 1,095/1,095 Phase 11 daily pipeline markers; 12/12 phases 0–11 connected; synchronized technology/world dates; 12/12 Phase 11 integrity checks; 50/50 global integration checks; zero errors.
 - GitHub Pages build and production deployment succeeded for commit d2f2d6e745557bdc1331c152cbd24412b4209ef1.
 
+
+
+## Phase 12 completion evidence
+- Versioned generation state connected to the Phase 2 population/family graph, with deterministic lineage depth, family-head tracking, generation distribution and family legacy metrics.
+- One-time estate settlement with spouse/child inheritance, debt-aware net estate calculations and reconciliation records.
+- Deterministic monthly autonomous birth events, with lineage links and the named-NPC materialization cap enforced.
+- Player-controlled executive succession plans and appointments integrated with Phase 4 company management; rival-studio CEO transitions and leadership history.
+- Annual entertainment-industry evolution across six bounded indices, with persistent era/trend snapshots published to market state.
+- Dedicated Phase 12 audit passed 14/14; browser QA passed for dashboard, successor planning/appointment, 45-day simulation, integration and save/reload.
+- Three-year cross-phase stress test: 1,095/1,095 Phase 12 daily markers, three annual evolution ticks, 13/13 implemented phases connected, global integration audit 53/53, synchronized dates and zero errors.
+- Full regression passed on commit `5674497a4104a7caa1fe98142669726854983a43` (run [43701468068](https://github.com/NeorTox/the-studio-simulator/actions/runs/43701468068)); GitHub Pages build/deploy succeeded (run [43701468113](https://github.com/NeorTox/the-studio-simulator/actions/runs/43701468113)).
