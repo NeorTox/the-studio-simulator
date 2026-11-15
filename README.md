@@ -4,9 +4,9 @@ A film and entertainment company simulation game.
 
 ## Project baseline
 
-- Game version: 4.21.0
+- Game version: 4.22.0
 - Engine versions: Phase 6 Ecosystem 6.1.0; Phase 6 Audience version is reported by its runtime module
-- Completed development phases: 0–7
+- Completed development phases: 0–7; Phase 8 is active
 - Phase 6: Entertainment ecosystem — complete; financial retries, media, awards and multi-year integration verified
 - Phase 7: Smartphone & media — complete; app catalog, social creators, personalized feeds, daily engagement, digital advertising and save persistence verified
 - Active development phase: Phase 8 — Financial empire
@@ -45,3 +45,12 @@ This repository holds the application source, engines, static assets, tests, and
 ## Release policy
 
 Production deployments must pass the existing engine, browser, save/load, integration, and multi-year simulation checks. Preserve existing saves and the current production build until a candidate passes verification.
+
+
+## Phase 8 — Financial empire
+
+Phase 8 adds an institutional capital-management layer to the existing company finance system. Players can establish investment funds, assign fund managers and strategies, acquire private equity, venture capital, corporate and government bonds, real estate, infrastructure and commodities, and liquidate holdings. Purchases and sales post through the existing company ledger and double-entry marketable-investments account.
+
+The daily financial-empire processor deterministically marks active holdings to market, accrues modeled investment income, and distributes accrued income at month end. Treasury reporting includes portfolio cost and market value, unrealized and realized gains, accrued income, liquidity, concentration, leverage and a simulated credit rating. Investment policy controls include risk profile, liquidity reserve target, maximum single exposure and target annual return. All state is stored in the campaign save and checked by the cross-phase integration gate.
+
+Phase 8 is under active development. It is not signed off until its browser regression, complete regression workflow and a fresh 1,095-day cross-phase stress test all pass on the same commit.
