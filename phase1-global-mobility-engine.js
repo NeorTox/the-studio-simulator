@@ -33,7 +33,7 @@ function quote(destinationId,mode='flight'){
  return {from,to,mode,distanceKm:distance,durationHours:hours,fare,domestic,currency:'game currency',assumption:'Procedural in-game route estimate; not a real timetable or live fare.'};
 }
 function passportNationality(countryId){const t=ensure(),c=G.getCountry(countryId);if(!c)throw Error('Choose a valid passport nationality.');t.passport.nationality=c.id;t.passport.updatedDate=active.date;persist();render();return t.passport;}
-function hasEntryPermit(countryId,date){const t=ensure();if(t.passport.nationality===countryId)return true;return t.visas.some(v=>v.countryId===countryId&&v.status==='valid'&&v.validFrom<=date&&v.validUntil>=date);}
+function hasEntryPermit(countryId,date){const t=ensure();if(t.passport.nationality===countryId)return true;return t.visas.some(v=>v.countryId===countryId&&v.nationality===t.passport.nationality&&v.status==='valid'&&v.validFrom<=date&&v.validUntil>=date);}
 function applyForEntryPermit(countryId){
  const t=ensure(),c=G.getCountry(countryId);if(!c)throw Error('Unknown destination country.');
  if(t.passport.nationality===c.id)return {status:'not-required',message:'Your passport nationality matches the destination.'};
@@ -49,6 +49,7 @@ function planTrip(destinationId,mode,departureDate,nights=2,hotelTier='standard'
  const t=ensure();if(!t)throw Error('Create a campaign first.');
  if(!dateValid(departureDate)||departureDate<active.date)throw Error('Departure date must be today or a future simulation date.');
  const q=quote(destinationId,mode),n=Math.max(1,Math.min(30,Math.floor(Number(nights)||1)));
+ const conflict=t.bookings.find(b=>['Booked','In transit'].includes(b.status)&&b.arrivalDate>=departureDate);if(conflict)throw Error('You already have a booking that overlaps this departure. Complete or cancel that trip first.');
  if(!q.domestic&&!hasEntryPermit(q.to.countryId,departureDate))throw Error('An in-game entry permit is required. Apply for one before booking.');
  const hotelRates={budget:45,standard:110,premium:260,luxury:650},rate=hotelRates[hotelTier]||hotelRates.standard,hotelCost=round(rate*n),total=round(q.fare+hotelCost);
  if(!active.founder||Number(active.founder.personalCash||0)<total)throw Error('Insufficient personal cash. Trip total is '+total.toFixed(2)+'.');
