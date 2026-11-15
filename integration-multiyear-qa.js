@@ -31,7 +31,7 @@ const {chromium}=require('playwright'),assert=require('assert');
  assert.equal(result.founderDate,result.date);
  assert.equal(result.companyDate,result.date);
  assert.equal(result.ecosystemDate,result.date);
- assert.equal(result.ecosystemVersion,'6.0.0');
+ assert.equal(result.ecosystemVersion,'6.1.0');
  assert(result.worldDays>=1095);
  assert(result.popDays>=1095);
  assert.equal(result.trackedDays,result.completedDays);
