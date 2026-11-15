@@ -11,7 +11,7 @@ const {chromium}=require('playwright'),assert=require('assert');
  const start=await page.evaluate(()=>active.date);
  const setup=await page.evaluate(()=>{
   const p=window.StudioPhase0;
-  active.worldClock=active.worldClock||{};active.worldClock.running=false;active.worldClock.accumulatorMs=0;active.worldClock.lastWallMs=Date.now();
+  active.worldClock=active.worldClock||{};active.worldClock.running=false;active.worldClock.liveTick=false;active.worldClock.accumulatorMs=0;active.worldClock.lastWallMs=Date.now();
   if(!p?.phase1?.processWorldDay||!window.StudioPopulationEngine?.processDay||!window.Phase3Founder?.stepDay||!window.Phase4Company?.stepDay||!window.Phase5Production?.audit||!window.Phase6Ecosystem?.stepDay||!window.Phase6Ecosystem?.audit||!window.Phase7Smartphone?.stepDay&&!window.Phase7Smartphone?.processDay||!window.Phase9GlobalEconomy?.stepDay||!window.Phase10Competitors?.stepDay||!window.Phase11Technology?.stepDay||!window.Phase12Generations?.stepDay||!window.StudioSimulationDepth?.processDay||!window.StudioPublicSafety?.audit||!window.StudioCyberSecurity?.audit||!window.StudioRelationshipDynamics?.audit||!window.StudioSupplyChain?.audit)throw Error('Required Phase 0–13 and simulation-depth APIs are missing');
   const scheduler=p.createCampaignScheduler();
   scheduler.schedule('world:story',addDays(active.date,45),{title:'Integration stress scheduled event'});
