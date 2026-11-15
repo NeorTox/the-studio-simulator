@@ -3,6 +3,7 @@
 const VERSION='1.0.0',TASK='npc.personal-agency',MAX_DAILY=1200,MAX_EVENTS=300;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,Number(v)||0));
 const hash=s=>{let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return(h>>>0).toString(16).padStart(8,'0')};
+const addDays=(date,n)=>{const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
 const alive=n=>n&&n.alive!==false&&n.status!=='Deceased';
 const population=()=>{if(!active)return null;active.world=active.world||{};return active.world.population||null};
 const sample=(ctx,key)=>ctx.random(key);
@@ -21,7 +22,7 @@ function decide(n,ctx){
  const state=n.autonomy||(n.autonomy={version:VERSION,decisions:0,actionCounts:{},lastAction:null,lastDecisionDate:null,goal:null});
  state.decisions=(state.decisions||0)+1;state.actionCounts=state.actionCounts||{};
  state.actionCounts[action]=(state.actionCounts[action]||0)+1;state.lastAction=action;state.lastDecisionDate=ctx.date;state.wellbeing=Number(wellbeing.toFixed(2));
- if(!state.goal||state.goal.expires<ctx.date||state.goal.action!==action)state.goal={action,created:ctx.date,expires:ctx.date.slice(0,8)+'28',priority:Number(entries[0].score.toFixed(2))};
+ if(!state.goal||state.goal.expires<ctx.date||state.goal.action!==action)state.goal={action,created:ctx.date,expires:addDays(ctx.date,7),priority:Number(entries[0].score.toFixed(2))};
  n.schedule=n.schedule||{routine:'Balanced',workHours:8,leisureHours:3};
  switch(action){
   case'rest':
