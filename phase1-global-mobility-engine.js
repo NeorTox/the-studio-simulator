@@ -65,7 +65,7 @@ function processDay(date){
  const t=ensure();if(!t||t.lastProcessedDate===date)return false;
  t.bookings.forEach(b=>{
   if(b.status==='Booked'&&b.departureDate<=date){b.status='In transit';t.player.inTransitBookingId=b.id;t.history.unshift({date,type:'departure',text:'Departed for '+G.getCity(b.toCityId).name,bookingId:b.id});}
-  if(b.status==='In transit'&&b.arrivalDate<=date){const city=G.getCity(b.toCityId);b.status='Arrived';b.actualArrivalDate=date;t.player.cityId=city.id;t.player.countryId=city.countryId;delete t.player.inTransitBookingId;t.history.unshift({date,type:'arrival',text:'Arrived in '+city.name+', '+G.getCountry(city.countryId).name,bookingId:b.id});const stay=t.stays.find(x=>x.bookingId===b.id);if(stay)stay.status='Checked in';}
+  if(b.status==='In transit'&&b.arrivalDate<=date){const city=G.getCity(b.toCityId);b.status='Arrived';b.actualArrivalDate=date;t.player.cityId=city.id;t.player.countryId=city.countryId;active.world.geography=active.world.geography||{};active.world.geography.focusCountry=G.getCountry(city.countryId).name;active.world.geography.focusCity=city.name;active.world.geography.focusRegion=city.simulationRegion;delete t.player.inTransitBookingId;t.history.unshift({date,type:'arrival',text:'Arrived in '+city.name+', '+G.getCountry(city.countryId).name,bookingId:b.id});const stay=t.stays.find(x=>x.bookingId===b.id);if(stay)stay.status='Checked in';}
  });
  t.stays.forEach(s=>{if(s.status==='Checked in'&&s.checkOut<=date)s.status='Completed';});
  t.lastProcessedDate=date;return true;
