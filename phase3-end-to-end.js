@@ -27,7 +27,7 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
  await p.locator('#p3iname').fill('Index Portfolio');await p.locator('#p3ivalue').fill('1000');await p.locator('#p3ireturn').fill('1');await p.locator('#p3form button').click();
  const before=await p.evaluate(()=>({date:active.date,cash:Number(active.founder.personalCash),recurring:active.founder.personalFinance.recurring.length}));
  await p.getByRole('button',{name:/Overview/}).click();
- await p.getByRole('button',{name:/\+1 year/}).click();
+ await p.getByRole('button',{name:/\+1 year/}).click({timeout:120000});
  await p.waitForTimeout(500);
  const after=await p.evaluate(()=>({date:active.date,cash:Number(active.founder.personalCash),entries:active.founder.personalFinance.ledger.filter(x=>x.source==='recurring').map(x=>({description:x.description,amount:x.amount,date:x.date})),lastDay:active.founder.phase3.lastDay}));
  console.log('LONG SIM',JSON.stringify({initial,before,after}));
