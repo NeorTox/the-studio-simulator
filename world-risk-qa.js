@@ -16,5 +16,5 @@ assert.match(js,/function showTutorial/);
 assert.match(js,/STORE_KEY/);
 assert.match(html,/studio-overhaul\.css/);
 assert.match(html,/player-experience-layer\.js/);
-assert.match(html,/world-risk-qa\.js/);
+assert.doesNotMatch(html,/world-risk-qa\.js/);
 console.log('PLAYER EXPERIENCE QA PASSED: landscape UI assets, optional situation inbox, 12-response intervention interface, deterministic regional risk/forecast/mitigation, onboarding tutorial and asset wiring.');
