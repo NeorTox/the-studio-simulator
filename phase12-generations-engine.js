@@ -208,10 +208,10 @@ function render(){
 }
 const api={version:VERSION,ensure,stepDay:processDay,processDay,audit,render,planSuccessor,appointSuccessor,refreshLineages,settleEstates,metrics:()=>({...ensure()?.metrics}),getWorld:()=>JSON.parse(JSON.stringify(ensure()?.world||{}))};
 window.Phase12Generations=api;
-const oldStep=window.Phase11Technology?.stepDay;
+const oldStep=window.Phase6Ecosystem?.stepDay;
 if(typeof oldStep==='function'&&!oldStep.__phase12Wrapped){
  const wrapped=function(date){const prior=oldStep.call(this,date),result=processDay(date);if(result.processed&&$('page-generations')?.classList.contains('active'))render();return prior};
- wrapped.__phase12Wrapped=true;window.Phase11Technology.stepDay=wrapped;
+ wrapped.__phase12Wrapped=true;window.Phase6Ecosystem.stepDay=wrapped;
 }
 const integration=window.StudioPhaseIntegration;
 if(integration){
