@@ -33,9 +33,10 @@ function quote(destinationId,mode='flight'){
  return {from,to,mode,distanceKm:distance,durationHours:hours,fare,domestic,currency:'game currency',assumption:'Procedural in-game route estimate; not a real timetable or live fare.'};
 }
 function passportNationality(countryId){const t=ensure(),c=G.getCountry(countryId);if(!c)throw Error('Choose a valid passport nationality.');t.passport.nationality=c.id;t.passport.updatedDate=active.date;persist();render();return t.passport;}
+function renewPassport(fee=300){const t=ensure(),cost=round(Math.max(0,Number(fee)||300));if(!active.founder||Number(active.founder.personalCash||0)<cost)throw Error('Insufficient personal cash to renew the passport.');Phase3Founder.record('Expense',cost,'Travel & immigration','Passport renewal',active.date,'global-mobility');const next=Number(String(t.passport.number||'').match(/(\\d+)$/)?.[1]||1)+1;t.passport.number='STUDIO-PASSPORT-'+String(next).padStart(4,'0');t.passport.issuedDate=active.date;t.passport.expiryDate=dateAdd(active.date,3650);t.passport.renewalCount=Number(t.passport.renewalCount||0)+1;t.history.unshift({date:active.date,type:'passport-renewal',text:'Passport renewed through '+t.passport.expiryDate,amount:cost});persist();render();return t.passport;}
 function hasEntryPermit(countryId,date){const t=ensure();if(t.passport.nationality===countryId)return true;return t.visas.some(v=>v.countryId===countryId&&v.nationality===t.passport.nationality&&v.status==='valid'&&v.validFrom<=date&&v.validUntil>=date);}
 function applyForEntryPermit(countryId){
- const t=ensure(),c=G.getCountry(countryId);if(!c)throw Error('Unknown destination country.');
+ const t=ensure(),c=G.getCountry(countryId);if(!c)throw Error('Unknown destination country.');if(t.passport.expiryDate<active.date)throw Error('Your passport has expired. Renew it before applying for entry permits.');
  if(t.passport.nationality===c.id)return {status:'not-required',message:'Your passport nationality matches the destination.'};
  if(hasEntryPermit(c.id,active.date))return {status:'valid',message:'You already hold a valid in-game entry permit.'};
  const fee=round(c.continent==='EU'?180:c.continent==='NA'?160:c.continent==='AS'?120:100);
@@ -47,7 +48,7 @@ function applyForEntryPermit(countryId){
 }
 function planTrip(destinationId,mode,departureDate,nights=2,hotelTier='standard'){
  const t=ensure();if(!t)throw Error('Create a campaign first.');
- if(!dateValid(departureDate)||departureDate<active.date)throw Error('Departure date must be today or a future simulation date.');
+ if(!dateValid(departureDate)||departureDate<active.date)throw Error('Departure date must be today or a future simulation date.');if(t.passport.expiryDate<departureDate)throw Error('Your passport expires before departure. Renew it before booking.');
  const q=quote(destinationId,mode),n=Math.max(1,Math.min(30,Math.floor(Number(nights)||1)));
  const conflict=t.bookings.find(b=>['Booked','In transit'].includes(b.status)&&b.arrivalDate>=departureDate);if(conflict)throw Error('You already have a booking that overlaps this departure. Complete that trip before booking another.');
  if(!q.domestic&&!hasEntryPermit(q.to.countryId,departureDate))throw Error('An in-game entry permit is required. Apply for one before booking.');
@@ -76,7 +77,7 @@ function audit(){
  const t=ensure(),tests=[],add=(name,ok,detail)=>tests.push({name,ok:!!ok,detail:String(detail||'')});
  add('Travel state is initialized',!!t,'Campaign travel state exists.');
  add('Player location resolves to a city',!!G.getCity(t?.player?.cityId),'Current location is linked to the global city registry.');
- add('Passport nationality resolves',!!G.getCountry(t?.passport?.nationality),'Passport nationality is a registered country.');
+ add('Passport nationality resolves',!!G.getCountry(t?.passport?.nationality),'Passport nationality is a registered country.');add('Passport validity dates are ordered',dateValid(t?.passport?.issuedDate)&&dateValid(t?.passport?.expiryDate)&&t.passport.expiryDate>t.passport.issuedDate,'Passport issue and expiry dates are valid.');
  add('All bookings reference valid cities',t?.bookings?.every(b=>G.getCity(b.fromCityId)&&G.getCity(b.toCityId)),(t?.bookings?.length||0)+' bookings');
  add('All stays reference bookings',t?.stays?.every(s=>t.bookings.some(b=>b.id===s.bookingId)),(t?.stays?.length||0)+' accommodation records');
  add('Travel costs are finite and nonnegative',t?.bookings?.every(b=>Number.isFinite(b.fare)&&b.fare>=0&&Number.isFinite(b.hotel.total)&&b.hotel.total>=0),'Ticket and accommodation charges are finite.');add('Booking state and date invariants',t?.bookings?.every(b=>['Booked','In transit','Arrived'].includes(b.status)&&dateValid(b.departureDate)&&dateValid(b.arrivalDate)&&b.arrivalDate>b.departureDate),'Every booking has a valid state and a strictly later arrival date.');add('Route coverage spans multiple world regions',new Set(G.cities.filter(c=>c.airport&&Number.isFinite(c.latitude)).map(c=>c.countryId)).size>=90,new Set(G.cities.filter(c=>c.airport&&Number.isFinite(c.latitude)).map(c=>c.countryId)).size+' countries have seeded airport hubs.');
@@ -97,7 +98,7 @@ function render(){
  quoteBtn.onclick=()=>{try{const q=getQuote();$('travel-quote-result').textContent=q.distanceKm.toLocaleString()+' km · '+q.durationHours+' hours estimated · '+q.fare.toLocaleString()+' ticket · '+q.from.name+' → '+q.to.name;}catch(e){$('travel-quote-result').textContent=e.message;}};
  bookBtn.onclick=()=>{try{const b=planTrip($('travel-destination').value,$('travel-mode').value,$('travel-date').value,$('travel-nights').value,$('travel-hotel').value);toast('Trip booked · arrival '+b.arrivalDate);render();}catch(e){toast(e.message);}};
  $('travel-save-nationality').onclick=()=>{try{passportNationality($('travel-nationality').value);toast('Passport nationality updated');}catch(e){toast(e.message);}};
- $('travel-visa').onclick=()=>{try{const dest=G.getCity($('travel-destination').value),v=applyForEntryPermit(dest.countryId);toast(v.status==='not-required'?'No entry permit required':v.status==='valid'?'Entry permit already valid':'Entry permit issued');}catch(e){toast(e.message);}};
+ $('travel-renew-passport').onclick=()=>{try{const p=renewPassport();toast('Passport renewed · expires '+p.expiryDate);}catch(e){toast(e.message);}};$('travel-visa').onclick=()=>{try{const dest=G.getCity($('travel-destination').value),v=applyForEntryPermit(dest.countryId);toast(v.status==='not-required'?'No entry permit required':v.status==='valid'?'Entry permit already valid':'Entry permit issued');}catch(e){toast(e.message);}};
 }
 P.on('world:day',e=>processDay(e.date));
 const oldRender=window.render;if(typeof oldRender==='function'&&!oldRender.__globalTravelWrapped){const wrapped=function(...a){const out=oldRender.apply(this,a);render();return out};wrapped.__globalTravelWrapped=true;window.render=wrapped;}
@@ -105,7 +106,7 @@ const oldNav=window.nav;if(typeof oldNav==='function'&&!oldNav.__globalTravelWra
 const oldPersist=window.persist;if(typeof oldPersist==='function'&&!oldPersist.__globalTravelWrapped){const wrapped=function(...a){if(active)ensure();return oldPersist.apply(this,a)};wrapped.__globalTravelWrapped=true;window.persist=wrapped;}
 const oldEndDay=window.StudioPhaseIntegration?.endDay;if(typeof oldEndDay==='function'&&!oldEndDay.__globalTravelWrapped){const wrappedEnd=function(date){const t=ensure();if(t&&t.lastProcessedDate!==date)throw Error('Cannot complete integration day '+date+': global travel processor did not commit.');return oldEndDay.call(this,date)};wrappedEnd.__globalTravelWrapped=true;window.StudioPhaseIntegration.endDay=wrappedEnd;}
 const oldAudit=window.StudioPhaseIntegration?.audit;if(typeof oldAudit==='function'){window.StudioPhaseIntegration.audit=function(){const r=oldAudit.call(this),g=G.audit(),t=audit();r.tests.push({name:'Global geography registry audit',ok:g.failed===0,detail:g.passed+' passed / '+g.failed+' failed'});r.tests.push({name:'Global travel daily checkpoint',ok:!Object.keys(active.integration?.days||{}).length||ensure()?.lastProcessedDate===active.date,detail:'Travel '+String(ensure()?.lastProcessedDate||'not yet processed')+' · campaign '+active.date});r.tests.push({name:'Global mobility and travel audit',ok:t.failed===0,detail:t.passed+' passed / '+t.failed+' failed'});r.passed=r.tests.filter(x=>x.ok).length;r.failed=r.tests.length-r.passed;return r};}
-window.StudioGlobalTravel={version:VERSION,ensure,quote,passportNationality,applyForEntryPermit,planTrip,processDay,catchUp,audit,render};
+window.StudioGlobalTravel={version:VERSION,ensure,quote,passportNationality,renewPassport,applyForEntryPermit,planTrip,processDay,catchUp,audit,render};
 try{P.registerModule({id:'global-mobility',name:'Worldwide player travel and mobility',deps:['world','global-geography','founder'],owns:['player location','route estimates','transport bookings','entry permits','accommodation','travel history'],status:'implemented'});}catch(e){}
 if(active)catchUp();render();
 })();
