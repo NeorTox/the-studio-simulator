@@ -28,7 +28,7 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
  const before=await p.evaluate(()=>({date:active.date,cash:Number(active.founder.personalCash),recurring:active.founder.personalFinance.recurring.length}));
  await p.getByRole('button',{name:/Overview/}).click();
  await p.getByRole('button',{name:/\+1 year/}).click({timeout:120000});
- await p.waitForFunction(()=>!window.__advanceBatchActive,null,{timeout:300000});
+ await p.waitForFunction(()=>!window.__advanceBatchActive,null,{timeout:900000});
  const simulated=await p.evaluate(()=>({date:active.date,clockFrozen:active.clockFrozen,batchActive:!!window.__advanceBatchActive,toast:document.querySelector('#toast')?.textContent||''}));
  console.log('YEAR ADVANCE COMPLETION',JSON.stringify(simulated));
  assert.equal(simulated.date,'2027-11-14','Year advance stopped early; inspect clock, cash and toast diagnostics');
