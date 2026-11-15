@@ -10,7 +10,7 @@ const a=api.sendMessage('NPC-0','PLAYER','A quick hello from a neighbour.');asse
 const reply=api.sendMessage('PLAYER','NPC-0','Thanks for checking in.');assert.equal(reply.sent,true);
 const group=api.createGroupChat('NPC-0',['NPC-1','NPC-2'],'Weekend plans');assert.equal(group.created,true);assert.equal(api.sendGroupMessage(group.chat.id,'NPC-1','Anyone free this weekend?').sent,true);
 const post=api.publishPost('NPC-0','A small win today after a long week.','Community');assert.equal(post.created,true);assert.equal(api.react(post.post.id,'PLAYER').likes,1);assert.equal(api.comment(post.post.id,'PLAYER','Congratulations!').text,'Congratulations!');
-assert.equal(api.report(post.post.id).reports,1);assert.equal(api.moderate(post.post.id,'hide'),'hidden');
+assert.equal(api.report(post.post.id),1);assert.equal(api.moderate(post.post.id,'hide'),'hidden');
 const task=tasks.get('npc.digital-society'),state={};const result=task.run({date:'2026-11-16',state,random:key=>.01});assert.equal(result.processed,1200);assert.ok(result.messages>=0&&result.posts>=0);assert.equal(api.processDay({date:'2026-11-16',state,random:key=>.5}).idempotent,true);
 const audit=api.audit();assert.equal(audit.failed,0,audit.tests.filter(x=>!x.ok).map(x=>x.name).join(', '));
 assert.doesNotThrow(()=>JSON.stringify(campaign));
