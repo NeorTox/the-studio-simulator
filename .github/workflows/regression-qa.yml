@@ -33,6 +33,8 @@ jobs:
             curl -fsS http://127.0.0.1:4173/index.html >/dev/null && break
             sleep 1
           done
+      - name: Validate Phase 7 digital-life syntax early
+        run: node --check phase7-digital-life-engine.js && node --check phase7-digital-life-qa.js
       - name: Run actual application form regression
         run: node actual-phase3-submit-qa.js
       - name: Run simulation and save round-trip regression
