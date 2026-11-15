@@ -26,10 +26,17 @@ function syncAudit(){
  add(tests,'Phase 13 release-quality contract registered',!!contract&&contract.requires.includes('StudioReleaseQuality.audit'),'Release-quality API is declared in the integration registry.');
  const modules=integration?.contracts||[];
  add(tests,'Fourteen phase contracts registered',modules.length===14,modules.length+' phase contracts registered.');
- add(tests,'PWA landscape metadata',document.querySelector('link[rel="manifest"]')&&/orientation\s*:\s*["']landscape["']/.test(document.querySelector('link[rel="manifest"]')?.href||'')===false,'Manifest is linked; orientation is verified from the fetched manifest.');
+ add(tests,'PWA landscape metadata',!!document.querySelector('link[rel="manifest"]'),'Manifest link is present; actual orientation is parsed in the release audit.');
  const scriptRefs=[...document.scripts].map(s=>s.getAttribute('src')).filter(x=>x&&x.startsWith('./')&&x.endsWith('.js'));
  const duplicateRefs=scriptRefs.filter((x,i)=>scriptRefs.indexOf(x)!==i);
  add(tests,'Local engine script references are unique',duplicateRefs.length===0,duplicateRefs.length?duplicateRefs.join(', '):scriptRefs.length+' local engine scripts referenced.');
+ if(typeof active!=='undefined'&&active){
+  const decision=window.StudioNPCDecisionConsequences?.audit?.(),risk=window.StudioWorldRisk?.audit?.(),finance=window.Phase8FinancialEmpire?.audit?.(),digital=window.Phase7Smartphone?.lifeExpansionAudit?.();
+  add(tests,'Universal decision/consequence engine integrity',!!decision&&decision.failed===0,decision?decision.passed+' passed / '+decision.failed+' failed':'Decision engine audit unavailable');
+  add(tests,'Regional hazard consequence integrity',!!risk&&risk.failed===0,risk?risk.passed+' passed / '+risk.failed+' failed':'World-risk audit unavailable');
+  add(tests,'Digital-life and telecom integrity',!!digital&&digital.failed===0,digital?digital.passed+' passed / '+digital.failed+' failed':'Digital-life audit unavailable');
+  add(tests,'Financial empire and portfolio integrity',!!finance&&finance.failed===0,finance?finance.passed+' passed / '+finance.failed+' failed':'Financial empire audit unavailable');
+ }else add(tests,'Post-roadmap simulation audits available',!!window.StudioNPCDecisionConsequences?.audit&&!!window.StudioWorldRisk?.audit&&!!window.Phase7Smartphone?.lifeExpansionAudit&&!!window.Phase8FinancialEmpire?.audit,'Decision, regional risk, digital-life and financial-empire audits are registered.');
  const apis=REQUIRED.map(x=>({id:x.id,connected:x.api()}));
  add(tests,'Phase 12 generation state remains serializable',!active?.generations||(()=>{try{JSON.stringify(active.generations);return true}catch(e){return false}})(),'Generation state can be serialized with the campaign.');
  if(typeof active!=='undefined'&&active){
@@ -53,6 +60,7 @@ async function audit(){
   try{const r=await fetch(manifest,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const m=await r.json();add(tests,'Manifest parses and requests landscape',m.orientation==='landscape'&&m.display==='standalone','orientation='+m.orientation+'; display='+m.display)}catch(e){add(tests,'Manifest parses and requests landscape',false,e.message)}
  }else add(tests,'Manifest parses and requests landscape',false,'Manifest link missing.');
  await check('Service worker asset is reachable','./sw.js','Service worker');
+ try{const r=await fetch('./sw.js',{cache:'no-store'});const source=await r.text();add(tests,'Offline cache namespace is versioned',r.ok&&/v4\\.\\d+\\.\\d+-world-systems-market/.test(source),source.match(/const CACHE='([^']+)'/)?.[1]||'Cache namespace missing')}catch(e){add(tests,'Offline cache namespace is versioned',false,e.message)}
  const refs=[...document.scripts].map(s=>s.getAttribute('src')).filter(x=>x&&x.startsWith('./')&&x.endsWith('.js'));
  for(const src of refs){await check('Engine asset '+src,src,'Local script');}
  const storageKey='studio-phase13-probe-'+Date.now();
