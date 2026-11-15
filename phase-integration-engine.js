@@ -55,7 +55,7 @@ function audit(){
  const modules=CONTRACTS.map(c=>{
   const missing=c.requires.filter(r=>!path(r));
   const implemented=c.id<=10&&missing.length===0;
-  return {...c,status:c.id<=9?(missing.length?'degraded':'connected'):'not-built',missing};
+  return {...c,status:c.id<=10?(missing.length?'degraded':'connected'):'not-built',missing};
  });
  modules.forEach(m=>add('Phase '+m.id+' · '+m.name,m.status==='connected'||m.status==='not-built',m.status+(m.missing.length?': '+m.missing.join(', '):'')));
  const dep=P.dependencyReport();add('Architecture dependency graph',dep.invalidEdges.length===0,dep.invalidEdges.length?dep.invalidEdges.join('; '):dep.domains+' domains / '+dep.edges+' declared edges');
