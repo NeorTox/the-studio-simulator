@@ -40,8 +40,8 @@ function territoryOverlap(a,b){
  };
  const x=norm(a),y=norm(b);if(!x||!y)return false;
  if(x==='worldwide'||y==='worldwide'||x===y)return true;
- const contains=(parent,child)=>groups[parent]?.includes(child)||false;
- return contains(x,y)||contains(y,x);
+ const members=value=>groups[value]||[value];
+ return members(x).some(member=>members(y).includes(member));
 }
 function dateOverlap(a,b){const ae=a.endDate||'9999-12-31',be=b.endDate||'9999-12-31';return a.startDate<=be&&b.startDate<=ae;}
 function rightsOverlap(a,b){return a.rights==='All media'||b.rights==='All media'||a.rights===b.rights;}
@@ -66,8 +66,9 @@ function addDistributionDeal(data){
  const start=String(data.startDate||active.date),end=String(data.endDate||'');
  if(!isoDate(start)||(end&&!isoDate(end))||(end&&end<start))throw Error('Distribution window dates are invalid.');
  const upfront=money(data.upfrontFee),share=money(data.revenueShare),fee=money(data.distributorFee);
- if(!data.licensee||!data.territory||!data.rights||upfront<0||share<0||share>100||fee<0||fee>100||share+fee>100)throw Error('Check licensee, territory, rights and revenue percentages.');
- const d={id:uid('DIST'),projectId:p.id,projectTitle:p.title,channel:data.channel||'Theatrical',licensee:String(data.licensee).trim(),territory:String(data.territory).trim(),rights:data.rights,exclusive:data.exclusive!==false,startDate:start,endDate:end||null,upfrontFee:upfront,revenueShare:share,distributorFee:fee,minimumGuarantee:money(data.minimumGuarantee??data.upfrontFee),status:'Active',signedDate:active.date,paidToDate:0,reportedRevenue:0,notes:String(data.notes||'')};
+ const licensee=String(data.licensee||'').trim(),territory=String(data.territory||'').trim();
+ if(!licensee||!territory||!data.rights||upfront<0||share<0||share>100||fee<0||fee>100||share+fee>100)throw Error('Check licensee, territory, rights and revenue percentages.');
+ const d={id:uid('DIST'),projectId:p.id,projectTitle:p.title,channel:data.channel||'Theatrical',licensee,territory,rights:data.rights,exclusive:data.exclusive!==false,startDate:start,endDate:end||null,upfrontFee:upfront,revenueShare:share,distributorFee:fee,minimumGuarantee:money(data.minimumGuarantee??data.upfrontFee),status:'Active',signedDate:active.date,paidToDate:0,reportedRevenue:0,notes:String(data.notes||'')};
  const conflict=hasConflict(d);if(conflict)throw Error('Exclusive rights conflict with '+conflict.licensee+' for '+conflict.territory+' ('+conflict.rights+').');
  if(upfront&&!postCash('Distribution advance — '+p.title,'Distribution advance',upfront,active.date,{dealId:d.id,projectId:p.id}))throw Error('The distribution advance could not be posted.');
  d.paidToDate=upfront;e.deals.unshift(d);log('Distribution deal signed',p.title+' · '+d.channel+' · '+d.licensee);persist('Distribution deal recorded.');return d;
@@ -94,7 +95,7 @@ function addRelease(data){
  const e=ensure(),p=project(data.projectId);if(!p||p.stage<6)throw Error('Only released projects can enter distribution.');
  const opening=String(data.openingDate||active.date),screens=Math.floor(money(data.screens)),ticket=money(data.averageTicket),exhibitor=money(data.exhibitorShare),fee=money(data.distributorFee);
  if(!isoDate(opening)||screens<1||ticket<=0||exhibitor<0||exhibitor>100||fee<0||fee>100||exhibitor+fee>=100)throw Error('Release schedule and box-office economics are invalid.');
- const territory=String(data.territory||'Domestic');
+ const territory=String(data.territory||'Domestic').trim();if(!territory)throw Error('Release territory is required.');
  if(e.releases.some(x=>x.projectId===p.id&&x.territory.toLowerCase()===territory.toLowerCase()&&x.status==='Active'))throw Error('An active release already exists for this project and territory.');
  const r={id:uid('REL'),projectId:p.id,projectTitle:p.title,territory,channel:'Theatrical',openingDate:opening,screens,averageTicket:ticket,exhibitorShare:exhibitor,distributorFee:fee,expectedRunDays:Math.max(7,Math.floor(money(data.expectedRunDays)||56)),dailyGross:0,totalGross:0,studioReceipts:0,daysRun:0,status:'Scheduled',notes:String(data.notes||'')};
  e.releases.unshift(r);log('Theatrical release scheduled',p.title+' · '+territory+' · '+opening);persist('Theatrical release scheduled.');return r;
@@ -102,7 +103,7 @@ function addRelease(data){
 function addCampaign(data){
  const e=ensure(),p=project(data.projectId),budget=money(data.budget),duration=Math.floor(money(data.durationDays)||30);
  if(!p||p.stage<4)throw Error('Marketing campaigns require a project in post-production or later.');
- if(!data.name||budget<0||duration<1||duration>730||!data.channel||!data.segment)throw Error('Marketing campaign details are invalid.');
+ if(!String(data.name||'').trim()||budget<0||duration<1||duration>730||!data.channel||!String(data.segment||'').trim())throw Error('Marketing campaign details are invalid.');
  if(budget>0&&!postCash('Marketing campaign — '+data.name,'Marketing & publicity',-budget,active.date,{projectId:p.id}))throw Error('Insufficient company cash for this campaign.');
  const c={id:uid('MKT'),projectId:p.id,projectTitle:p.title,name:String(data.name).trim(),channel:data.channel,segment:data.segment,budget,spent:budget,durationDays:duration,startDate:active.date,endDate:addDays(active.date,duration),status:'Active',impressions:0,engagements:0,conversions:0,attributedRevenue:0,brandLift:0};
  e.campaigns.unshift(c);log('Marketing campaign launched',c.name+' · '+c.channel+' · '+c.segment);persist('Marketing campaign launched.');return c;
@@ -110,7 +111,7 @@ function addCampaign(data){
 function addMerchandise(data){
  const e=ensure(),asset=ip(data.ipId),units=Math.floor(money(data.initialStock)),cost=money(data.unitCost),price=money(data.retailPrice),rate=money(data.royaltyRate);
  if(!asset)throw Error('Link merchandise to an IP asset.');
- if(!data.name||units<0||cost<0||price<=cost||rate<0||rate>100)throw Error('Merchandise product economics are invalid.');
+ if(!String(data.name||'').trim()||units<0||cost<0||price<=cost||rate<0||rate>100)throw Error('Merchandise product economics are invalid.');
  const m={id:uid('MERCH'),name:String(data.name).trim(),ipId:asset.id,ipTitle:asset.title,category:data.category||'Collectibles',unitCost:cost,retailPrice:price,royaltyRate:rate,inventory:units,unitsSold:0,revenue:0,costOfGoods:0,royaltyAccrued:0,status:'Active',created:active.date};
  e.merchandise.unshift(m);if(rate>0)e.royalties.unshift({id:uid('ROY'),ipId:asset.id,ipTitle:asset.title,projectId:asset.projectId||'',merchandiseId:m.id,payee:asset.creator||asset.rightsOwner||'Rights holder',rate,basis:'gross',accrued:0,paid:0,status:'Active',created:active.date,notes:'Product royalty for '+m.name});log('Merchandise product added',m.name+' · '+units+' units');persist('Merchandise product added.');return m;
 }
@@ -127,7 +128,7 @@ function sellMerchandise(id,units){
 }
 function addRoyalty(data){
  const e=ensure(),asset=ip(data.ipId),rate=money(data.rate);
- if(!asset||!data.payee||rate<0||rate>100||!['gross','net'].includes(data.basis||'gross'))throw Error('Royalty agreement terms are invalid.');
+ if(!asset||!String(data.payee||'').trim()||rate<0||rate>100||!['gross','net'].includes(data.basis||'gross'))throw Error('Royalty agreement terms are invalid.');
  const r={id:uid('ROY'),ipId:asset.id,ipTitle:asset.title,projectId:data.projectId||asset.projectId||'',payee:String(data.payee).trim(),rate,basis:data.basis||'gross',accrued:0,paid:0,status:'Active',created:active.date,notes:String(data.notes||'')};
  e.royalties.unshift(r);log('Royalty agreement added',asset.title+' · '+r.payee+' · '+rate+'%');persist('Royalty agreement added.');return r;
 }
