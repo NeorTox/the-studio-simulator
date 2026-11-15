@@ -9,6 +9,10 @@ const {chromium}=require('playwright');
  await page.getByRole('button',{name:/Create campaign/}).click();
  for(const [id,value] of [['nfounder','Phase Seven QA Founder'],['ncompany','Phase Seven QA Studios'],['ncountry','India'],['ncity','Mumbai']])await page.locator('#'+id).fill(value);
  await page.getByRole('button',{name:/Create and save campaign/}).click();
+ const initialHealth=await page.evaluate(()=>StudioPhaseIntegration.audit());
+ assert.equal(initialHealth.modules.find(x=>x.id===6).status,'connected','Phase 6 must be connected immediately after campaign creation: '+JSON.stringify(initialHealth.modules.find(x=>x.id===6)));
+ assert.equal(initialHealth.modules.find(x=>x.id===7).status,'connected','Phase 7 must be connected immediately after campaign creation: '+JSON.stringify(initialHealth.modules.find(x=>x.id===7)));
+ assert.equal(initialHealth.failed,0,'Fresh campaign integration audit must be green: '+JSON.stringify(initialHealth.tests.filter(x=>!x.ok)));
  const setup=await page.evaluate(()=>{
   const p=window.Phase7Smartphone;if(!p)throw Error('Phase 7 engine did not load');
   const s=p.ensure();const creator=p.createCreator({name:'QA Creator',handle:'qa_creator',category:'Film',followers:50000});
