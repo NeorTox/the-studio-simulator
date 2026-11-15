@@ -4,6 +4,7 @@ const fs=require('node:fs');
 const css=fs.readFileSync('studio-overhaul.css','utf8');
 const js=fs.readFileSync('player-experience-layer.js','utf8');
 const html=fs.readFileSync('index.html','utf8');
+const sw=fs.readFileSync('sw.js','utf8');
 assert.match(css,/grid-template-columns:248px/);
 assert.match(css,/orientation:landscape/);
 assert.match(js,/StudioNPCDecisionConsequences/);
