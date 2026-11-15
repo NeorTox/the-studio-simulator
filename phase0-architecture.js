@@ -7,6 +7,7 @@ const domains=[
 {id:'kernel',name:'Simulation kernel',deps:[],owns:['simulation date','day counter','deterministic random streams','simulation event dispatch'],status:'foundation'},
 {id:'world',name:'World and time',deps:['kernel'],owns:['world clock','calendar','regions','environment','world events'],status:'partial'},
 {id:'population',name:'Population and NPCs',deps:['kernel','world'],owns:['people','demographics','life events','social graph','careers'],status:'partial'},
+{id:'npc-social-networks',name:'NPC relationships and collective behaviour',deps:['kernel','population','npc-personal-agency','npc-decision-consequences'],owns:['relationship graph','trust and affinity dynamics','rumor propagation','group membership','collective action','bounded social memory'],status:'implemented'},
 {id:'household-consumer-economics',name:'Household and consumer economics',deps:['kernel','population','economy'],owns:['households','budgets','consumer purchases','savings','credit','debt','arrears','financial stress','regional consumer demand'],status:'implemented'},
 {id:'founder',name:'Founder and personal life',deps:['kernel','world','population'],owns:['founder profile','wellbeing','personal assets','relationships'],status:'partial'},
 {id:'company',name:'Corporate management',deps:['kernel','finance','workforce'],owns:['companies','divisions','subsidiaries','facilities','governance'],status:'partial'},
