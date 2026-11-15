@@ -5,7 +5,8 @@ for(let i=0;i<2500;i++)campaign.world.population.npcs.push({id:'NPC-'+i,alive:tr
 const controller={registerTask(spec){assert.ok(!tasks.has(spec.id));tasks.set(spec.id,spec);return{registered:true}}};
 const context={active:campaign,window:{StudioAutonomy:controller,StudioPhase0:{registerModule(){}}},document:{readyState:'complete',addEventListener(){}}};vm.createContext(context);vm.runInContext(source,context);
 const api=context.window.StudioSocialNetwork;assert.ok(api);assert.equal(api.relationTypes.length,10);assert.equal(tasks.size,1);
-const playerLink=api.createRelationship('PLAYER','NPC-6','friend',{closeness:40,trust:55});assert.equal(playerLink.created,true);assert.equal(api.networkFor('PLAYER').relationships[0].otherNpcId,'NPC-6');\nconst relationship=api.createRelationship('NPC-0','NPC-1','friend',{closeness:35,trust:45});assert.equal(relationship.created,true);assert.equal(api.createRelationship('NPC-1','NPC-0','friend').created,false);
+const playerLink=api.createRelationship('PLAYER','NPC-6','friend',{closeness:40,trust:55});assert.equal(playerLink.created,true);assert.equal(api.networkFor('PLAYER').relationships[0].otherNpcId,'NPC-6');
+const relationship=api.createRelationship('NPC-0','NPC-1','friend',{closeness:35,trust:45});assert.equal(relationship.created,true);assert.equal(api.createRelationship('NPC-1','NPC-0','friend').created,false);
 api.interact('NPC-0','NPC-1','support',3,'2026-03-01');let network=api.networkFor('NPC-0');assert.equal(network.relationships.length,1);assert.ok(network.relationships[0].closeness>35);
 const rumor=api.createRumor({id:'RUM-01',originNpcId:'NPC-0',date:'2026-03-01',content:'A local studio may open a new facility.',truthfulness:.9,salience:.9});assert.equal(rumor.created,true);assert.equal(api.createRumor({id:'RUM-01',originNpcId:'NPC-0'}).duplicate,true);
 const rumorResult=api.propagateRumors('2026-03-02',100);assert.ok(rumorResult.transmissions>=0);
