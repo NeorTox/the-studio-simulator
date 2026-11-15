@@ -252,10 +252,11 @@ function processMonth(date){
   if(pendingFailed)return false;
   e.lastMonthlyDate=month;
  }
- // Royalty settlement is retried on later days if the finance ledger was unable to pay.
- if(Number(date.slice(8,10))===1||e.royaltySettlementPending){
+ // Settle once per month after monthly statements have posted. Retry every day until finance accepts all payments.
+ if(e.lastRoyaltySettlementMonth!==month||e.royaltySettlementPending){
   const result=settleRoyalties(date);e.royaltySettlementPending=result.failed>0;
   if(result.failed)log('Royalty settlement delayed',result.failed+' payment(s) could not be posted.');
+  else e.lastRoyaltySettlementMonth=month;
  }
  return !pendingFailed;
 }
