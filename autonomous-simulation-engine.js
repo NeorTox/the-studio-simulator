@@ -7,7 +7,7 @@ const tasks=new Map(),handlers=new Map();
 const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
 const clone=v=>v==null?v:JSON.parse(JSON.stringify(v));
 const hash=s=>{let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(16).padStart(8,'0')};
-const validDate=s=>/^\d{4}-\d{2}-\d{2}$/.test(String(s))&&!Number.isNaN(Date.parse(String(s)+'T00:00:00Z'));
+const validDate=s=>{const v=String(s);if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return false;const d=new Date(v+'T00:00:00Z');return !Number.isNaN(d.getTime())&&d.toISOString().slice(0,10)===v};
 const ordinal=s=>Math.floor(Date.parse(s+'T00:00:00Z')/86400000);
 function campaign(){return typeof active!=='undefined'&&active?active:null}
 function ensure(){
@@ -129,7 +129,7 @@ function attach(){
  const integration=window.StudioPhaseIntegration;
  if(integration&&!integration.__autonomyWrapped){
   const oldEnd=integration.endDay;
-  integration.endDay=function(date){const result=runTick(date);const out=oldEnd.call(this,date);return {autonomy:result,integration:out};};
+  integration.endDay=function(date){const out=oldEnd.call(this,date);const result=runTick(date);return {autonomy:result,integration:out};};
   const oldAudit=integration.audit;
   integration.audit=function(){const report=oldAudit.call(this),a=audit();report.tests.push({name:'Autonomous simulation controller',ok:a.failed===0,detail:a.passed+'/'+(a.passed+a.failed)+' checks passed'});report.passed=report.tests.filter(x=>x.ok).length;report.failed=report.tests.length-report.passed;return report;};
   integration.__autonomyWrapped=true;
