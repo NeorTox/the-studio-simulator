@@ -22,12 +22,13 @@ const domains=[
 {id:'markets',name:'Capital markets',deps:['kernel','finance','economy'],owns:['equities','orders','IPO','bonds','shareholders','takeovers'],status:'partial'},
 {id:'economy',name:'Global economy',deps:['kernel','world'],owns:['GDP','inflation','rates','labour','FX','trade','commodities'],status:'partial'},
 {id:'competitors',name:'Competitor companies',deps:['kernel','company','workforce','production','finance','economy'],owns:['rival agents','strategy','production slate','M&A','insolvency'],status:'partial'},
-{id:'technology',name:'Technology and R&D',deps:['kernel','company','economy'],owns:['research','patents','AI','technology adoption','cybersecurity'],status:'missing'},
+{id:'technology',name:'Technology and R&D',deps:['kernel','company','economy'],owns:['research','patents','AI','technology adoption','cybersecurity'],status:'implemented'},
 {id:'sustainability',name:'Sustainability',deps:['kernel','company','production','economy'],owns:['energy','emissions','water','waste','supply chain'],status:'partial'},
 {id:'risk',name:'Risk and resilience',deps:['kernel','company','finance','world'],owns:['insurance','crisis','fraud','disaster recovery','legal exposure'],status:'partial'},
 {id:'legacy',name:'Generations and succession',deps:['kernel','founder','population','company','finance'],owns:['family trees','heirs','inheritance','leadership succession'],status:'partial'},
 {id:'global-media-information',name:'Global media and information ecosystem',deps:['kernel','media','population','npc-social-networks','npc-memory-reputation','economy'],owns:['local to international newsrooms','editorial credibility and verification','event significance and news selection','regional news digests','NPC news exposure and public information','corrections and subscriptions'],status:'implemented'},
-{id:'npc-digital-society',name:'NPC communication and digital society',deps:['kernel','population','npc-social-networks','npc-memory-reputation','media','global-media-information'],owns:['private and group messaging','social accounts and posts','comments and reactions','online communities','digital footprints','bounded communication delivery'],status:'implemented'}
+{id:'npc-digital-society',name:'NPC communication and digital society',deps:['kernel','population','npc-social-networks','npc-memory-reputation','media','global-media-information'],owns:['private and group messaging','social accounts and posts','comments and reactions','online communities','digital footprints','bounded communication delivery'],status:'implemented'},
+{id:'risk-resilience',name:'Corporate risk and cyber resilience',deps:['kernel','company','finance','workforce','world','media','global-media-information','npc-digital-society'],owns:['cyber exposure scoring','security controls','incident detection','containment and recovery','insurance claims','operational resilience'],status:'implemented'}
 ];
 const schema={
 version:SCHEMA_VERSION,name:'THE STUDIO campaign schema',
