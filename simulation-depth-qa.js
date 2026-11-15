@@ -29,6 +29,10 @@ assert.match(world,/currentHourlyByRegion/,'Hourly regional weather must persist
 assert.match(experience,/Hourly city microclimate/,'World dashboard must expose hourly city weather');
 assert.match(index,/\.\/simulation-depth-engine\.js/,'Application must load the depth engine');
 assert.match(index,/StudioMarketLiquidity\.processDay\(next\)/,'Daily stock liquidity must run before order execution');
+assert.match(index,/q\.bidAskSpreadPct/,'Order execution must use the modeled bid-ask spread');
+assert.match(index,/q\.askDepthLevels/,'Buy orders must consume modeled ask depth');
+assert.match(index,/q\.bidDepthLevels/,'Sell orders must consume modeled bid depth');
+assert.match(index,/q\.marketImpactPct/,'Order fills must include liquidity impact');
 assert.match(sw,/\.\/simulation-depth-engine\.js/,'Offline shell must cache the depth engine');
 assert.match(sw,/v4\.36\.0-world-systems-market/,'Offline cache version must rotate for new assets');
 assert.doesNotMatch(index,/'Crime, safety and law enforcement','World','MISSING'/,'Crime and safety may no longer be marked completely missing');
