@@ -1,0 +1,42 @@
+const {chromium}=require('playwright'),assert=require('assert');
+(async()=>{
+ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ const page=await browser.newPage({viewport:{width:1440,height:900}});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+ await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
+ await page.getByRole('button',{name:/New campaign/}).click();
+ await page.getByRole('button',{name:/Create campaign/}).click();
+ for(const [id,value] of [['nfounder','Integration Stress Founder'],['ncompany','Integration Stress Studios'],['ncountry','India'],['ncity','Mumbai']])await page.locator('#'+id).fill(value);
+ await page.getByRole('button',{name:/Create and save campaign/}).click();
+ const start=await page.evaluate(()=>active.date);
+ const setup=await page.evaluate(()=>{
+  const p=window.StudioPhase0;
+  if(!p?.phase1?.processWorldDay||!window.StudioPopulationEngine?.processDay||!window.Phase3Founder?.stepDay||!window.Phase4Company?.stepDay||!window.Phase5Production?.audit)throw Error('Required Phase 0–5 API is missing');
+  const scheduler=p.createCampaignScheduler();
+  scheduler.schedule('world:story',addDays(active.date,45),{title:'Integration stress scheduled event'});
+  return {date:active.date,npcs:active.npcs?.length||0};
+ });
+ // 1,095 simulated days, advanced in 30-day chunks to exercise the real public advance path.
+ for(let i=0;i<37;i++)await page.evaluate(days=>window.advance(Math.min(days,1095-(window.__stressDays||0))),30).then(()=>page.evaluate(()=>{window.__stressDays=(window.__stressDays||0)+30;})).catch(e=>{throw e;});
+ const result=await page.evaluate(()=>{
+  const w=active.world?.time,pop=active.population?.phase2,founder=active.founder?.phase3,company=window.Phase4Company.ensure(),telemetry=active.integration;
+  const worldDate=w?.lastProcessedDate,popDate=pop?.lastProcessedDate,founderDate=founder?.lastDay,companyDate=company?.lastProcessedDate;
+  const report=window.StudioPhaseIntegration.audit();
+  return {date:active.date,start:active.startDate,worldDate,worldDays:w?.processedDays,popDate,popDays:pop?.dailyTicks,founderDate,companyDate,companyDays:company?.processedDays,trackedDays:Object.keys(telemetry?.days||{}).length,completedDays:Object.values(telemetry?.days||{}).filter(x=>x.status==='completed').length,schedulerHistory:active.simulationKernel?.history?.length,schedulerQueue:active.simulationKernel?.queue?.length,audit:{passed:report.passed,failed:report.failed,tests:report.tests},phase5:window.Phase5Production.audit()};
+ });
+ console.log('MULTIYEAR CROSS-PHASE STRESS',JSON.stringify({setup,result,errors}));
+ assert.equal(result.date,addDays(start,1110)); // 37 x 30-day advances
+ assert.equal(result.worldDate,result.date);
+ assert.equal(result.popDate,result.date);
+ assert.equal(result.founderDate,result.date);
+ assert.equal(result.companyDate,result.date);
+ assert(result.worldDays>=1095);
+ assert(result.popDays>=1095);
+ assert.equal(result.trackedDays,result.completedDays);
+ assert(result.trackedDays>=1095);
+ assert.equal(result.audit.failed,0,JSON.stringify(result.audit.tests.filter(x=>!x.ok)));
+ assert.equal(result.phase5.failed,0);
+ assert.deepEqual(errors,[]);
+ await browser.close();
+ console.log('PASS 3-year daily cross-phase stress run, scheduler, integration audit and Phase 5 audit');
+})();
