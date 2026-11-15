@@ -10,12 +10,12 @@ const RIGHTS=['Theatrical exhibition','Streaming','Broadcast','Home video','Down
 const SEGMENTS=['Families','Young adults','Teen audiences','Adults 25–44','Adults 45+','Genre fans','Animation fans','Gamers','Music listeners','Global general audience'];
 function ensure(){
  if(!active)return null;
- if(!active.ecosystem||typeof active.ecosystem!=='object'||Array.isArray(active.ecosystem))active.ecosystem={version:'6.0.0',deals:[],offers:[],releases:[],campaigns:[],merchandise:[],royalties:[],revenueEvents:[],platforms:[],history:[],lastProcessedDate:null,lastMonthlyDate:null};
+ if(!active.ecosystem||typeof active.ecosystem!=='object'||Array.isArray(active.ecosystem))active.ecosystem={version:'6.1.0',deals:[],offers:[],releases:[],campaigns:[],merchandise:[],royalties:[],revenueEvents:[],platforms:[],audienceSegments:[],fandoms:[],reviews:[],history:[],lastProcessedDate:null,lastMonthlyDate:null};
  const e=active.ecosystem;
- const defaults={version:'6.0.0',deals:[],offers:[],releases:[],campaigns:[],merchandise:[],royalties:[],revenueEvents:[],platforms:[],history:[],lastProcessedDate:null,lastMonthlyDate:null};
+ const defaults={version:'6.1.0',deals:[],offers:[],releases:[],campaigns:[],merchandise:[],royalties:[],revenueEvents:[],platforms:[],audienceSegments:[],fandoms:[],reviews:[],history:[],lastProcessedDate:null,lastMonthlyDate:null};
  Object.keys(defaults).forEach(k=>{if(e[k]===undefined)e[k]=Array.isArray(defaults[k])?[]:defaults[k];});
- ['deals','offers','releases','campaigns','merchandise','royalties','revenueEvents','platforms','history'].forEach(k=>{if(!Array.isArray(e[k]))e[k]=[];});
- e.version='6.0.0';
+ ['deals','offers','releases','campaigns','merchandise','royalties','revenueEvents','platforms','audienceSegments','fandoms','reviews','history'].forEach(k=>{if(!Array.isArray(e[k]))e[k]=[];});
+ e.version='6.1.0';
  if(!e.platforms.length)e.platforms.push(
   {id:'PLAT-ORBIT',name:'Orbit Stream',type:'SVOD',territory:'Worldwide',subscribers:1250000,monthlyRevenuePerSubscriber:8,active:true,reliability:88},
   {id:'PLAT-NORTHSTAR',name:'Northstar Broadcast',type:'Broadcast',territory:'North America',subscribers:0,monthlyRevenuePerSubscriber:0,active:true,reliability:82},
@@ -27,7 +27,22 @@ function log(action,detail){const e=ensure();if(!e)return;const item={id:uid('EC
 function persist(message){if(typeof window.persist==='function')window.persist();else if(typeof persistCampaign==='function')persistCampaign();if(message&&typeof toast==='function')toast(message);}
 function project(id){return (active?.projects||[]).find(p=>p.id===id)||null;}
 function ip(id){return (active?.company?.ipAssets||[]).find(p=>p.id===id)||null;}
-function territoryOverlap(a,b){return a==='Worldwide'||b==='Worldwide'||String(a).toLowerCase()===String(b).toLowerCase();}
+function territoryOverlap(a,b){
+ const norm=x=>String(x||'').trim().toLowerCase().replace(/&/g,'and').replace(/\s+/g,' ');
+ const groups={
+  'north america':['north america','united states','usa','us','canada','mexico'],
+  'south asia':['south asia','india','pakistan','bangladesh','sri lanka','nepal','bhutan'],
+  'east asia':['east asia','china','japan','south korea','north korea','taiwan','hong kong'],
+  'europe':['europe','continental europe','united kingdom','uk','ireland','france','germany','italy','spain','netherlands','sweden','norway','denmark','poland'],
+  'latin america':['latin america','brazil','argentina','chile','colombia','peru','mexico'],
+  'oceania':['oceania','australia','new zealand'],
+  'middle east and africa':['middle east and africa','middle east','africa','uae','saudi arabia','south africa','nigeria','egypt']
+ };
+ const x=norm(a),y=norm(b);if(!x||!y)return false;
+ if(x==='worldwide'||y==='worldwide'||x===y)return true;
+ const contains=(parent,child)=>groups[parent]?.includes(child)||false;
+ return contains(x,y)||contains(y,x);
+}
 function dateOverlap(a,b){const ae=a.endDate||'9999-12-31',be=b.endDate||'9999-12-31';return a.startDate<=be&&b.startDate<=ae;}
 function rightsOverlap(a,b){return a.rights==='All media'||b.rights==='All media'||a.rights===b.rights;}
 function hasConflict(candidate,ignoreId){
@@ -167,7 +182,7 @@ function processMonth(date){
 }
 function stepDay(date){
  const e=ensure();if(!e||!isoDate(date)||e.lastProcessedDate===date)return {skipped:true};
- e.deals.forEach(d=>{if(d.status==='Active'&&d.endDate&&d.endDate<date){const topUp=Math.max(0,money(d.minimumGuarantee)-money(d.paidToDate));if(topUp>0&&recordRevenue('Minimum guarantee settlement — '+d.projectTitle+' — '+d.licensee,topUp,date,{projectId:d.projectId,dealId:d.id}))d.paidToDate=money(d.paidToDate)+topUp;d.status='Completed';}});
+ e.deals.forEach(d=>{if(d.status==='Active'&&d.endDate&&d.endDate<date){const topUp=Math.max(0,money(d.minimumGuarantee)-money(d.paidToDate));if(topUp>0){const posted=recordRevenue('Minimum guarantee settlement — '+d.projectTitle+' — '+d.licensee,topUp,date,{projectId:d.projectId,dealId:d.id});if(!posted){d.settlementPending=true;return;}d.paidToDate=money(d.paidToDate)+posted;}d.settlementPending=false;d.status='Completed';}});
  e.releases.forEach(r=>processReleaseDay(r,date));
  e.campaigns.forEach(c=>processCampaignDay(c,date));
  if(date.slice(8,10)==='01')processMonth(date);
@@ -178,7 +193,8 @@ function audit(){
  const ids=[...e.deals,...e.offers,...e.releases,...e.campaigns,...e.merchandise,...e.royalties].map(x=>x.id);
  add('Ecosystem record identifiers are unique',new Set(ids).size===ids.length,'Across deals, offers, releases, campaigns, products and royalty agreements.');
  add('Distribution deal terms are valid',e.deals.every(d=>d.id&&d.projectId&&d.licensee&&d.territory&&d.rights&&isoDate(d.startDate)&&(!d.endDate||isoDate(d.endDate)&&d.endDate>=d.startDate)&&money(d.upfrontFee)>=0&&money(d.revenueShare)>=0&&money(d.revenueShare)<=100&&money(d.distributorFee)>=0&&money(d.distributorFee)<=100&&money(d.revenueShare)+money(d.distributorFee)<=100),'All rights windows and financial shares are bounded.');
- add('No overlapping exclusive rights grants',e.deals.every(d=>!hasConflict(d,d.id)),'Exclusive rights cannot be granted twice over overlapping territory, rights and dates.');
+ add('No overlapping exclusive rights grants',e.deals.every(d=>!hasConflict(d,d.id)),'Exclusive rights cannot be granted twice over overlapping territory, rights and dates, including regional territories.');
+ add('Audience and fandom records are structurally valid',e.audienceSegments.every(x=>x.id&&x.name&&x.audienceIndex>=0&&x.engagement>=0&&x.engagement<=100)&&e.fandoms.every(x=>x.id&&x.projectId&&x.name&&x.members>=0&&x.engagement>=0&&x.engagement<=100)&&e.reviews.every(x=>x.id&&x.projectId&&x.critic&&x.score>=0&&x.score<=100),'Audience segments, fan communities and critic reviews stay within valid ranges.');
  add('Negotiation records have valid status',e.offers.every(o=>['Negotiating','Accepted','Rejected'].includes(o.status)),'Offers use a controlled negotiation state.');
  add('Theatrical release economics are valid',e.releases.every(r=>r.id&&r.projectId&&isoDate(r.openingDate)&&r.screens>0&&r.averageTicket>0&&r.exhibitorShare>=0&&r.distributorFee>=0&&r.exhibitorShare+r.distributorFee<100&&r.daysRun>=0&&r.totalGross>=0),'Release schedules, shares and receipts are non-negative.');
  add('Marketing campaign metrics are finite',e.campaigns.every(c=>c.id&&c.projectId&&c.budget>=0&&c.impressions>=0&&c.engagements>=0&&c.conversions>=0&&Number.isFinite(c.brandLift)),'Marketing measurement remains finite.');
@@ -248,7 +264,7 @@ function install(){
  if(typeof priorDay==='function'&&!priorDay.__p6Wrapped){const wrapped=function(...args){const out=priorDay.apply(this,args);stepDay(args[0]||active?.date);return out;};wrapped.__p6Wrapped=true;window.simulateLifeDay=wrapped;}
  render();
 }
-window.Phase6Ecosystem={version:'6.0.0',ensure,addPlatform,addDistributionDeal,createOffer,counterOffer,acceptOffer,rejectOffer,addRelease,addCampaign,addMerchandise,sellMerchandise,addRoyalty,settleRoyalties,stepDay,audit,render,hasConflict};
+window.Phase6Ecosystem={version:'6.1.0',ensure,addPlatform,addDistributionDeal,createOffer,counterOffer,acceptOffer,rejectOffer,addRelease,addCampaign,addMerchandise,sellMerchandise,addRoyalty,settleRoyalties,stepDay,audit,render,hasConflict};
 try{window.StudioPhase0?.registerModule({id:'ecosystem',name:'Entertainment ecosystem',deps:['kernel','rights','media','production','finance','economy'],owns:['distribution agreements','rights windows','theatrical releases','platform revenue','marketing analytics','merchandise','creator royalties'],status:'implemented'});}catch(e){}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
