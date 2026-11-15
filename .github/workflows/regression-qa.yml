@@ -24,6 +24,8 @@ jobs:
         run: |
           npm install --no-save playwright
           npx playwright install --with-deps chromium
+      - name: Run player experience browser smoke test
+        run: node player-experience-browser-qa.js
       - name: Run Phase 3 engine and finance tests
         run: |
           node --check phase3-founder-engine.js
