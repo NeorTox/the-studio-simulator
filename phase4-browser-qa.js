@@ -2,6 +2,7 @@ const {chromium}=require('playwright'),assert=require('assert');
 (async()=>{
  const b=await chromium.launch({headless:true,args:['--no-sandbox']});
  const p=await b.newPage({viewport:{width:390,height:844}}),errors=[];
+ await p.addInitScript(()=>localStorage.setItem('the-studio-onboarding-v1','skipped'));
  p.on('pageerror',e=>errors.push(e.message));
  await p.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
  await p.getByRole('button',{name:/New campaign/}).click();
