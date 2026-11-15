@@ -40,8 +40,9 @@ function endDay(date){
  d.steps.push({name:'phase6-audience',at:new Date().toISOString()});
  d.steps.push({name:'phase7-smartphone',at:new Date().toISOString()});
  d.steps.push({name:'phase8-financial-empire',at:new Date().toISOString()});
+ if(active.world?.travel)d.steps.push({name:'global-travel',at:new Date().toISOString()});
  d.status='completed';d.completedAt=new Date().toISOString();s.days[date]=d;
- s.history.unshift({date,status:'completed',phases:['world','population','founder','company','ecosystem','audience','smartphone','financial-empire']});s.history=s.history.slice(0,90);
+ s.history.unshift({date,status:'completed',phases:['world','population','founder','company','ecosystem','audience','smartphone','financial-empire','travel']});s.history=s.history.slice(0,90);
  if(typeof persist==='function')persist();return true;
 }
 function audit(){
@@ -66,6 +67,8 @@ function audit(){
   add('Phase 6 is part of every completed daily pipeline',incompletePhase6.length===0,incompletePhase6.length?incompletePhase6.map(d=>d.date).join(', '):dates.length+' days include world, company and both ecosystem processors.');
   add('Phase 7 is part of every completed daily pipeline',dates.filter(d=>d.status==='completed'&&!d.steps.some(x=>x.name==='phase7-smartphone')).length===0,'Every completed day includes smartphone and digital-media processing.');
   add('Phase 8 is part of every completed daily pipeline',dates.filter(d=>d.status==='completed'&&!d.steps.some(x=>x.name==='phase8-financial-empire')).length===0,'Every completed day includes financial-empire valuation and income processing.');
+  add('Global travel is part of every completed daily pipeline',dates.filter(d=>d.status==='completed'&&!d.steps.some(x=>x.name==='global-travel')).length===0,'Every completed day includes global mobility processing.');
+  add('Global travel checkpoint is synchronized',dates.length===0||active.world?.travel?.lastProcessedDate===active.date,'Travel '+String(active.world?.travel?.lastProcessedDate||'not yet processed')+' · campaign '+active.date);
   const p7=window.Phase7Smartphone?.audit?.();add('Phase 7 internal integrity audit',!!p7&&p7.failed===0,p7?(p7.passed+' passed / '+p7.failed+' failed'):'Phase 7 audit API unavailable.');
   const media=active.market?.media,awards=active.awardSubmissions;
   add('Media simulation and presentation are available',!!media&&Array.isArray(media.outlets)&&Array.isArray(media.coverage)&&typeof window.simulateMediaMonth==='function'&&typeof window.renderMedia==='function','Media world, outlet and coverage state plus monthly simulation and UI are available.');
