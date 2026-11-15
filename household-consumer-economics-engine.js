@@ -39,13 +39,13 @@ function householdKey(n){
 }
 function prepareMonth(date){
  const s=getState();if(!s)return {processed:false,reason:'no-active-campaign'};
- if(s.preparedDate===date)return {processed:false,idempotent:true,date,households:Object.keys(s.households).length};
+ if(s.preparedDate===date)return {processed:false,idempotent:true,date,households:Number(s.metrics?.households)||Object.keys(s.households).length};
  if(s.lastProcessedDate&&date<=s.lastProcessedDate)return {processed:false,stale:true,date,lastProcessedDate:s.lastProcessedDate};
  const people=population().slice(0,25000),macro=active.market?.globalEconomy,employeeMap=new Map();
  (active.employees||[]).forEach(e=>{if(e.npcId)employeeMap.set(e.npcId,e);else if(String(e.id||'').startsWith('EMP-'))employeeMap.set(String(e.id).slice(4),e)});
  const groups=new Map();
  for(const n of people){if(!alive(n))continue;const key=householdKey(n);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(n)}
- const householdRecords={},regional={};
+ const householdRecords={},pendingFinance={},regional={};
  const regionStates=s.regions;
  for(const [id,r] of Object.entries(macro?.regions||{}))void id,void r;
  for(const [key,members] of groups){
@@ -106,12 +106,14 @@ function prepareMonth(date){
    memberIncome:Object.fromEntries(memberRows.map(x=>[x.id,round(x.income)])),memberExpenseShares:Object.fromEntries(memberRows.map(x=>[x.id,round(x.expenseShare||0)])),
    arrears:0,lastProcessedDate:date
   };
-  householdRecords[key]=household;
+  if(Object.keys(householdRecords).length<500)householdRecords[key]=household;
+  for(const row of memberRows)pendingFinance[row.id]={householdId:key,income:round(row.income),expenseShare:round(row.expenseShare||0),arrears:0};
   const bucket=regional[regionId]||(regional[regionId]={households:0,income:0,spending:0,stress:0,essentialCoverage:0});
   bucket.households++;bucket.income+=totalIncome;bucket.spending+=total;bucket.stress+=household.financialStress;bucket.essentialCoverage+=household.essentialCoverage;
  }
  // Commit a single month snapshot; individual ledgers are applied exactly once below.
  s.households=householdRecords;
+ s.pendingFinance=pendingFinance;
  s.preparedDate=date;
  s.metrics={date,households:groups.size,namedResidents:people.filter(alive).length,regional};
  const macroRegions=macro?.regions||[];
@@ -136,9 +138,9 @@ function processIndividualMonth(n,date){
  const s=getState();if(!s||!n||!alive(n))return false;
  if(n.finances?.lastHouseholdFinanceDate===date)return true;
  if(s.preparedDate!==date)return false;
- const household=s.households[householdKey(n)];if(!household)return false;
- const income=Math.max(0,Number(household.memberIncome?.[n.id])||0);
- const share=Math.max(0,Number(household.memberExpenseShares?.[n.id])||0);
+ const entry=s.pendingFinance?.[n.id];if(!entry)return false;
+ const income=Math.max(0,Number(entry.income)||0);
+ const share=Math.max(0,Number(entry.expenseShare)||0);
  const nf=n.finances||(n.finances={cash:0,debt:0,creditScore:650});
  const before=Math.max(0,Number(nf.cash)||0),debtBefore=Math.max(0,Number(nf.debt)||0),delta=income-share;
  nf.monthlyIncome=round(income);nf.monthlyExpenses=round(share);
@@ -152,16 +154,16 @@ function processIndividualMonth(n,date){
  n.career=n.career||{};n.career.monthlyIncome=round(income);
  if(n.needs)n.needs.security=clamp(Number(n.needs.security??60)+(delta>=0?.4:-.9),0,100);
  if(n.reputation)n.reputation.personal=clamp(Number(n.reputation.personal??50)+(delta>=0?.03:-.05),0,100);
- household.arrears=round(household.arrears+Math.max(0,share-before-income));
+ entry.arrears=round(Math.max(0,share-before-income));
  return true;
 }
 function finalizeMonth(date){
  const s=getState();if(!s||s.preparedDate!==date)return {processed:false};
- let cash=0,debt=0,householdArrears=0;
- for(const h of Object.values(s.households)){householdArrears+=Number(h.arrears)||0;h.lastProcessedDate=date}
+ let cash=0,debt=0,householdArrears=Object.values(s.pendingFinance||{}).reduce((sum,x)=>sum+(Number(x.arrears)||0),0);
+ for(const h of Object.values(s.households))h.lastProcessedDate=date;
  for(const n of population()){if(!alive(n))continue;cash+=Number(n.finances?.cash)||0;debt+=Number(n.finances?.debt)||0}
  const summary={date,households:Object.keys(s.households).length,namedResidents:s.metrics.namedResidents,householdDemandIndex:Number(active.market?.economy?.householdDemandIndex)||100,aggregateCash:round(cash),aggregateDebt:round(debt),unpaidHouseholdArrears:round(householdArrears)};
- s.history.unshift(summary);s.history=s.history.slice(0,MAX_HISTORY);s.lastProcessedDate=date;s.metrics.summary=summary;
+ s.history.unshift(summary);s.history=s.history.slice(0,MAX_HISTORY);s.lastProcessedDate=date;s.metrics.summary=summary;s.pendingFinance={};
  return {processed:true,...summary};
 }
 function audit(){
@@ -176,10 +178,11 @@ function audit(){
  const people=population();
  add('Individual finance balances valid',people.every(n=>!n.finances||[n.finances.cash,n.finances.debt,n.finances.monthlyIncome,n.finances.monthlyExpenses].every(v=>Number.isFinite(Number(v))&&Number(v)>=0)),'Named NPC cash, debt, income and expenses remain finite and non-negative.');
  add('Month preparation checkpoint',!s.preparedDate||s.preparedDate<=active.date,'Household processor does not run ahead of campaign time.');
- add('Household state serializes',(()=>{try{JSON.stringify(s);return true}catch(e){return false}})(),'Households, regional indices and monthly history are save-safe.');
+ add('Closed month has no pending finance transactions',s.lastProcessedDate!==s.preparedDate||Object.keys(s.pendingFinance||{}).length===0,'Pending per-person transactions are cleared after monthly settlement.');
+ add('Household state serializes',(()=>{try{JSON.stringify(s);return true}catch(e){return false}})(),'Household summaries, regional indices and monthly history are save-safe.');
  const passed=tests.filter(t=>t.ok).length;return {date:active.date,passed,failed:tests.length-passed,tests};
 }
-function metrics(){const s=getState();return s?{...s.metrics,version:s.version,lastPreparedDate:s.lastPreparedDate,lastProcessedDate:s.lastProcessedDate,history:s.history.length}:null}
+function metrics(){const s=getState();return s?{...s.metrics,households:Number(s.metrics?.households)||Object.keys(s.households).length,storedHouseholdSamples:Object.keys(s.households).length,version:s.version,lastPreparedDate:s.lastPreparedDate,lastProcessedDate:s.lastProcessedDate,history:s.history.length}:null}
 window.StudioHouseholdEconomics={version:VERSION,prepareMonth,processIndividualMonth,finalizeMonth,audit,metrics,ensure:getState};
 try{window.StudioPhase0?.registerModule?.({id:'household-consumer-economics',name:'Household & consumer economics',deps:['kernel','population'],owns:['household budgets','shared household expenses','personal cashflow','consumer demand','regional price indices','household financial stress'],status:'implemented'})}catch(e){}
 })();
