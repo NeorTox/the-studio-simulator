@@ -25,7 +25,7 @@ const article=campaign.world.mediaEcosystem.articles.find(a=>a.eventId==='GLOBAL
 api.correctArticle(article.id,'The initial report understated the confidence interval.','Data correction');
 assert.equal(article.status,'Corrected');
 assert.equal(api.subscribe(outlet.id).subscribed,true);
-const task=tasks.get('media.global-information'),second=task.run({date:campaign.date,state:{},random:key=>.5});assert.equal(second.duplicate,true);const next=task.run({date:'2026-11-16',state:{},random:key=>.5});assert.equal(next.processed,1);assert.equal(next.processed,1);assert.equal(campaign.world.mediaEcosystem.cursor,2400);assert.ok(campaign.world.mediaEcosystem.exposures.length<=5000);assert.ok(campaign.world.population.npcs.some(n=>n.memory?.memories?.length));
+const task=tasks.get('media.global-information'),second=task.run({date:campaign.date,state:{},random:key=>.5});assert.equal(second.duplicate,true);const next=task.run({date:'2026-11-16',state:{},random:key=>.5});assert.equal(next.processed,1);assert.equal(next.npcProcessed,1200);assert.equal(campaign.world.mediaEcosystem.cursor,2400);assert.ok(campaign.world.mediaEcosystem.exposures.length<=5000);assert.ok(campaign.world.population.npcs.some(n=>n.memory?.memories?.length));
 const report=api.audit();assert.equal(report.failed,0,JSON.stringify(report.tests.filter(x=>!x.ok)));
 assert.ok(JSON.stringify(campaign).includes('Global Wire Service'));
 console.log('GLOBAL MEDIA ECOSYSTEM QA PASSED: newsroom tiers, editorial focus, event significance, regional briefs, verified/unverified reporting, correction workflow, subscriptions, 25,000-NPC exposure batches and save integrity.');
