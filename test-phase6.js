@@ -2,8 +2,8 @@ const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const nodes={};
 const document={readyState:'complete',getElementById:id=>nodes[id]||null,querySelector:()=>null,querySelectorAll:()=>[],createElement:()=>({}),addEventListener(){}};
 const active={id:'P6-QA',date:'2026-11-14',day:1,worldSeed:12345,company:{name:'QA Studios',currency:'USD',cash:100000,ipAssets:[{id:'IP-QA',title:'The Last Orbit',category:'Original screenplay',creator:'A. Rao',rightsOwner:'QA Studios',projectId:'P6-PROJECT',licenses:[]}]},projects:[{id:'P6-PROJECT',title:'The Last Orbit',format:'Feature Film',stage:6,genre:'Science Fiction',budget:1000000,performance:{}}],market:{economy:{cinemaAttendance:'100'}}};
-const posts=[];
-function post(description,category,amount,date,type,meta){if(amount<0&&active.company.cash<Math.abs(amount))return false;active.company.cash+=Number(amount);posts.push({description,category,amount:Number(amount),date,type,meta});return true;}
+const posts=[];let failRevenue=false;
+function post(description,category,amount,date,type,meta){if(amount>0&&failRevenue)return false;if(amount<0&&active.company.cash<Math.abs(amount))return false;active.company.cash+=Number(amount);posts.push({description,category,amount:Number(amount),date,type,meta});return true;}
 const ctx={document,window:{post,persist(){},StudioPhase0:{registerModule:x=>x},simulateLifeDay:null},active,show(){},close(){},toast(){},fmt:n=>String(n),esc:s=>String(s),addDays:(d,n)=>{const x=new Date(d+'T00:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)},stableUnit:(seed,key)=>String(((seed+key.length*17)%997)/997),hashSeed:s=>String(s).length,persist(){},addLog(){},Date,Math,console};
 vm.createContext(ctx);vm.runInContext(fs.readFileSync('phase6-ecosystem-engine.js','utf8'),ctx);
 const api=ctx.window.Phase6Ecosystem;assert(api,'Phase 6 API registered');assert.equal(api.version,'6.1.0');
@@ -25,6 +25,13 @@ const snapshot=JSON.stringify(active.ecosystem);assert(snapshot.includes('Orbit 
 assert.equal(api.stepDay('2026-11-15').skipped,true,'same-day processing is idempotent');
 const settlement=api.settleRoyalties('2026-11-16');assert(settlement.paid>0);assert.equal(royalty.accrued,0);assert(royalty.paid>0);
 active.date='2026-11-17';api.stepDay('2026-11-17');assert.equal(guaranteeDeal.status,'Completed');assert.equal(guaranteeDeal.paidToDate,2000,'Minimum guarantee is topped up at the end of the rights window');
+const retryOffer=api.createOffer({projectId:'P6-PROJECT',licensee:'Retry Broadcaster',channel:'Broadcast TV',territory:'India',rights:'Broadcast',startDate:'2026-11-17',endDate:'2026-11-17',upfrontFee:0,minimumGuarantee:5000,revenueShare:65,distributorFee:10});
+const retryDeal=api.acceptOffer(retryOffer.id);
+failRevenue=true;active.date='2026-11-18';api.stepDay('2026-11-18');
+assert.equal(retryDeal.status,'Active','Failed minimum-guarantee settlement must remain retryable');
+assert.equal(retryDeal.settlementPending,true);
+failRevenue=false;active.date='2026-11-19';api.stepDay('2026-11-19');
+assert.equal(retryDeal.status,'Completed');assert.equal(retryDeal.paidToDate,5000,'Pending minimum guarantee retries without being lost');
 const audit=api.audit();assert.equal(audit.failed,0,JSON.stringify(audit.tests.filter(x=>!x.ok)));
 assert(posts.some(x=>x.category==='Entertainment ecosystem revenue'));assert(posts.some(x=>x.category==='Talent & IP royalties'));
 console.log('PASS Phase 6 distribution rights conflicts, negotiations, theatrical box office, marketing analytics, merchandise inventory, royalty accrual/settlement, daily idempotency, save serialization and audit');
