@@ -22,7 +22,7 @@ const {chromium}=require('playwright'),assert=require('assert');
   const w=active.world?.time,pop=active.world?.population?.phase2,founder=active.founder?.phase3,company=window.Phase4Company.ensure(),ecosystem=active.ecosystem,telemetry=active.integration;
   const worldDate=w?.lastProcessedDate,popDate=pop?.lastProcessedDate,founderDate=founder?.lastDay,companyDate=company?.lastProcessedDate,ecosystemDate=ecosystem?.lastProcessedDate;
   const report=window.StudioPhaseIntegration.audit();
-  return {date:active.date,start:active.startDate,worldDate,worldDays:w?.processedDays,popDate,popDays:pop?.dailyTicks,founderDate,companyDate,companyDays:company?.processedDays,ecosystemDate,ecosystemVersion:ecosystem?.version,trackedDays:Object.keys(telemetry?.days||{}).length,completedDays:Object.values(telemetry?.days||{}).filter(x=>x.status==='completed').length,schedulerHistory:active.simulationKernel?.history?.length,schedulerQueue:active.simulationKernel?.queue?.length,audit:{passed:report.passed,failed:report.failed,tests:report.tests},phase5:window.Phase5Production.audit()};
+  return {date:active.date,start:active.startDate,worldDate,worldDays:w?.processedDays,popDate,popDays:pop?.dailyTicks,founderDate,companyDate,companyDays:company?.processedDays,ecosystemDate,audienceDate:ecosystem?.audienceLastProcessedDate,audienceSegments:ecosystem?.audienceSegments?.length,ecosystemVersion:ecosystem?.version,trackedDays:Object.keys(telemetry?.days||{}).length,completedDays:Object.values(telemetry?.days||{}).filter(x=>x.status==='completed').length,schedulerHistory:active.simulationKernel?.history?.length,schedulerQueue:active.simulationKernel?.queue?.length,audit:{passed:report.passed,failed:report.failed,tests:report.tests},phase5:window.Phase5Production.audit()};
  });
  console.log('MULTIYEAR CROSS-PHASE STRESS',JSON.stringify({setup,result,errors}));
  const expectedDate=new Date(start+'T00:00:00Z');expectedDate.setUTCDate(expectedDate.getUTCDate()+1095);assert.equal(result.date,expectedDate.toISOString().slice(0,10)); // exactly 1,095 simulated days
@@ -31,6 +31,8 @@ const {chromium}=require('playwright'),assert=require('assert');
  assert.equal(result.founderDate,result.date);
  assert.equal(result.companyDate,result.date);
  assert.equal(result.ecosystemDate,result.date);
+ assert.equal(result.audienceDate,result.date);
+ assert.equal(result.audienceSegments,10);
  assert.equal(result.ecosystemVersion,'6.1.0');
  assert(result.worldDays>=1095);
  assert(result.popDays>=1095);
