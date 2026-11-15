@@ -250,6 +250,7 @@ function render(){
  host.querySelectorAll('[data-p6-reject]').forEach(b=>b.onclick=()=>{try{rejectOffer(b.dataset.p6Reject);render();}catch(err){toast(err.message);}});
  host.querySelectorAll('[data-p6-sell]').forEach(b=>b.onclick=()=>{const units=prompt('Units to sell');if(units===null)return;try{sellMerchandise(b.dataset.p6Sell,units);render();}catch(err){toast(err.message);}});
  $('p6-audit').onclick=()=>{const a=audit();$('p6-audit-results').innerHTML=a.tests.map(t=>'<div class="rowitem"><span>'+esc(t.name)+'<div class="tiny">'+esc(t.detail)+'</div></span><b style="color:'+(t.ok?'var(--green)':'var(--red)')+'">'+(t.ok?'PASS':'FAIL')+'</b></div>').join('');};
+ window.Phase6Audience?.render();
 }
 function install(){
  const nav=document.querySelector('.nav'),content=document.querySelector('.content');if(!nav||!content)return;
