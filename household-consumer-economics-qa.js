@@ -29,5 +29,5 @@ const roundTrip=JSON.parse(JSON.stringify(campaign));assert.equal(roundTrip.worl
 const largePeople=[];for(let i=0;i<25000;i++)largePeople.push(npc('L'+i,30,'Independent',null,1000,1200,500,i%2?'north-america':'south-asia'));
 campaign.world.population.npcs=largePeople;campaign.world.householdEconomics=null;
 const large=api.prepareMonth('2026-03-01');assert.equal(large.households,25000);assert.equal(large.namedResidents,25000);
-assert.ok(api.metrics().households===25000);
+assert.ok(api.metrics().households===25000);assert.equal(api.metrics().storedHouseholdSamples,500,'persisted household detail must be capped');assert.equal(Object.keys(campaign.world.householdEconomics.pendingFinance).length,25000);api.finalizeMonth('2026-03-01');assert.equal(Object.keys(campaign.world.householdEconomics.pendingFinance).length,0,'pending finance records must clear at month close');
 console.log('HOUSEHOLD ECONOMICS QA PASSED: shared budgets, dependent protection, deterministic regional demand, monthly idempotency, save serialization, and 25,000-NPC bounded aggregation.');
