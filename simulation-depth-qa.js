@@ -28,5 +28,5 @@ assert.doesNotMatch(index,/'Crime, safety and law enforcement','World','MISSING'
 assert.doesNotMatch(index,/'Cybersecurity and platform trust','Technology','MISSING'/,'Cybersecurity may no longer be marked completely missing');
 assert.match(experience,/'Crime, safety and law enforcement':\['PARTIAL'/,'Dynamic algorithm inventory must report the new safety model');
 assert.match(experience,/'Cybersecurity and platform trust':\['PARTIAL'/,'Dynamic algorithm inventory must report the new cyber model');
-assert.match(integration,/Simulation depth systems integrity/,'Cross-phase QA must include the depth systems audit');
+assert.match(depth,/Simulation depth systems integrity/,'Cross-phase QA must include the depth systems audit');
 console.log('SIMULATION DEPTH STATIC QA PASSED: safety, cyber, relationships, macro, supply chain, hourly climate, UI, cache and integration contracts.');
