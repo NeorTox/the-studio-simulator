@@ -10,6 +10,9 @@ assert.match(depth,/window\.StudioSupplyChain=/,'Supply-chain API must be expose
 assert.match(depth,/function processSafetyDay\(/,'Daily safety simulation must exist');
 assert.match(depth,/function processCyberDay\(/,'Daily cybersecurity simulation must exist');
 assert.match(depth,/function processRelationships\(/,'Daily relationship simulation must exist');
+assert.match(depth,/MAX_RELATIONSHIP_DAILY_NPCS=25000/,'Relationship simulation must use bounded rotating NPC cohorts');
+assert.match(depth,/s\.cohortCursor/,'Relationship simulation must rotate its processing cohort');
+assert.match(depth,/lastEvaluationGap=elapsedDays/,'Cohort updates must account for elapsed simulation days');
 assert.match(depth,/function processSupply\(/,'Daily supply-chain simulation must exist');
 assert.match(depth,/function processEquityLiquidity\(/,'Daily equity liquidity must exist');
 assert.match(depth,/function liquidityAudit\(/,'Equity liquidity audit must exist');
