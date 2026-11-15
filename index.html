@@ -550,7 +550,7 @@ n=Math.max(1,Math.min(3650,Math.floor(Number(n)||1)));
 let old=active.date,advanced=0;
 for(let i=0;i<n;i++){
 const next=addDays(active.date,1),y=Number(next.slice(0,4)),m=Number(next.slice(5,7)),day=Number(next.slice(8,10));
-const __coreStart=Date.now();let __coreMark=__coreStart;const __coreStage=name=>{if(window.__studioBatchDebug){const now=Date.now();console.info('[STUDIO_CORE_STAGE]',JSON.stringify({date:next,stage:name,ms:now-__coreMark,totalMs:now-__coreStart}));__coreMark=now}};
+const __coreStart=Date.now();let __coreMark=__coreStart;const __coreStage=name=>{if(window.__studioBatchDebug&&Number(active?.day||0)<=Number(window.__studioBatchDebugUntilDay||0)){const now=Date.now();console.info('[STUDIO_CORE_STAGE]',JSON.stringify({date:next,stage:name,ms:now-__coreMark,totalMs:now-__coreStart}));__coreMark=now}};
 const daysInMonth=new Date(Date.UTC(y,m,0)).getUTCDate();
 const productionDue=productionPaymentsDue(next),opsDue=productionOpsDue(next);if(dnum(dadd(productionDue,opsDue))>active.company.cash){addLog("Clock halted before "+next+": insufficient cash for scheduled production contract payments of "+fmt(dnum(productionDue))+". No time or payment was posted.");break;}
 let payroll=0,facilityRent=0,facilityMaintenance=0,insurancePremium=0,subsidiaryCosts=0,managementPayroll=0;
