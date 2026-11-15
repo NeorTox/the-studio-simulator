@@ -22,6 +22,10 @@ function createFund(x={}){
 function buyAsset(x={}){
  const a=ensure(),fund=a?.funds.find(f=>f.id===x.fundId&&f.status==='Active'),name=String(x.name||'').trim(),cost=Math.round(Number(x.cost)*100)/100,yieldPct=Number(x.annualYield)||0,vol=Number(x.volatility)||0,risk=Number(x.risk)||3;
  if(!fund)throw Error('Choose an active fund.');if(!name||!Number.isFinite(cost)||cost<=0||cost>Number(active.company.cash)||yieldPct<0||yieldPct>40||vol<0||vol>60||risk<1||risk>5)throw Error('Check asset name, cash, yield (0–40%), volatility (0–60%) and risk score (1–5).');
+ const currentValue=a.holdings.filter(h=>h.status==='Active').reduce((s,h)=>s+h.marketValue,0),projectedCash=Number(active.company.cash)-cost,projectedTotal=projectedCash+currentValue+cost;
+ if(projectedTotal>0&&projectedCash/projectedTotal*100<a.policy.liquidityReservePct)throw Error('This acquisition would breach the treasury liquidity reserve. Reduce the investment amount or revise the policy.');
+ if(projectedTotal>0&&cost/projectedTotal*100>a.policy.maxSingleExposurePct)throw Error('This acquisition would exceed the maximum single-asset exposure.');
+ const maxRisk={Conservative:2,Balanced:4,Growth:5,Aggressive:5}[a.policy.riskProfile]||4;if(risk>maxRisk)throw Error('The selected risk score exceeds the current '+a.policy.riskProfile+' mandate.');
  const id='FE-'+String(a.holdings.length+1).padStart(5,'0');
  if(!window.post?.('Financial empire acquisition — '+name,'Marketable securities',-cost,active.date,'equity_buy',{ticker:id,shares:1,notional:cost.toFixed(2),fee:'0',price:cost.toFixed(2),financialEmpire:true}))throw Error('Investment purchase could not be posted to the company ledger.');
  a.holdings.push({id,fundId:fund.id,name,assetClass:x.assetClass||'Private equity',costBasis:cost,marketValue:cost,annualYieldPct:yieldPct,volatilityPct:vol,riskScore:risk,accruedIncome:0,created:active.date,lastMarkDate:active.date,status:'Active',history:[{date:active.date,value:cost}]});
@@ -41,7 +45,7 @@ function updatePolicy(x={}){
 function metrics(){
  const a=ensure();if(!a)return null;const hs=a.holdings.filter(h=>h.status==='Active'),cost=hs.reduce((s,h)=>s+h.costBasis,0),value=hs.reduce((s,h)=>s+h.marketValue,0),income=hs.reduce((s,h)=>s+h.accruedIncome,0),cash=Number(active.company.cash)||0,total=cash+value,largest=hs.reduce((m,h)=>Math.max(m,h.marketValue),0),debt=Math.max(0,Number(active.company.debt)||0),leverage=total>0?debt/total*100:0;
  const rating=cash<0?'D':leverage>75?'CCC':leverage>55?'B':leverage>35?'BB':leverage>20?'BBB':leverage>8?'A':'AA';
- return {asOf:active.date,cash,portfolioCost:cost,portfolioValue:value,unrealizedGain:value-cost,accruedIncome:income,realizedGain:a.realizedGain,totalTreasury:total,liquidityPct:total?cash/total*100:100,largestExposurePct:value?largest/value*100:0,leveragePct:leverage,creditRating:rating,activeHoldings:hs.length,activeFunds:a.funds.filter(f=>f.status==='Active').length};
+ return {asOf:active.date,cash,portfolioCost:cost,portfolioValue:value,unrealizedGain:value-cost,accruedIncome:income,realizedGain:a.realizedGain,totalTreasury:total,liquidityPct:total?cash/total*100:100,largestExposurePct:total?largest/total*100:0,leveragePct:leverage,creditRating:rating,activeHoldings:hs.length,activeFunds:a.funds.filter(f=>f.status==='Active').length};
 }
 function stepDay(date){
  const a=ensure();if(!a)return {processed:false};if(a.lastProcessedDate===date)return {processed:false,idempotent:true};
