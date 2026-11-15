@@ -44,7 +44,7 @@ function prepareMonth(date){
  (active.employees||[]).forEach(e=>{if(e.npcId)employeeMap.set(e.npcId,e);else if(String(e.id||'').startsWith('EMP-'))employeeMap.set(String(e.id).slice(4),e)});
  const groups=new Map();
  for(const n of people){if(!alive(n))continue;const key=householdKey(n);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(n)}
- const householdRecords={},pendingFinance={},regional={},regionStates=s.regions;
+ const householdRecords={},pendingFinance={},regional={},regionStates=s.regions;let storedHouseholdCount=0;
  for(const mr of macro?.regions||[]){
   const rs=regionStates[mr.id]||(regionStates[mr.id]={priceIndex:100,lastUpdated:null});
   if(rs.lastUpdated!==date){const annualInflation=clamp(Number(mr.inflationPct??2.5),-2,30);rs.priceIndex=clamp(Number(rs.priceIndex||100)*(1+annualInflation/1200),50,300);rs.lastUpdated=date}
@@ -116,7 +116,7 @@ function prepareMonth(date){
    financialStress:round(clamp(30+Math.max(0,essential-totalIncome-adultCash-creditCapacity)/Math.max(1,essential)*70,0,100)),
    arrears:0,lastProcessedDate:date
   };
-  if(Object.keys(householdRecords).length<MAX_HOUSEHOLD_SAMPLES)householdRecords[key]=household;
+  if(storedHouseholdCount<MAX_HOUSEHOLD_SAMPLES){householdRecords[key]=household;storedHouseholdCount++;}
   for(const row of memberRows)pendingFinance[row.id]={householdId:key,income:round(row.income),expenseShare:round(row.expenseShare||0),essentialExpenseShare:round(row.essentialShare||0),arrears:0,borrowed:0,interest:0};
   const bucket=regional[regionId]||(regional[regionId]={households:0,income:0,spending:0,stress:0,essentialCoverage:0,categoryActual:{},categoryPlan:{}});
   bucket.households++;bucket.income+=totalIncome;bucket.spending+=total;bucket.stress+=household.financialStress;bucket.essentialCoverage+=household.essentialCoverage;
