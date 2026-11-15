@@ -135,9 +135,13 @@ function addMerchandise(data){
 function sellMerchandise(id,units){
  const m=ensure().merchandise.find(x=>x.id===id);units=Math.floor(money(units));
  if(!m||m.status!=='Active'||units<1||units>m.inventory)throw Error('Sale exceeds available merchandise inventory.');
+ if(m.pendingSaleRollback)throw Error('A previous merchandise sale is awaiting finance rollback; retry after the next simulation day.');
  const revenue=units*m.retailPrice,cost=units*m.unitCost,royalty=Math.round(revenue*m.royaltyRate/100*100)/100;
  if(!postCash('Merchandise cost of goods — '+m.name,'Merchandise cost of sales',-cost,active.date,{merchandiseId:m.id}))throw Error('Insufficient cash to fulfil this merchandise sale.');
- if(!recordRevenue('Merchandise sales — '+m.name,revenue,active.date,{ipId:m.ipId,merchandiseId:m.id,royaltyBasis:'gross'}))throw Error('Merchandise revenue could not be posted.');
+ if(!recordRevenue('Merchandise sales — '+m.name,revenue,active.date,{ipId:m.ipId,merchandiseId:m.id,royaltyBasis:'gross'})){
+  if(!postCash('Merchandise sale rollback — '+m.name,'Merchandise cost reversal',cost,active.date,{merchandiseId:m.id,rollback:true}))m.pendingSaleRollback={cost,date:active.date,units,revenue};
+  throw Error('Merchandise revenue could not be posted; the cost debit was reversed or queued for automatic rollback.');
+ }
  m.inventory-=units;m.unitsSold+=units;m.revenue+=revenue;m.costOfGoods+=cost;m.royaltyAccrued+=royalty;
  // IP-level royalty agreements accrue through recordRevenue(); the product's
  // own royalty meter is tracked separately to avoid double-accruing the same sale.
@@ -258,6 +262,7 @@ function processMonth(date){
 
 function stepDay(date){
  const e=ensure();if(!e||!isoDate(date)||e.lastProcessedDate===date)return {skipped:true};
+ e.merchandise.forEach(m=>{if(m.pendingSaleRollback){if(postCash('Merchandise sale rollback — '+m.name,'Merchandise cost reversal',money(m.pendingSaleRollback.cost),date,{merchandiseId:m.id,rollback:true})){m.pendingSaleRollback=null;}}});
  e.deals.forEach(d=>{if(d.status==='Active'&&d.endDate&&d.endDate<date){const topUp=Math.max(0,money(d.minimumGuarantee)-money(d.paidToDate));if(topUp>0){const posted=recordRevenue('Minimum guarantee settlement — '+d.projectTitle+' — '+d.licensee,topUp,date,{projectId:d.projectId,dealId:d.id});if(!posted){d.settlementPending=true;return;}d.paidToDate=money(d.paidToDate)+posted;}d.settlementPending=false;d.status='Completed';}});
  e.releases.forEach(r=>processReleaseDay(r,date));
  e.campaigns.forEach(c=>processCampaignDay(c,date));
@@ -275,6 +280,7 @@ function audit(){
  add('Theatrical release economics are valid',e.releases.every(r=>r.id&&r.projectId&&isoDate(r.openingDate)&&r.screens>0&&r.averageTicket>0&&r.exhibitorShare>=0&&r.distributorFee>=0&&r.exhibitorShare+r.distributorFee<100&&r.daysRun>=0&&r.totalGross>=0),'Release schedules, shares and receipts are non-negative.');
  add('Marketing campaign metrics are finite',e.campaigns.every(c=>c.id&&c.projectId&&c.budget>=0&&c.impressions>=0&&c.engagements>=0&&c.conversions>=0&&Number.isFinite(c.brandLift)),'Marketing measurement remains finite.');
  add('Merchandise inventory and unit economics reconcile',e.merchandise.every(m=>m.inventory>=0&&m.unitsSold>=0&&m.unitCost>=0&&m.retailPrice>m.unitCost&&m.revenue>=0&&m.costOfGoods>=0),'Stock never becomes negative and unit economics remain positive.');
+ add('Pending finance transactions remain recoverable',e.merchandise.every(m=>!m.pendingSaleRollback||(money(m.pendingSaleRollback.cost)>=0&&isoDate(m.pendingSaleRollback.date)))&&e.releases.every(r=>!r.pendingReceipt||(isoDate(r.pendingReceipt.date)&&money(r.pendingReceipt.gross)>=0&&money(r.pendingReceipt.studio)>=0))&&e.deals.every(d=>!d.pendingStatement||(isoDate(d.pendingStatement.date)&&money(d.pendingStatement.amount)>=0&&money(d.pendingStatement.gross)>=0)),'Failed merchandise reversals, box-office receipts and platform statements remain queued for retry.');
  add('Platform partner profiles are valid',e.platforms.every(p=>p.id&&p.name&&p.type&&p.territory&&p.subscribers>=0&&p.monthlyRevenuePerSubscriber>=0&&p.reliability>=0&&p.reliability<=100&&(!p.monthlySubscriberDelta||Number.isFinite(p.monthlySubscriberDelta))),'Partner audiences, unit economics, reliability and subscriber movement are bounded.');
  add('Royalty balances are finite and non-negative',e.royalties.every(r=>r.rate>=0&&r.rate<=100&&r.accrued>=0&&r.paid>=0&&Number.isFinite(r.accrued+r.paid)),'Accrued and settled royalty balances reconcile.');
  add('Revenue event amounts are finite',e.revenueEvents.every(r=>r.id&&isoDate(r.date)&&Number.isFinite(r.amount)&&r.amount>0),'Revenue events are auditable and date-stamped.');
