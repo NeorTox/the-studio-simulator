@@ -593,12 +593,25 @@ async function advanceInChunks(total,persistEvery=30){
  window.__advanceBatchActive=true;let completed=0,pendingPersist=0,progressMs=Date.now(),saveFailed=false;const clock=active.worldClock||null,wasRunning=!!clock?.running&&!active.clockFrozen;
  if(wasRunning){clock.running=false;clock.lastWallMs=Date.now();saveClock()}
  try{
+  const testAcceleration=window.__STUDIO_TEST_ACCELERATION===true;
   while(completed<total){
    const before=active.date,startedAt=Date.now();
-   // One simulated day per task keeps long fast-forwards responsive; save writes
-   // remain batched to avoid repeatedly serializing the full campaign.
-   advance(1,{silent:true,quiet:true,deferPersist:true});
-   const elapsed=Math.max(0,Math.round((Date.parse(active.date+'T00:00:00Z')-Date.parse(before+'T00:00:00Z'))/86400000));
+   // Test-only acceleration batches 30 consecutive days through the exact same
+   // daily advance pipeline. It changes scheduling/yield frequency only; no
+   // gameplay systems, daily rules, consequences or persistence checks are skipped.
+   const requested=Math.min(testAcceleration?30:1,total-completed);
+   // Preserve the real daily pipeline order even when the test batches browser yields.
+   // Each one-day call runs core simulation AND its wrapped world/phase integrations
+   // before the next date is processed. Only the UI yield/persistence cadence is batched.
+   let elapsed=0;
+   for(let dayIndex=0;dayIndex<requested;dayIndex++){
+    const dayBefore=active.date;
+    advance(1,{silent:true,quiet:true,deferPersist:true});
+    const dayElapsed=Math.max(0,Math.round((Date.parse(active.date+'T00:00:00Z')-Date.parse(dayBefore+'T00:00:00Z'))/86400000));
+    elapsed+=dayElapsed;
+    if(dayElapsed<1)break;
+   }
+   if(testAcceleration)console.info('[STUDIO_TEST_ACCELERATION]',JSON.stringify({requested,elapsed,date:active.date,ms:Date.now()-startedAt}));
    completed+=elapsed;pendingPersist+=elapsed;
    if(pendingPersist>=persistEvery||completed>=total){
     if(active&&!persist()){saveFailed=true;break;}
