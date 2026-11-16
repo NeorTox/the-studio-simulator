@@ -604,7 +604,7 @@ async function advanceInChunks(total,persistEvery=30){
     if(active&&!persist()){saveFailed=true;break;}
     if(window.__studioBatchDebug||pendingPersist>=persistEvery)console.info('[STUDIO_BATCH_PROGRESS]',JSON.stringify({completed,total,date:active.date,chunkDays:pendingPersist,chunkMs:Date.now()-progressMs,lastDayMs:Date.now()-startedAt}));
     pendingPersist=0;progressMs=Date.now();
-   }
+   }else if(window.__studioBatchDebug){console.info('[STUDIO_BATCH_PROGRESS]',JSON.stringify({completed,total,date:active.date,chunkDays:elapsed,chunkMs:Date.now()-progressMs,lastDayMs:Date.now()-startedAt}));}
    if(elapsed<1)break;
    await new Promise(resolve=>setTimeout(resolve,0));
   }
