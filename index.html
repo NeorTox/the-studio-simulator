@@ -590,7 +590,7 @@ async function advanceInChunks(total,persistEvery=30){
  if(!active){toast('Create a campaign first.');return}
  if(active.clockFrozen){toast('Simulation clock is frozen. Use TIME UNFREEZE in Sandbox.');return}
  total=Math.max(1,Math.min(3650,Math.floor(Number(total)||1)));persistEvery=Math.max(1,Math.min(30,Math.floor(Number(persistEvery)||30)));
- window.__advanceBatchActive=true;let completed=0,pendingPersist=0,progressMs=Date.now();const clock=active.worldClock||null,wasRunning=!!clock?.running&&!active.clockFrozen;
+ window.__advanceBatchActive=true;let completed=0,pendingPersist=0,progressMs=Date.now(),saveFailed=false;const clock=active.worldClock||null,wasRunning=!!clock?.running&&!active.clockFrozen;
  if(wasRunning){clock.running=false;clock.lastWallMs=Date.now();saveClock()}
  try{
   while(completed<total){
@@ -601,7 +601,7 @@ async function advanceInChunks(total,persistEvery=30){
    const elapsed=Math.max(0,Math.round((Date.parse(active.date+'T00:00:00Z')-Date.parse(before+'T00:00:00Z'))/86400000));
    completed+=elapsed;pendingPersist+=elapsed;
    if(pendingPersist>=persistEvery||completed>=total){
-    if(active)persist();
+    if(active&&!persist()){saveFailed=true;break;}
     console.info('[STUDIO_BATCH_PROGRESS]',JSON.stringify({completed,total,date:active.date,chunkDays:pendingPersist,chunkMs:Date.now()-progressMs,lastDayMs:Date.now()-startedAt}));
     pendingPersist=0;progressMs=Date.now();
    }
@@ -614,8 +614,8 @@ async function advanceInChunks(total,persistEvery=30){
     try{active.worldClock=active.worldClock||{};active.worldClock.running=true;active.worldClock.lastWallMs=Date.now();saveClock()}
     catch(error){console.error('[STUDIO_CLOCK_RESTORE_FAILURE]',error)}
    }
-   if(active)persist();
-   toast(completed?'Advanced '+completed+' of '+total+' requested day(s).':'Clock did not advance.')
+   if(active)saveFailed=!persist();
+   toast(saveFailed?'Advanced '+completed+' of '+total+' day(s), but saving failed. Export a backup immediately.':completed?'Advanced '+completed+' of '+total+' requested day(s).':'Clock did not advance.')
   }finally{
    window.__advanceBatchActive=false;
   }
