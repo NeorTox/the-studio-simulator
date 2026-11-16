@@ -600,8 +600,17 @@ async function advanceInChunks(total,persistEvery=30){
    // daily advance pipeline. It changes scheduling/yield frequency only; no
    // gameplay systems, daily rules, consequences or persistence checks are skipped.
    const requested=Math.min(testAcceleration?30:1,total-completed);
-   advance(requested,{silent:true,quiet:true,deferPersist:true});
-   const elapsed=Math.max(0,Math.round((Date.parse(active.date+'T00:00:00Z')-Date.parse(before+'T00:00:00Z'))/86400000));
+   // Preserve the real daily pipeline order even when the test batches browser yields.
+   // Each one-day call runs core simulation AND its wrapped world/phase integrations
+   // before the next date is processed. Only the UI yield/persistence cadence is batched.
+   let elapsed=0;
+   for(let dayIndex=0;dayIndex<requested;dayIndex++){
+    const dayBefore=active.date;
+    advance(1,{silent:true,quiet:true,deferPersist:true});
+    const dayElapsed=Math.max(0,Math.round((Date.parse(active.date+'T00:00:00Z')-Date.parse(dayBefore+'T00:00:00Z'))/86400000));
+    elapsed+=dayElapsed;
+    if(dayElapsed<1)break;
+   }
    if(testAcceleration)console.info('[STUDIO_TEST_ACCELERATION]',JSON.stringify({requested,elapsed,date:active.date,ms:Date.now()-startedAt}));
    completed+=elapsed;pendingPersist+=elapsed;
    if(pendingPersist>=persistEvery||completed>=total){
