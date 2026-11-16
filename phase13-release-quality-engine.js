@@ -60,7 +60,7 @@ async function audit(){
   try{const r=await fetch(manifest,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const m=await r.json();add(tests,'Manifest parses and requests landscape',m.orientation==='landscape'&&m.display==='standalone','orientation='+m.orientation+'; display='+m.display)}catch(e){add(tests,'Manifest parses and requests landscape',false,e.message)}
  }else add(tests,'Manifest parses and requests landscape',false,'Manifest link missing.');
  await check('Service worker asset is reachable','./sw.js','Service worker');
- try{const r=await fetch('./sw.js',{cache:'no-store'});const source=await r.text();add(tests,'Offline cache namespace is versioned',r.ok&&/v4\\.\\d+\\.\\d+-world-systems-market/.test(source),source.match(/const CACHE='([^']+)'/)?.[1]||'Cache namespace missing')}catch(e){add(tests,'Offline cache namespace is versioned',false,e.message)}
+ try{const r=await fetch('./sw.js',{cache:'no-store'});const source=await r.text();add(tests,'Offline cache namespace is versioned',r.ok&&/v4\.\d+\.\d+-world-systems-market/.test(source),source.match(/const CACHE='([^']+)'/)?.[1]||'Cache namespace missing')}catch(e){add(tests,'Offline cache namespace is versioned',false,e.message)}
  const refs=[...document.scripts].map(s=>s.getAttribute('src')).filter(x=>x&&x.startsWith('./')&&x.endsWith('.js'));
  for(const src of refs){await check('Engine asset '+src,src,'Local script');}
  const storageKey='studio-phase13-probe-'+Date.now();
