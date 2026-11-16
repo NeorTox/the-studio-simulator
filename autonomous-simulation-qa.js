@@ -24,7 +24,7 @@ const api=context.window.StudioAutonomy;
 assert.ok(api,'Autonomy API is exposed');
 assert.equal(api.version,'1.0.0');
 api.registerTask({id:'qa.alpha',name:'QA prerequisite',cadenceDays:1,priority:10,run(ctx){assert.equal(ctx.campaign.pipelineValidated,ctx.date);ctx.state.count=(ctx.state.count||0)+1;return {count:ctx.state.count}}});
-api.registerTask({id:'qa.beta',name:'QA dependent',cadenceDays:1,priority:20,deps:['qa.alpha'],run(ctx){const prior=ctx.getTaskState('qa.alpha');assert.equal(prior.count,ctx.date==='2026-01-01'?1:ctx.date==='2026-01-02'?2:3);ctx.state.runs=(ctx.state.runs||0)+1;return true}});
+api.registerTask({id:'qa.beta',name:'QA dependent',cadenceDays:1,priority:20,deps:['qa.alpha'],run(ctx){const prior=ctx.getTaskState('qa.alpha');assert.equal(prior.count,Number(ctx.date.slice(-2)));ctx.state.runs=(ctx.state.runs||0)+1;return true}});
 api.on('qa.ping',event=>{handled+=event.payload.value});
 api.on('qa.future',()=>{futureHandled++});
 api.emit('qa.unhandled',{value:1},{id:'unhandled-first',date:'2026-01-01'});
