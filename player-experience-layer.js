@@ -145,7 +145,7 @@ function renderCommandPulse(){
 function boot(){
  syncAlgorithmRegister();installHelp();installExperiencePages();installWorldRisk();
  const oldRender=window.render;if(typeof oldRender==='function'&&!oldRender.__experienceWrapped){const wrapped=function(){const out=oldRender.apply(this,arguments);renderSituations();installHelp();renderCommandPulse();return out};wrapped.__experienceWrapped=true;window.render=wrapped}
- if(!$('studio-tutorial-overlay')){let done=false;try{done=localStorage.getItem(STORE_KEY)==='completed'||localStorage.getItem(STORE_KEY)==='skipped'}catch(e){}if(!done&&!navigator.webdriver)setTimeout(()=>{if(!$('studio-tutorial-overlay')){tour.open=true;tour.index=0;renderTutorial()}},900)}
+ if(!$('studio-tutorial-overlay')){let done=false;try{done=localStorage.getItem(STORE_KEY)==='completed'||localStorage.getItem(STORE_KEY)==='skipped'}catch(e){}if(!done&&!navigator.webdriver&&!window.__STUDIO_DISABLE_AUTO_TUTORIAL)setTimeout(()=>{if(!$('studio-tutorial-overlay')&&!window.__STUDIO_DISABLE_AUTO_TUTORIAL){tour.open=true;tour.index=0;renderTutorial()}},900)}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 window.StudioTutorial={start:()=>showTutorial(0),close:()=>closeTutorial(false),steps:tutorialSteps};
