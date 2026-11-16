@@ -602,7 +602,7 @@ async function advanceInChunks(total,persistEvery=30){
    completed+=elapsed;pendingPersist+=elapsed;
    if(pendingPersist>=persistEvery||completed>=total){
     if(active&&!persist()){saveFailed=true;break;}
-    console.info('[STUDIO_BATCH_PROGRESS]',JSON.stringify({completed,total,date:active.date,chunkDays:pendingPersist,chunkMs:Date.now()-progressMs,lastDayMs:Date.now()-startedAt}));
+    if(window.__studioBatchDebug||pendingPersist>=persistEvery)console.info('[STUDIO_BATCH_PROGRESS]',JSON.stringify({completed,total,date:active.date,chunkDays:pendingPersist,chunkMs:Date.now()-progressMs,lastDayMs:Date.now()-startedAt}));
     pendingPersist=0;progressMs=Date.now();
    }
    if(elapsed<1)break;
