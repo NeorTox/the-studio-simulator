@@ -71,9 +71,11 @@ function audit(){
   add('Daily integration telemetry',!!s,'Serializable integration state is attached to the campaign.');
   const dates=Object.values(s.days),incomplete=dates.filter(d=>d.status!=='completed');
   add('No incomplete daily pipelines',incomplete.length===0,incomplete.length?incomplete.map(d=>d.date).join(', '):dates.length+' completed day records.');
+  const currentDay=s.days[active.date];
+  add('Current completed day includes Phase 2 population processing',!currentDay||currentDay.status!=='completed'||currentDay.steps.some(x=>x.name==='phase2-population'),'Current campaign date: '+active.date);
   const duplicate=dates.some(d=>new Set(d.steps.map(x=>x.name)).size!==d.steps.length);
   add('No duplicate pipeline steps',!duplicate,'Each tracked daily stage appears once per date.');
-  const required=['world-before-life','phase2-population','population-founder-company','phase6-ecosystem','phase6-audience','phase7-smartphone','phase8-financial-empire','phase9-global-economy','phase10-competitors','phase11-technology-sustainability'];
+  const required=['world-before-life','population-founder-company','phase6-ecosystem','phase6-audience','phase7-smartphone','phase8-financial-empire','phase9-global-economy','phase10-competitors','phase11-technology-sustainability'];
   const incompletePhase6=dates.filter(d=>d.status==='completed'&&required.some(step=>!d.steps.some(x=>x.name===step)));
   add('All required daily pipeline stages are present',incompletePhase6.length===0,incompletePhase6.length?incompletePhase6.map(d=>d.date).join(', '):dates.length+' tracked days include all required world, company, ecosystem, smartphone, finance, economy and competitor stages.');
   add('Phase 7 is part of every completed daily pipeline',dates.filter(d=>d.status==='completed'&&!d.steps.some(x=>x.name==='phase7-smartphone')).length===0,'Every completed day includes smartphone and digital-media processing.');
