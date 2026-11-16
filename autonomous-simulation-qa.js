@@ -59,7 +59,7 @@ assert.equal(api.metrics().queuedEvents,1000);
 assert.throws(()=>api.emit('qa.unhandled',{n:1000},{id:'overflow-rejected',date:'2026-01-03'}),/queue is full/);
 assert.equal(api.metrics().queuedEvents,1000,'queue overflow must preserve existing events and reject new ones');
 assert.equal(integration.endDay('2026-01-04').autonomy.processed,true);
-assert.equal(api.metrics().deadLetters,2);
+assert.equal(api.metrics().deadLetters,4,'one unhandled event and three isolated task failures are retained in the dead-letter queue');
 assert.equal(api.random(123,'same'),api.random(123,'same'));
 assert.notEqual(api.random(123,'same'),api.random(123,'different'));
 assert.throws(()=>api.runTick('2025-12-31'),/cannot move backwards/);
