@@ -22,7 +22,22 @@
 const STORE='the-studio-saves-v2',OLD='the-studio-saves-v1';let saves=JSON.parse(localStorage.getItem(STORE)||'[]'),activeId=localStorage.getItem('the-studio-active-v2')||null,active=saves.find(x=>x.id===activeId)||null;
 if(!saves.length){try{const old=JSON.parse(localStorage.getItem(OLD)||'[]');saves=old.map(x=>({...x,employees:x.employees||[],divisions:x.divisions||[],day:x.day||1,ledger:x.ledger||[]}));if(saves.length)localStorage.setItem(STORE,JSON.stringify(saves))}catch(e){}}
 const $=id=>document.getElementById(id),fmt=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:(active&&active.company&&active.company.currency)||'USD',maximumFractionDigits:0}).format(Number(n||0)),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function persist(){if(!active)return;let i=saves.findIndex(x=>x.id===active.id);if(i<0)saves.push(active);else saves[i]=active;localStorage.setItem(STORE,JSON.stringify(saves));localStorage.setItem('the-studio-active-v2',active.id);activeId=active.id;render()}
+function persist(){
+ if(!active)return false;
+ let i=saves.findIndex(x=>x.id===active.id);if(i<0)saves.push(active);else saves[i]=active;
+ try{
+  const serialized=JSON.stringify(saves);
+  localStorage.setItem(STORE,serialized);
+  localStorage.setItem('the-studio-active-v2',active.id);
+  activeId=active.id;
+ }catch(error){
+  console.error('[STUDIO_SAVE_FAILURE]',error);
+  try{toast('Save failed: browser storage may be full or unavailable. Export a backup before continuing.')}catch(_){}
+  return false;
+ }
+ try{render()}catch(error){console.error('[STUDIO_RENDER_AFTER_SAVE_FAILURE]',error)}
+ return true;
+}
 function toast(t){$('toast').textContent=t;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',2500)}
 function nav(p){const target=$('page-'+p);if(!target)return false;document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));target.classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===p));$('crumb').textContent=p.toUpperCase();render();document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x===target));document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===p));return true}window.nav=nav;
 document.querySelectorAll('.nav button').forEach(x=>x.onclick=()=>nav(x.dataset.page));
@@ -594,8 +609,16 @@ async function advanceInChunks(total,persistEvery=30){
    await new Promise(resolve=>setTimeout(resolve,0));
   }
  }finally{
-  if(wasRunning&&active&&!active.clockFrozen){active.worldClock=active.worldClock||{};active.worldClock.running=true;active.worldClock.lastWallMs=Date.now();saveClock()}
-  if(active)persist();window.__advanceBatchActive=false;toast(completed?'Advanced '+completed+' of '+total+' requested day(s).':'Clock did not advance.')
+  try{
+   if(wasRunning&&active&&!active.clockFrozen){
+    try{active.worldClock=active.worldClock||{};active.worldClock.running=true;active.worldClock.lastWallMs=Date.now();saveClock()}
+    catch(error){console.error('[STUDIO_CLOCK_RESTORE_FAILURE]',error)}
+   }
+   if(active)persist();
+   toast(completed?'Advanced '+completed+' of '+total+' requested day(s).':'Clock did not advance.')
+  }finally{
+   window.__advanceBatchActive=false;
+  }
  }
 }
 function exportSave(){if(!active){toast('No active campaign to export.');return}download(active.id)}
