@@ -205,7 +205,7 @@
         ? [node]
         : Array.from(node.querySelectorAll('button[data-page]'));
       candidates.forEach(button => {
-        if (button.parentElement !== nav) return;
+        if (!nav.contains(button) || button.classList.contains('stui-nav-item')) return;
         const route = button.dataset.page;
         const key = groupFor.get(route) || 'advanced';
         let section = nav.querySelector('[data-nav-group="' + key + '"]');
@@ -231,7 +231,7 @@
       });
     }));
   });
-  dynamicNavObserver.observe(nav, { childList: true });
+  dynamicNavObserver.observe(nav, { childList: true, subtree: true });
 
   // Recompose the existing overview without changing the direct-child
   // contract used by the World Pulse renderer (it inserts before .grid.stats).
