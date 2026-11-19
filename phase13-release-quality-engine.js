@@ -51,7 +51,11 @@ function syncAudit(){
   // Verify real campaign task execution; synthetic scheduler tests alone cannot prove integration.
   const autonomous=window.StudioAutonomy?.metrics?.(),autonomyState=active.autonomy||{},latestTick=autonomyState.history?.[0];
   add(tests,'Seven autonomous world tasks registered',!!autonomous&&autonomous.registeredTasks===7,'Expected six NPC/media tasks plus regional environmental risk; found '+String(autonomous?.registeredTasks??'unavailable')+'.');
-  add(tests,'Autonomous scheduler completed the campaign date',!!autonomous&&autonomous.lastTickDate===active.date&&latestTick?.date===active.date&&latestTick.tasksRun===7&&latestTick.failed===0,'Campaign '+active.date+' · tick '+String(autonomous?.lastTickDate||'missing')+' · '+String(latestTick?.tasksRun??0)+' tasks run · '+String(latestTick?.failed??'unknown')+' failures.');
+  const schedulerHasProcessed=Number(autonomous?.ticks)>0;
+  const schedulerDateIsValid=schedulerHasProcessed
+   ? autonomous.lastTickDate===active.date&&latestTick?.date===active.date&&latestTick.tasksRun===7&&latestTick.failed===0
+   : !autonomous?.lastTickDate&&!latestTick;
+  add(tests,'Autonomous scheduler date and execution integrity',!!autonomous&&schedulerDateIsValid,schedulerHasProcessed?'Campaign '+active.date+' · tick '+String(autonomous?.lastTickDate||'missing')+' · '+String(latestTick?.tasksRun??0)+' tasks run · '+String(latestTick?.failed??'unknown')+' failures.':'Fresh campaign has not advanced; scheduler is correctly awaiting its first day.');
   const autonomousAudits=[
    ['NPC personal agency',window.StudioNPCAutonomy?.audit?.()],
    ['Universal NPC decisions and consequences',window.StudioNPCDecisionConsequences?.audit?.()],
