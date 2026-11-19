@@ -48,6 +48,25 @@ function syncAudit(){
   add(tests,'Regional hazard consequence integrity',!!risk&&risk.failed===0,auditDetail(risk));
   add(tests,'Digital-life and telecom integrity',!!digital&&digital.failed===0,auditDetail(digital));
   add(tests,'Financial empire and portfolio integrity',!!finance&&finance.failed===0,auditDetail(finance));
+  // Verify real campaign task execution; synthetic scheduler tests alone cannot prove integration.
+  const autonomous=window.StudioAutonomy?.metrics?.(),autonomyState=active.autonomy||{},latestTick=autonomyState.history?.[0];
+  add(tests,'Seven autonomous world tasks registered',!!autonomous&&autonomous.registeredTasks===7,'Expected six NPC/media tasks plus regional environmental risk; found '+String(autonomous?.registeredTasks??'unavailable')+'.');
+  const schedulerHasProcessed=Number(autonomous?.ticks)>0;
+  const schedulerDateIsValid=schedulerHasProcessed
+   ? autonomous.lastTickDate===active.date&&latestTick?.date===active.date&&latestTick.tasksRun===7&&latestTick.failed===0
+   : !autonomous?.lastTickDate&&!latestTick;
+  add(tests,'Autonomous scheduler date and execution integrity',!!autonomous&&schedulerDateIsValid,schedulerHasProcessed?'Campaign '+active.date+' · tick '+String(autonomous?.lastTickDate||'missing')+' · '+String(latestTick?.tasksRun??0)+' tasks run · '+String(latestTick?.failed??'unknown')+' failures.':'Fresh campaign has not advanced; scheduler is correctly awaiting its first day.');
+  const autonomousAudits=[
+   ['NPC personal agency',window.StudioNPCAutonomy?.audit?.()],
+   ['Universal NPC decisions and consequences',window.StudioNPCDecisionConsequences?.audit?.()],
+   ['NPC social networks',window.StudioSocialNetwork?.audit?.()],
+   ['NPC memory and reputation',window.StudioNPCMemory?.audit?.()],
+   ['NPC digital society',window.StudioDigitalSociety?.audit?.()],
+   ['Global media and information',window.StudioMediaEcosystem?.audit?.()],
+   ['Regional environmental hazards',window.StudioWorldRisk?.audit?.()]
+  ];
+  autonomousAudits.forEach(([name,result])=>add(tests,name+' subsystem integrity',!!result&&result.failed===0,auditDetail(result)));
+
  }
  return {version:VERSION,passed:tests.filter(x=>x.ok).length,failed:tests.filter(x=>!x.ok).length,tests,apis};
 }
