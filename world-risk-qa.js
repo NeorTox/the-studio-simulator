@@ -28,6 +28,8 @@ assert.match(js,/getRegionalImpact/);
 assert.match(depth,/getRegionalImpact/);
 assert.match(depth,/hazardPenalty/);
 assert.match(depth,/energyDemandIndex/);
+assert.match(html,/getRegionalImpact/);
+assert.match(html,/Regional hazard disruption/);
 assert.match(js,/function showTutorial/);
 assert.match(js,/STORE_KEY/);
 assert.match(html,/studio-overhaul\.css/);
