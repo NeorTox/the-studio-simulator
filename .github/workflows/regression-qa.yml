@@ -6,7 +6,7 @@ concurrency:
 
 on:
   push:
-    branches: [main, 'algorithms/**', 'refinement/**', 'systems/**', 'fix/**']
+    branches: [main, 'algorithms/**', 'refinement/**', 'systems/**', 'fix/**', 'ui/**']
   workflow_dispatch:
 
 permissions:
@@ -42,6 +42,8 @@ jobs:
             curl -fsS http://127.0.0.1:4173/index.html >/dev/null && break
             sleep 1
           done
+      - name: Run redesigned UI preview browser regression
+        run: node studio-ui-next-browser-qa.js
       - name: Run player experience browser smoke test
         run: node player-experience-browser-qa.js
       - name: Verify all seven world systems execute on real simulation days
