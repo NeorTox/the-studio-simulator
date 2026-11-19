@@ -549,6 +549,66 @@
     refreshCompanyDossier();
   }
 
+  // Finance workspace: add a non-destructive section navigator to the
+  // existing ledger, journal, invoice, asset, debt, tax and treasury panels.
+  const financePage = $('#page-finance');
+  if (financePage) {
+    financePage.classList.add('stui-finance-page');
+    const financeHero = $('.hero', financePage);
+    const summaryGrid = $('.grid.stats', financePage);
+    const financeSections = [
+      { title: 'Balance sheet snapshot', id: 'stui-finance-balance-sheet', label: 'Balance sheet' },
+      { title: 'General ledger', id: 'stui-finance-ledger', label: 'Ledger' },
+      { title: 'Double-entry accounting', id: 'stui-finance-accounting', label: 'Accounting' },
+      { title: 'Receivables & payables', id: 'stui-finance-receivables', label: 'Receivables' },
+      { title: 'Fixed asset register', id: 'stui-finance-assets', label: 'Assets' },
+      { title: 'Debt facilities', id: 'stui-finance-debt', label: 'Debt' },
+      { title: 'Corporate tax estimation', id: 'stui-finance-tax', label: 'Tax' },
+      { title: 'Foreign exchange & treasury wallets', id: 'stui-finance-treasury', label: 'FX & treasury' },
+      { title: 'Financial integrity', id: 'stui-finance-integrity', label: 'Audit' }
+    ];
+    if (financeHero && summaryGrid && !$('.stui-finance-section-nav', financePage)) {
+      summaryGrid.id = summaryGrid.id || 'stui-finance-summary';
+      const nav = document.createElement('nav');
+      nav.className = 'stui-finance-section-nav';
+      nav.setAttribute('aria-label', 'Finance sections');
+      const items = [{ id: summaryGrid.id, label: 'Summary' }];
+      financeSections.forEach(section => {
+        const panel = Array.from(financePage.children).find(child =>
+          child.classList?.contains('card') &&
+          $('.cardtitle', child)?.textContent.trim() === section.title
+        );
+        if (!panel) return;
+        if (!panel.id) panel.id = section.id;
+        panel.classList.add('stui-finance-panel');
+        items.push({ id: panel.id, label: section.label });
+      });
+      items.forEach((item, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'stui-finance-section-link';
+        button.textContent = item.label;
+        button.dataset.target = item.id;
+        if (index === 0) button.setAttribute('aria-current', 'location');
+        button.addEventListener('click', () => {
+          const target = document.getElementById(button.dataset.target);
+          if (!target) return;
+          target.scrollIntoView({
+            behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+            block: 'start'
+          });
+          $$('.stui-finance-section-link', nav).forEach(link => {
+            if (link === button) link.setAttribute('aria-current', 'location');
+            else link.removeAttribute('aria-current');
+          });
+        });
+        nav.append(button);
+      });
+      financeHero.insertAdjacentElement('afterend', nav);
+      financePage.dataset.stuiFinanceSections = String(items.length);
+    }
+  }
+
   const refreshPresentation = () => { if (typeof window.render === 'function') window.render(); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', refreshPresentation, { once: true });
   else refreshPresentation();
