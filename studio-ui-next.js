@@ -289,6 +289,7 @@
   const refreshPresentation = () => { if (typeof window.render === 'function') window.render(); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', refreshPresentation, { once: true });
   else refreshPresentation();
+  window.addEventListener('load', refreshPresentation, { once: true });
 
   console.info('[STUDIO_UI_NEXT] Preview shell active. Simulation engines and save data are unchanged.');
 })();
