@@ -16,6 +16,7 @@ assert.match(js,/function forecast/);
 assert.match(js,/function mitigate/);
 assert.match(js,/function regionalImpact/);
 assert.match(js,/function applyHazardConsequences/);
+assert.match(js,/e\\.hazards\\.unshift\\(hazard\\);created\\+\\+;applyHazardConsequences\\(hazard,ctx\\)/,'New hazards must publish regional impact on their creation day');
 assert.match(js,/function npcBelongsToRegion/);
 assert.match(js,/phase1\?\.regionFor/);
 assert.match(js,/transportReliabilityPct/);
