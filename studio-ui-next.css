@@ -1178,3 +1178,80 @@ body.stui-next #companydetails > b {
 @media (prefers-reduced-motion: reduce) {
   body.stui-next .stui-company-link { transition: none; }
 }
+
+
+/* Finance section index — navigates the live panels without hiding or replacing them. */
+body.stui-next .stui-finance-section-nav {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  margin: 0 0 13px;
+  padding: 6px;
+  overflow-x: auto;
+  border: 1px solid var(--stui-line);
+  border-radius: 8px;
+  background: rgba(18, 23, 29, .94);
+  scrollbar-width: thin;
+  scrollbar-color: #46515a transparent;
+}
+body.stui-next .stui-finance-section-link {
+  flex: 0 0 auto;
+  min-height: 31px;
+  padding: 7px 11px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--stui-muted);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 590;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+body.stui-next .stui-finance-section-link:hover {
+  border-color: var(--stui-line);
+  color: var(--stui-ink);
+}
+body.stui-next .stui-finance-section-link[aria-current="location"] {
+  border-color: rgba(200, 168, 120, .34);
+  background: rgba(200, 168, 120, .10);
+  color: var(--stui-brass-bright);
+}
+body.stui-next .stui-finance-panel {
+  scroll-margin-top: 20px;
+}
+body.stui-next #page-finance > .grid.stats {
+  gap: 9px;
+  margin-bottom: 12px;
+}
+body.stui-next #page-finance > .grid.stats > .card {
+  min-width: 0;
+  padding: 14px 15px;
+}
+body.stui-next #page-finance > .grid.stats .statvalue {
+  font-size: clamp(17px, 1.55vw, 23px);
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+body.stui-next #page-finance .tablewrap {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+body.stui-next #page-finance table {
+  min-width: 570px;
+}
+@media (max-width: 760px) {
+  body.stui-next .stui-finance-section-nav {
+    margin-right: -2px;
+    margin-left: -2px;
+  }
+  body.stui-next #page-finance > .grid.stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.stui-next .stui-finance-section-link { transition: none; }
+}
