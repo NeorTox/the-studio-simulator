@@ -121,7 +121,7 @@
       const result = originalNav.apply(this, arguments);
       if (result) {
         updateActiveRoute(id);
-        if (window.matchMedia('(max-width: 760px)').matches) {
+        if (window.matchMedia('(max-width: 900px)').matches) {
           $('.content')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
         }
       }
