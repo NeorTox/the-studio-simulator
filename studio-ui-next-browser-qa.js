@@ -179,6 +179,30 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('#page-company').evaluate(el => el.classList.contains('active')), true);
     console.log('UI_QA_STAGE: Company dossier and contextual links passed');
 
+    // Finance section navigation must point at the existing ledger and
+    // accounting panels without hiding or replacing any financial controls.
+    await page.locator('[data-page="finance"]').click();
+    const financeNav = page.locator('.stui-finance-section-nav');
+    assert.equal(await financeNav.count(), 1, 'Finance section navigator is present');
+    assert.equal(await page.locator('.stui-finance-section-link').count(), 10, 'Summary and nine financial destinations are indexed');
+    for (const id of [
+      'stui-finance-summary', 'stui-finance-balance-sheet', 'stui-finance-ledger',
+      'stui-finance-accounting', 'stui-finance-receivables', 'stui-finance-assets',
+      'stui-finance-debt', 'stui-finance-tax', 'stui-finance-treasury', 'stui-finance-integrity'
+    ]) {
+      assert.equal(await page.locator('#' + id).count(), 1, 'Finance destination exists: ' + id);
+    }
+    assert.equal(await page.locator('#fcash').innerText(), companyDossier.summaryCash, 'Finance cash matches the Company dossier');
+    for (const id of ['ledger', 'balancesheet', 'trialbalance', 'journalregister', 'invoicelist', 'assetlist', 'loanlist', 'taxsummary', 'fxsummary']) {
+      assert.equal(await page.locator('#' + id).count(), 1, 'Existing Finance renderer target remains mounted: ' + id);
+    }
+    assert.equal(await page.locator('#page-finance .hero button').count() >= 1, true, 'Record-transaction action remains available');
+    assert.equal(await page.locator('#page-finance button[onclick="invoiceForm()"]').count(), 1, 'Invoice creation action remains available');
+    await page.locator('.stui-finance-section-link[data-target="stui-finance-debt"]').click();
+    assert.equal(await page.locator('.stui-finance-section-link[data-target="stui-finance-debt"]').getAttribute('aria-current'), 'location');
+    assert.equal(await page.locator('#stui-finance-debt').isVisible(), true, 'Debt panel remains visible after section navigation');
+    console.log('UI_QA_STAGE: Finance navigator, data parity and legacy actions passed');
+
     // Existing Life and Travel screens must still render their actual engine data.
     await page.locator('[data-page="personal"]').click();
     assert.equal(await page.locator('#page-personal').evaluate(el => el.classList.contains('active')), true);
@@ -239,7 +263,7 @@ const assert = require('node:assert/strict');
     assert.equal(await standard.locator('body').evaluate(el => el.classList.contains('stui-next')), false);
     assert.equal(await standard.locator('.stui-preview-mode').count(), 0);
     console.log('UI_QA_STAGE: default-mode isolation passed');
-    console.log('PASS redesigned shell, overview contract, live campaign, life, travel, geography, all routes, landscape layout and default-mode isolation');
+    console.log('PASS redesigned shell, overview, campaign, Company, Finance, life, travel, geography, all routes, landscape layout and default-mode isolation');
   } finally {
     await browser.close();
   }
