@@ -86,6 +86,7 @@ body.stui-next .stui-nav-search input {
   font-size: 11px;
 }
 body.stui-next .stui-nav-search input::placeholder { color: #687681; }
+body.stui-next .navlabel { display: none !important; }
 body.stui-next .nav.stui-navigation {
   display: flex;
   flex: 1;
