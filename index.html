@@ -1515,7 +1515,20 @@ function loadClock(){
  c.lastWallMs=Number(c.lastWallMs);c.accumulatorMs=Math.max(0,Number(c.accumulatorMs));
  active.worldClock=c;saveClock();return c;
 }
-function saveClock(){if(!active||!active.worldClock)return;try{localStorage.setItem(clockKey(active.id),JSON.stringify(active.worldClock))}catch(e){}}
+function saveClock(){
+ if(!active||!active.worldClock)return;
+ const diagnostic=window.__STUDIO_TEST_ACCELERATION===true,started=diagnostic?performance.now():0;
+ try{
+  if(diagnostic)console.info('[STUDIO_CLOCK_SAVE_BEGIN]',JSON.stringify({date:active.date,keys:Object.keys(active.worldClock),key:clockKey(active.id)}));
+  const serialized=JSON.stringify(active.worldClock);
+  if(diagnostic)console.info('[STUDIO_CLOCK_SAVE_SERIALIZED]',JSON.stringify({date:active.date,bytes:serialized.length,elapsedMs:Math.round(performance.now()-started)}));
+  if(diagnostic)console.info('[STUDIO_CLOCK_STORAGE_WRITE_BEGIN]',JSON.stringify({date:active.date,bytes:serialized.length}));
+  localStorage.setItem(clockKey(active.id),serialized);
+  if(diagnostic)console.info('[STUDIO_CLOCK_STORAGE_WRITE_END]',JSON.stringify({date:active.date,elapsedMs:Math.round(performance.now()-started)}));
+ }catch(e){
+  if(diagnostic)console.error('[STUDIO_CLOCK_SAVE_ERROR]',e&&e.stack||String(e));
+ }
+}
 function setClock(running){
  if(!active){toast('Create a campaign first.');return}
  const c=active.worldClock||loadClock();if(active.clockFrozen&&running){toast('Unfreeze the sandbox clock first.');return}
