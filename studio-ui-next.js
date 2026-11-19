@@ -536,6 +536,7 @@
       setText('stui-company-name', name);
       setText('stui-company-headquarters', city ? city + (currency ? ' · Reporting in ' + currency : '') : 'Headquarters not specified');
       setText('stui-company-status', status.toUpperCase());
+      $('#stui-company-status', companyPage)?.classList.toggle('is-incorporated', status.toLowerCase() === 'incorporated');
       setText('stui-company-ownership', ownership ? 'Ownership · ' + ownership : 'Ownership not specified');
       setText('stui-company-cash', rowValue('Cash balance') || 'Not available');
       setText('stui-company-capital', rowValue('Opening capital') || 'Not available');
