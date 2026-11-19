@@ -793,7 +793,7 @@
       label.textContent = 'SIMULATION CONTROLS';
       actions.insertBefore(label, actions.firstChild);
       const replacements = ['DAY +1','WEEK +1','MONTH +1','YEAR +1','EXPORT SAVE'];
-      Array.from(actions.querySelectorAll('button')).forEach((button, index) => {
+      Array.from(actions.querySelectorAll('button')).slice(1).forEach((button, index) => {
         if (replacements[index]) button.textContent = replacements[index];
         button.classList.add('stui-sim-button');
       });
