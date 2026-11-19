@@ -141,16 +141,18 @@
     if (crumb) crumb.textContent = label.toUpperCase();
   }
 
-  // Recompose the existing overview from its real DOM nodes. IDs and event
-  // handlers stay intact so legacy renderers continue to update real values.
+  // Recompose the existing overview without changing the direct-child
+  // contract used by the World Pulse renderer (it inserts before .grid.stats).
+  // Existing metric/activity nodes and their IDs remain in place.
   const overview = $('#page-overview');
-  if (overview && !$('.stui-overview', overview)) {
+  if (overview && !$('.stui-overview-intro', overview)) {
     const hero = $('.hero', overview);
     const stats = $('.grid.stats', overview);
     const columns = $('.grid.cols', overview);
     if (hero && stats && columns) {
       const heroCopy = hero.firstElementChild;
       const heroActions = hero.lastElementChild;
+      const pulse = $('#studio-command-pulse', overview);
       const intro = document.createElement('div');
       intro.className = 'stui-overview-intro';
       const introMain = document.createElement('div');
@@ -183,19 +185,20 @@
         link.addEventListener('click', () => window.nav(route));
         workspaceLinks.append(link);
       });
-      const shell = document.createElement('div');
-      shell.className = 'stui-overview';
-      shell.append(intro, workspaceLinks);
       const sectionLabel = document.createElement('div');
       sectionLabel.className = 'stui-section-label';
-      sectionLabel.textContent = 'Company pulse';
-      stats.classList.add('stui-kpis');
+      sectionLabel.textContent = 'World & company pulse';
       const lowerLabel = document.createElement('div');
       lowerLabel.className = 'stui-section-label stui-lower-label';
       lowerLabel.textContent = 'Live operations';
+      stats.classList.add('stui-kpis');
       columns.classList.add('stui-overview-columns');
-      shell.append(sectionLabel, stats, lowerLabel, columns);
-      overview.replaceChildren(shell);
+
+      hero.remove();
+      overview.insertBefore(intro, pulse || stats);
+      overview.insertBefore(workspaceLinks, pulse || stats);
+      overview.insertBefore(sectionLabel, pulse || stats);
+      overview.insertBefore(lowerLabel, columns);
     }
   }
 
