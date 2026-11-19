@@ -68,6 +68,11 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('#stui-company-capital').innerText(), '—');
     await page.locator('[data-page="overview"]').click();
     console.log('UI_QA_STAGE: empty Company state passed');
+    await page.locator('[data-page="projects"]').click();
+    assert.equal(await page.locator('#stui-production-total').innerText(), '—', 'No-campaign production metrics are unavailable, not zero');
+    assert.equal(await page.locator('#stui-production-count-label').innerText(), 'No campaign loaded');
+    await page.locator('[data-page="overview"]').click();
+    console.log('UI_QA_STAGE: empty Productions state passed');
 
     // Create a real campaign using the existing campaign form and save path.
     await page.locator('.stui-create-campaign').click();
@@ -203,6 +208,35 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('#stui-finance-debt').isVisible(), true, 'Debt panel remains visible after section navigation');
     console.log('UI_QA_STAGE: Finance navigator, data parity and legacy actions passed');
 
+    // Create a real project, then exercise slate summaries, search and stage
+    // filtering without advancing the project or posting production costs.
+    await page.locator('[data-page="projects"]').click();
+    assert.equal(await page.locator('#stui-production-total').innerText(), '0');
+    assert.equal(await page.locator('#stui-production-development').innerText(), '0');
+    await page.locator('#page-projects .hero .btn.primary').click();
+    await page.locator('#ptitle').fill('UI Preview QA Feature');
+    await page.locator('#pgenre').fill('Science Fiction');
+    await page.locator('#pbudget').fill('3000000');
+    await page.getByRole('button', { name: 'Add to slate' }).click();
+    assert.equal(await page.locator('.stui-production-entry').count(), 1, 'New project appears in the existing production list');
+    assert.equal(await page.locator('#stui-production-total').innerText(), '1');
+    assert.equal(await page.locator('#stui-production-development').innerText(), '1', 'Concept-stage project is counted as development');
+    assert.equal(await page.locator('#stui-production-shooting').innerText(), '0');
+    assert.equal(await page.locator('#stui-production-released').innerText(), '0');
+    await page.locator('#stui-production-stage').selectOption('development');
+    assert.equal(await page.locator('.stui-production-entry').isVisible(), true, 'Stage filter keeps the matching project visible');
+    await page.locator('#stui-production-search').fill('no such production');
+    assert.equal(await page.locator('.stui-production-entry').isVisible(), false, 'Search filters the production slate');
+    assert.equal(await page.locator('.stui-production-no-match').isVisible(), true, 'No-match state is explained');
+    await page.locator('#stui-production-search').fill('');
+    await page.locator('#stui-production-stage').selectOption('');
+    assert.equal(await page.locator('.stui-production-entry').isVisible(), true, 'Clearing filters restores the project');
+    assert.equal(await page.locator('[data-advance-project]').count(), 1, 'Original stage-advance action remains available');
+    assert.equal(await page.locator('[data-hire-crew]').count(), 1, 'Original crew action remains available');
+    assert.equal(await page.locator('[data-budget-project]').count(), 1, 'Original budget-detail action remains available');
+    assert.equal(await page.locator('#stui-production-count-label').innerText(), '1 project in slate');
+    console.log('UI_QA_STAGE: Productions slate, filters and legacy actions passed');
+
     // Existing Life and Travel screens must still render their actual engine data.
     await page.locator('[data-page="personal"]').click();
     assert.equal(await page.locator('#page-personal').evaluate(el => el.classList.contains('active')), true);
@@ -263,7 +297,7 @@ const assert = require('node:assert/strict');
     assert.equal(await standard.locator('body').evaluate(el => el.classList.contains('stui-next')), false);
     assert.equal(await standard.locator('.stui-preview-mode').count(), 0);
     console.log('UI_QA_STAGE: default-mode isolation passed');
-    console.log('PASS redesigned shell, overview, campaign, Company, Finance, life, travel, geography, all routes, landscape layout and default-mode isolation');
+    console.log('PASS redesigned shell, overview, campaign, Company, Finance, Productions, life, travel, geography, all routes, landscape layout and default-mode isolation');
   } finally {
     await browser.close();
   }
