@@ -451,6 +451,103 @@
     enhanceCampaignSetup();
   }
 
+  // Company workspace: elevate the existing corporate record without creating
+  // parallel company state or replacing any legacy action/renderer.
+  const companyPage = $('#page-company');
+  if (companyPage) {
+    companyPage.classList.add('stui-company-page');
+    const companyHero = $('.hero', companyPage);
+    const companyGrid = $('.grid.cols', companyPage);
+    if (companyHero && !$('.stui-company-dossier-overview', companyPage)) {
+      const overview = document.createElement('section');
+      overview.className = 'stui-company-dossier-overview';
+      overview.setAttribute('aria-label', 'Company at a glance');
+      overview.innerHTML = `
+        <div class="stui-company-identity">
+          <span class="stui-company-kicker">CORPORATE DOSSIER</span>
+          <h2 id="stui-company-name">No campaign loaded</h2>
+          <p id="stui-company-headquarters">Create a campaign to establish a corporate headquarters.</p>
+          <div class="stui-company-identity-meta">
+            <span id="stui-company-status" class="stui-company-status">NO CAMPAIGN</span>
+            <span id="stui-company-ownership">Ownership not available</span>
+          </div>
+        </div>
+        <div class="stui-company-facts" aria-label="Company operating facts">
+          <div><span>Company cash</span><strong id="stui-company-cash">—</strong></div>
+          <div><span>Opening capital</span><strong id="stui-company-capital">—</strong></div>
+          <div><span>Operating divisions</span><strong id="stui-company-divisions">—</strong></div>
+          <div><span>Subsidiaries</span><strong id="stui-company-subsidiaries">—</strong></div>
+        </div>`;
+      companyHero.insertAdjacentElement('afterend', overview);
+
+      const links = document.createElement('nav');
+      links.className = 'stui-company-links';
+      links.setAttribute('aria-label', 'Related company workspaces');
+      [
+        ['finance', 'Finance & capital'],
+        ['people', 'People'],
+        ['facilities', 'Facilities'],
+        ['governance', 'Governance'],
+        ['legal', 'Legal']
+      ].forEach(([route, label]) => {
+        if (!$('#page-' + route)) return;
+        const link = document.createElement('button');
+        link.type = 'button';
+        link.className = 'stui-company-link';
+        link.dataset.route = route;
+        link.textContent = label;
+        link.addEventListener('click', () => window.nav(route));
+        links.append(link);
+      });
+      overview.insertAdjacentElement('afterend', links);
+    }
+
+    if (companyGrid) companyGrid.classList.add('stui-company-dossier-grid');
+    const companyDetails = $('#companydetails', companyPage);
+    const divisionsHost = $('#divisions', companyPage);
+    const legalStatus = $('#legalstatus', companyPage);
+    const setText = (id, value) => {
+      const node = $('#' + id, companyPage);
+      if (node && node.textContent !== value) node.textContent = value;
+    };
+    const rowValue = label => {
+      const rows = $$('.rowitem', companyDetails || document);
+      const row = rows.find(item => (item.firstElementChild?.textContent || '').trim().toLowerCase() === label.toLowerCase());
+      return row?.lastElementChild?.textContent.trim() || '';
+    };
+    const refreshCompanyDossier = () => {
+      if (!companyDetails) return;
+      const hasCampaign = $$('.rowitem', companyDetails).length > 0;
+      const status = legalStatus?.textContent.trim() || 'Not available';
+      if (!hasCampaign) {
+        setText('stui-company-name', 'No campaign loaded');
+        setText('stui-company-headquarters', 'Create a campaign to establish a corporate headquarters.');
+        setText('stui-company-status', 'NO CAMPAIGN');
+        setText('stui-company-ownership', 'Ownership not available');
+        ['cash', 'capital', 'divisions', 'subsidiaries'].forEach(key => setText('stui-company-' + key, '—'));
+        return;
+      }
+      const name = rowValue('Legal name') || 'Untitled company';
+      const city = rowValue('Headquarters');
+      const currency = rowValue('Reporting currency');
+      const ownership = rowValue('Ownership');
+      const divisionCount = $$('.rowitem', divisionsHost || document).length;
+      const subsidiaryCount = rowValue('Subsidiaries') || '0';
+      setText('stui-company-name', name);
+      setText('stui-company-headquarters', city ? city + (currency ? ' · Reporting in ' + currency : '') : 'Headquarters not specified');
+      setText('stui-company-status', status.toUpperCase());
+      setText('stui-company-ownership', ownership ? 'Ownership · ' + ownership : 'Ownership not specified');
+      setText('stui-company-cash', rowValue('Cash balance') || 'Not available');
+      setText('stui-company-capital', rowValue('Opening capital') || 'Not available');
+      setText('stui-company-divisions', String(divisionCount));
+      setText('stui-company-subsidiaries', subsidiaryCount);
+    };
+    [companyDetails, divisionsHost, legalStatus].filter(Boolean).forEach(node => {
+      new MutationObserver(refreshCompanyDossier).observe(node, { childList: true, subtree: true, characterData: true });
+    });
+    refreshCompanyDossier();
+  }
+
   const refreshPresentation = () => { if (typeof window.render === 'function') window.render(); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', refreshPresentation, { once: true });
   else refreshPresentation();
