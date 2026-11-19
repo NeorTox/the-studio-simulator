@@ -18,12 +18,12 @@
 
   body.classList.add('stui-next');
   const groups = [
-    { key: 'home', title: 'Command', routes: ['overview', 'campaign', 'calendar'] },
-    { key: 'life', title: 'Life', routes: ['personal', 'people', 'talent'] },
-    { key: 'world', title: 'World & travel', routes: ['world', 'population', 'time', 'geography', 'globaltravel'] },
-    { key: 'studio', title: 'Studio', routes: ['company', 'facilities', 'projects', 'productionops', 'ip', 'distribution', 'media', 'awards'] },
-    { key: 'empire', title: 'Empire', routes: ['finance', 'market', 'legal', 'sustainability', 'governance', 'digital', 'generations', 'competitors', 'technology'] },
-    { key: 'advanced', title: 'Advanced systems', routes: ['admin', 'manual', 'algorithms', 'integrity', 'architecture', 'worldengine', 'peopleintelligence', 'situations', 'ecosystem', 'integrationhealth', 'phone', 'releasequality', 'autonomy', 'worldsystems'] }
+    { key: 'home', title: 'Command', routes: ['overview', 'campaign', 'calendar', 'situations'] },
+    { key: 'life', title: 'Life', routes: ['personal', 'population', 'phone', 'digital', 'generations'] },
+    { key: 'world', title: 'World & travel', routes: ['world', 'time', 'geography', 'globaltravel', 'worldengine', 'worldsystems'] },
+    { key: 'studio', title: 'Studio', routes: ['company', 'facilities', 'people', 'talent', 'projects', 'productionops', 'ip', 'distribution', 'media', 'awards', 'ecosystem'] },
+    { key: 'empire', title: 'Empire', routes: ['finance', 'market', 'legal', 'sustainability', 'governance', 'competitors', 'technology'] },
+    { key: 'advanced', title: 'Advanced systems', routes: ['admin', 'manual', 'algorithms', 'integrity', 'architecture', 'worldengine', 'peopleintelligence', 'integrationhealth', 'releasequality', 'autonomy'] }
   ];
   const groupFor = new Map();
   groups.forEach(group => group.routes.forEach(route => groupFor.set(route, group.key)));
@@ -207,7 +207,7 @@
   const activePage = $('.page.active');
   const activeId = activePage?.id?.replace(/^page-/, '') || 'overview';
   updateActiveRoute(activeId);
-  const pageTreatments = { personal: 'stui-life-page', world: 'stui-world-page', globaltravel: 'stui-travel-page', geography: 'stui-geography-page', population: 'stui-population-page', company: 'stui-company-page', finance: 'stui-finance-page', projects: 'stui-production-page' };
+  const pageTreatments = { personal: 'stui-life-page', population: 'stui-life-page', phone: 'stui-life-page', digital: 'stui-life-page', generations: 'stui-life-page', world: 'stui-world-page', worldengine: 'stui-world-page', worldsystems: 'stui-world-page', globaltravel: 'stui-travel-page', geography: 'stui-geography-page', population: 'stui-population-page', company: 'stui-company-page', finance: 'stui-finance-page', projects: 'stui-production-page' };
   Object.entries(pageTreatments).forEach(([id, className]) => $('#page-' + id)?.classList.add(className));
   const existingPageCount = $('.page', content).length;
   body.dataset.stuiPageCount = String(existingPageCount);
