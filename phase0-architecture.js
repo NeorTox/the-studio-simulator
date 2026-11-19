@@ -22,7 +22,7 @@ const domains=[
 {id:'markets',name:'Capital markets',deps:['kernel','finance','economy'],owns:['equities','orders','IPO','bonds','shareholders','takeovers'],status:'partial'},
 {id:'economy',name:'Global economy',deps:['kernel','world'],owns:['GDP','inflation','rates','labour','FX','trade','commodities'],status:'partial'},
 {id:'competitors',name:'Competitor companies',deps:['kernel','company','workforce','production','finance','economy'],owns:['rival agents','strategy','production slate','M&A','insolvency'],status:'partial'},
-{id:'technology',name:'Technology and R&D',deps:['kernel','company','economy'],owns:['research','patents','AI','technology adoption','cybersecurity'],status:'missing'},
+{id:'technology',name:'Technology and R&D',deps:['kernel','company','economy'],owns:['research','patents','AI','technology adoption','cybersecurity'],status:'implemented'},
 {id:'sustainability',name:'Sustainability',deps:['kernel','company','production','economy'],owns:['energy','emissions','water','waste','supply chain'],status:'partial'},
 {id:'risk',name:'Risk and resilience',deps:['kernel','company','finance','world'],owns:['insurance','crisis','fraud','disaster recovery','legal exposure'],status:'partial'},
 {id:'legacy',name:'Generations and succession',deps:['kernel','founder','population','company','finance'],owns:['family trees','heirs','inheritance','leadership succession'],status:'partial'},

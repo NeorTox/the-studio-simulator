@@ -41,8 +41,8 @@ function emit(type,payload={},options={}){
  const identity=String(options.id||hash(date+'|'+type+'|'+JSON.stringify(payload)));
  const id='AUT-'+hash(type+'|'+identity);
  if(s.events.some(e=>e.id===id)||s.deadLetters.some(e=>e.id===id)||s.processedEventIds.includes(id))return {queued:false,duplicate:true,id};
+ if(s.events.length>=MAX_EVENTS)throw Error('Autonomous event queue is full; existing events were preserved.');
  s.events.push({id,type,date,payload:clone(payload),createdAt:date,attempts:0});
- if(s.events.length>MAX_EVENTS)s.events.splice(0,s.events.length-MAX_EVENTS);
  return {queued:true,id};
 }
 function due(task,date,seed){
@@ -77,17 +77,18 @@ function runTick(date,options={}){
   catch(e){failed.push({id:t.id,error:String(e&&e.message||e)});s.metrics.failures++;s.deadLetters.push({id:'DLQ-'+hash(date+'|'+t.id),taskId:t.id,date,error:String(e&&e.message||e)});}
  }
  let handled=0,processed=0;
- const batch=s.events.splice(0,Math.min(s.events.length,MAX_EVENTS_PER_TICK));
+ const dueEvents=s.events.filter(event=>validDate(event.date)&&event.date<=date).sort((a,b)=>a.date.localeCompare(b.date)||a.id.localeCompare(b.id));
+ const batch=dueEvents.slice(0,MAX_EVENTS_PER_TICK),batchIds=new Set(batch.map(event=>event.id));
+ s.events=s.events.filter(event=>!batchIds.has(event.id));
  for(const event of batch){
   processed++;
   const listeners=[...(handlers.get(event.type)||[])];
-  if(!listeners.length){s.events.push(event);continue;}
-  let ok=true;
-  for(const fn of listeners){try{const result=fn(clone(event),{date,seed:s.seed,random:key=>random(s.seed,date+'|event|'+event.id+'|'+key),campaign:c,emit});if(result&&typeof result.then==='function')throw Error('Event handlers must be synchronous.');}catch(e){ok=false;event.attempts=(event.attempts||0)+1;event.lastError=String(e&&e.message||e);break;}}
+  let ok=listeners.length>0;
+  if(!listeners.length)event.lastError='No handler registered for event type '+event.type;
+  for(const fn of listeners){try{const result=fn(clone(event),{date,seed:s.seed,random:key=>random(s.seed,date+'|event|'+event.id+'|'+key),campaign:c,emit});if(result&&typeof result.then==='function')throw Error('Event handlers must be synchronous.');}catch(e){ok=false;event.lastError=String(e&&e.message||e);break;}}
   if(ok){handled++;s.metrics.eventsHandled++;s.processedEventIds.push(event.id);if(s.processedEventIds.length>2000)s.processedEventIds.splice(0,s.processedEventIds.length-2000);}
-  else if(event.attempts>=3){s.deadLetters.push(event)}else{s.events.push(event)}
+  else {event.attempts=(event.attempts||0)+1;if(event.attempts>=3)s.deadLetters.push(event);else s.events.push(event);}
  }
- if(s.events.length>MAX_EVENTS)s.events.splice(0,s.events.length-MAX_EVENTS);
  s.deadLetters=s.deadLetters.slice(-MAX_EVENTS);s.lastTickDate=date;s.ticks++;s.metrics.lastDurationMs=Math.max(0,Date.now()-started);
  const record={date,tasksDue:dueList.length,tasksRun:ran.length,failed:failed.length,skipped:skipped.length,eventsHandled:handled,eventsPending:s.events.length,durationMs:s.metrics.lastDurationMs};
  s.history.unshift(record);s.history=s.history.slice(0,MAX_HISTORY);

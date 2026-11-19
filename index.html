@@ -22,7 +22,22 @@
 const STORE='the-studio-saves-v2',OLD='the-studio-saves-v1';let saves=JSON.parse(localStorage.getItem(STORE)||'[]'),activeId=localStorage.getItem('the-studio-active-v2')||null,active=saves.find(x=>x.id===activeId)||null;
 if(!saves.length){try{const old=JSON.parse(localStorage.getItem(OLD)||'[]');saves=old.map(x=>({...x,employees:x.employees||[],divisions:x.divisions||[],day:x.day||1,ledger:x.ledger||[]}));if(saves.length)localStorage.setItem(STORE,JSON.stringify(saves))}catch(e){}}
 const $=id=>document.getElementById(id),fmt=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:(active&&active.company&&active.company.currency)||'USD',maximumFractionDigits:0}).format(Number(n||0)),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function persist(){if(!active)return;let i=saves.findIndex(x=>x.id===active.id);if(i<0)saves.push(active);else saves[i]=active;localStorage.setItem(STORE,JSON.stringify(saves));localStorage.setItem('the-studio-active-v2',active.id);activeId=active.id;render()}
+function persist(){
+ if(!active)return false;
+ let i=saves.findIndex(x=>x.id===active.id);if(i<0)saves.push(active);else saves[i]=active;
+ try{
+  const serialized=JSON.stringify(saves);
+  localStorage.setItem(STORE,serialized);
+  localStorage.setItem('the-studio-active-v2',active.id);
+  activeId=active.id;
+ }catch(error){
+  console.error('[STUDIO_SAVE_FAILURE]',error);
+  try{toast('Save failed: browser storage may be full or unavailable. Export a backup before continuing.')}catch(_){}
+  return false;
+ }
+ try{render()}catch(error){console.error('[STUDIO_RENDER_AFTER_SAVE_FAILURE]',error)}
+ return true;
+}
 function toast(t){$('toast').textContent=t;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',2500)}
 function nav(p){const target=$('page-'+p);if(!target)return false;document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));target.classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===p));$('crumb').textContent=p.toUpperCase();render();document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x===target));document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===p));return true}window.nav=nav;
 document.querySelectorAll('.nav button').forEach(x=>x.onclick=()=>nav(x.dataset.page));
@@ -52,11 +67,13 @@ function accountingAccountFor(t){
  if(cat.includes('legal'))return accountMeta('5700','Legal & compliance expense','debit');
  return accountMeta('5900','Other operating expense','debit');
 }
+let accountingIndexCache={accounting:null,postedArray:null,journalRefs:null,posted:new Set(),journal:new Set(),ledger:null,ledgerLength:-1};
+function accountingIndexes(){const a=active?.accounting;if(!a)return null;if(accountingIndexCache.accounting!==a||accountingIndexCache.postedArray!==a.postedTransactionIds||accountingIndexCache.journalRefs!==a.journalRefs){accountingIndexCache={accounting:a,postedArray:a.postedTransactionIds,journalRefs:a.journalRefs,posted:new Set(a.postedTransactionIds||[]),journal:new Set(a.journalRefs||[]),ledger:null,ledgerLength:-1}}return accountingIndexCache}
 function accountTransaction(t){
  if(!active||!t)return;
  active.accounting=active.accounting||{version:'double-entry-1.1',postedTransactionIds:[],journal:[],journalRefs:[]};
  active.accounting.postedTransactionIds=active.accounting.postedTransactionIds||[];
- if(active.accounting.postedTransactionIds.includes(t.id))return;
+ const indexes=accountingIndexes();if(indexes?.posted.has(t.id))return;
  const amount=dstr(dec(Math.abs(Number(t.amount)).toString()));
  if(dec(amount)===0n&&t.type!=='fx_conversion')return;
  let lines;
@@ -95,19 +112,19 @@ function accountTransaction(t){
   lines=[{code:offset.code,name:offset.name,debit:amount,credit:'0'},{code:'1000',name:'Cash and cash equivalents',debit:'0',credit:amount}];
  }
  journalPost('JRN-'+t.id,t.date,t.description,lines,t.id);
- active.accounting.postedTransactionIds.push(t.id);
+ active.accounting.postedTransactionIds.push(t.id);if(indexes){indexes.posted.add(t.id);indexes.ledger=active.ledger||null;indexes.ledgerLength=indexes.ledger?.length||0}
 }
 function journalPost(id,date,description,lines,reference){
  if(!active)return false;
  active.accounting=active.accounting||{version:'double-entry-1.1',postedTransactionIds:[],journal:[],journalRefs:[]};
  active.accounting.journal=active.accounting.journal||[];
  active.accounting.journalRefs=active.accounting.journalRefs||active.accounting.journal.map(j=>j.id);
- if(active.accounting.journalRefs.includes(id))return false;
+ const indexes=accountingIndexes();if(indexes?.journal.has(id))return false;
  const debit=lines.reduce((s,l)=>dadd(s,l.debit||'0'),dec('0'));
  const credit=lines.reduce((s,l)=>dadd(s,l.credit||'0'),dec('0'));
  if(debit!==credit){addLog('Accounting control blocked unbalanced journal '+id+'.');return false}
  active.accounting.journal.push({id,date,description,reference:reference||id,lines});
- active.accounting.journalRefs.push(id);
+ active.accounting.journalRefs.push(id);if(indexes)indexes.journal.add(id);
  return true;
 }
 function ensureAccounting(){
@@ -116,7 +133,7 @@ function ensureAccounting(){
  active.accounting.postedTransactionIds=active.accounting.postedTransactionIds||[];
  active.accounting.journal=active.accounting.journal||[];
  active.accounting.journalRefs=active.accounting.journalRefs||active.accounting.journal.map(j=>j.id);
- (active.ledger||[]).slice().reverse().forEach(accountTransaction);
+ const indexes=accountingIndexes(),ledger=active.ledger||[];if(indexes&&(indexes.ledger!==ledger||indexes.ledgerLength!==ledger.length)){ledger.slice().reverse().forEach(accountTransaction);indexes.ledger=ledger;indexes.ledgerLength=ledger.length}
 }
 function accountingBalances(){
  ensureAccounting();const map={};
@@ -550,8 +567,10 @@ n=Math.max(1,Math.min(3650,Math.floor(Number(n)||1)));
 let old=active.date,advanced=0;
 for(let i=0;i<n;i++){
 const next=addDays(active.date,1),y=Number(next.slice(0,4)),m=Number(next.slice(5,7)),day=Number(next.slice(8,10));
+const __coreStart=Date.now();let __coreMark=__coreStart;const __coreStage=name=>{if(window.__studioBatchDebug&&Number(active?.day||0)<=Number(window.__studioBatchDebugUntilDay||0)){const now=Date.now();console.info('[STUDIO_CORE_STAGE]',JSON.stringify({date:next,stage:name,ms:now-__coreMark,totalMs:now-__coreStart}));__coreMark=now}};
 const daysInMonth=new Date(Date.UTC(y,m,0)).getUTCDate();
-const productionDue=productionPaymentsDue(next),opsDue=productionOpsDue(next);if(dnum(dadd(productionDue,opsDue))>active.company.cash){addLog("Clock halted before "+next+": insufficient cash for scheduled production contract payments of "+fmt(dnum(productionDue))+". No time or payment was posted.");break;}
+if(window.__studioBatchDebug)console.info('[STUDIO_ADVANCE_TRACE]',JSON.stringify({date:next,day:active.day,debug:window.__studioBatchDebug,debugUntil:window.__studioBatchDebugUntilDay,projects:active.projects?.length||0,contracts:active.productionContracts?.length||0,ops:active.productionOps?.callSheets?.length||0,ledger:active.ledger?.length||0,stage:'before-production-preflight'}));
+__coreStage('before-production-preflight');const productionDue=productionPaymentsDue(next);if(window.__studioBatchDebug)console.info('[STUDIO_ADVANCE_TRACE]',JSON.stringify({date:next,stage:'after-production-payments-due'}));__coreStage('production-payments-due');const opsDue=productionOpsDue(next);if(window.__studioBatchDebug)console.info('[STUDIO_ADVANCE_TRACE]',JSON.stringify({date:next,stage:'after-production-ops-due'}));__coreStage('production-ops-due');const preflightTotal=dnum(dadd(productionDue,opsDue));__coreStage('production-preflight-total');if(preflightTotal>active.company.cash){addLog("Clock halted before "+next+": insufficient cash for scheduled production contract payments of "+fmt(dnum(productionDue))+". No time or payment was posted.");break;}
 let payroll=0,facilityRent=0,facilityMaintenance=0,insurancePremium=0,subsidiaryCosts=0,managementPayroll=0;
 if(day===daysInMonth){
 managementPayroll=window.Phase4Company?Phase4Company.monthlyPayroll(next):0;
@@ -559,22 +578,80 @@ managementPayroll=window.Phase4Company?Phase4Company.monthlyPayroll(next):0;
 payroll=Math.round(payroll*100)/100;let activeFacilities=(active.company.facilities||[]).filter(f=>f.status==='Active');facilityRent=activeFacilities.reduce((sum,f)=>sum+Number(f.monthlyRent||0),0);facilityMaintenance=activeFacilities.reduce((sum,f)=>sum+Number(f.monthlyMaintenance||0),0);insurancePremium=(active.company.insurancePolicies||[]).filter(p=>p.status==='Active'&&p.endDate>=next).reduce((sum,p)=>sum+Number(p.premium||0),0);subsidiaryCosts=(active.company.subsidiaries||[]).filter(s=>s.status==='Active').reduce((sum,s)=>sum+Number(s.monthlyCosts||0),0);let recurring=payroll+managementPayroll+facilityRent+facilityMaintenance+insurancePremium+subsidiaryCosts+debtServiceDue(next);
 if(recurring+dnum(productionDue)+dnum(opsDue)>active.company.cash){addLog('Clock halted before '+next+': insufficient cash for month-end payroll and facility obligations of '+fmt(recurring)+'. No time or recurring payment was posted.');break;}
 }
-active.date=next;active.day++;advanced++;processProductionPayments(next);processProductionOpsDay(next);processInvoiceAging(next);simulateMarketDay(next);if(window.StudioMarketLiquidity)window.StudioMarketLiquidity.processDay(next);processPortfolioOrders(next);processPortfolioDividends(next);processAwards(next);(active.employees||[]).forEach(emp=>{let end=emp.endDate||emp.contractEndDate;if(end&&end<=next&&emp.status!=='Terminated'){emp.status='Terminated';addLog(emp.name+' employment ended.');}});(active.scheduledEvents||[]).filter(ev=>!ev.completed&&ev.date===next).forEach(ev=>{ev.completed=true;addLog('Scheduled event: '+ev.title+' — '+ev.category+'.');});
+active.date=next;active.day++;advanced++;if(window.__studioBatchDebug)console.info('[STUDIO_ADVANCE_STEP]',JSON.stringify({date:next,step:'before-production-payments',contracts:active.productionContracts?.length||0,callSheets:active.productionOps?.callSheets?.length||0,projects:active.projects?.length||0,ledger:active.ledger?.length||0}));__coreStage('before-production-payment-processing');processProductionPayments(next);if(window.__studioBatchDebug)console.info('[STUDIO_ADVANCE_STEP]',JSON.stringify({date:next,step:'after-production-payments'}));__coreStage('production-payments');processProductionOpsDay(next);__coreStage('production-ops');processInvoiceAging(next);__coreStage('invoice-aging');simulateMarketDay(next);__coreStage('market-day');if(window.StudioMarketLiquidity)window.StudioMarketLiquidity.processDay(next);__coreStage('market-liquidity');processPortfolioOrders(next);__coreStage('portfolio-orders');processPortfolioDividends(next);__coreStage('portfolio-dividends');processAwards(next);__coreStage('awards');(active.employees||[]).forEach(emp=>{let end=emp.endDate||emp.contractEndDate;if(end&&end<=next&&emp.status!=='Terminated'){emp.status='Terminated';addLog(emp.name+' employment ended.');}});(active.scheduledEvents||[]).filter(ev=>!ev.completed&&ev.date===next).forEach(ev=>{ev.completed=true;addLog('Scheduled event: '+ev.title+' — '+ev.category+'.');});
 if(day===daysInMonth){if(payroll>0){post('Month-end payroll — '+next,'Payroll',-payroll,next,'payroll');addLog('Month-end payroll paid: '+fmt(payroll)+'.');}if(window.Phase4Company){const managementResult=Phase4Company.postMonthly(next);if(managementResult.failed)addLog('Warning: '+managementResult.failed+' executive payroll payment(s) could not be posted.');if(managementResult.paid>0)addLog('Executive compensation paid: '+fmt(managementResult.paid)+'.');}if(facilityRent>0)post('Facility rent — '+next,'Facility rent',-facilityRent,next);if(facilityMaintenance>0)post('Facility maintenance — '+next,'Facility maintenance',-facilityMaintenance,next);if(insurancePremium>0)post('Insurance premiums — '+next,'Insurance expense',-insurancePremium,next);if(subsidiaryCosts>0)post('Subsidiary operating costs — '+next,'Subsidiary operating expenses',-subsidiaryCosts,next);processAssetDepreciation(next);processLoanSchedules(next);processTaxAccrual(next);}
-if(day===1){addLog('New month begins. Review cash, payroll, outstanding obligations and production commitments.');simulateMarketMonth();processFXRevaluation(next);}
+if(day===1){addLog('New month begins. Review cash, payroll, outstanding obligations and production commitments.');simulateMarketMonth();processFXRevaluation(next);__coreStage('month-close');}
 }
 if(advanced>0&&!options.silent)addLog('Simulation advanced from '+old+' to '+active.date+' ('+advanced+' days).');
-persist();if(!options.quiet)toast(advanced?'Advanced '+advanced+' day(s).':'Clock did not advance.');
+if(!options.deferPersist)persist();if(!options.quiet)toast(advanced?'Advanced '+advanced+' day(s).':'Clock did not advance.');
 }
-async function advanceInChunks(total,chunkSize=30){
+async function advanceInChunks(total,persistEvery=30){
  if(window.__advanceBatchActive){toast('A time-advance operation is already running.');return}
  if(!active){toast('Create a campaign first.');return}
  if(active.clockFrozen){toast('Simulation clock is frozen. Use TIME UNFREEZE in Sandbox.');return}
- total=Math.max(1,Math.min(3650,Math.floor(Number(total)||1)));chunkSize=Math.max(1,Math.min(30,Math.floor(Number(chunkSize)||30)));
- window.__advanceBatchActive=true;let completed=0;const clock=active.worldClock||null,wasRunning=!!clock?.running&&!active.clockFrozen;
- if(wasRunning){clock.running=false;clock.lastWallMs=Date.now();saveClock()}
- try{while(completed<total){const step=Math.min(chunkSize,total-completed),before=active.date;advance(step,{silent:true,quiet:true});const elapsed=Math.max(0,Math.round((Date.parse(active.date+'T00:00:00Z')-Date.parse(before+'T00:00:00Z'))/86400000));completed+=elapsed;if(elapsed<step)break;await new Promise(resolve=>setTimeout(resolve,0));}}
- finally{if(wasRunning&&active&&!active.clockFrozen){active.worldClock=active.worldClock||{};active.worldClock.running=true;active.worldClock.lastWallMs=Date.now();saveClock();persist()}window.__advanceBatchActive=false;toast(completed?'Advanced '+completed+' of '+total+' requested day(s).':'Clock did not advance.')}
+ total=Math.max(1,Math.min(3650,Math.floor(Number(total)||1)));persistEvery=Math.max(1,Math.min(30,Math.floor(Number(persistEvery)||30)));
+ window.__advanceBatchActive=true;let completed=0,pendingPersist=0,progressMs=Date.now(),saveFailed=false;const clock=active.worldClock||null,wasRunning=!!clock?.running&&!active.clockFrozen;
+ window.__advanceBatchDebugState={stage:'entered',date:active.date,day:active.day,total,wasRunning,clockPresent:!!clock};
+ try{
+  if(window.__STUDIO_TEST_ACCELERATION===true)console.info('[STUDIO_BATCH_ENTER]',JSON.stringify({date:active.date,day:active.day,total,wasRunning,clockPresent:!!clock}));
+  if(wasRunning){
+   window.__advanceBatchDebugState.stage='clock-pause-begin';
+   if(window.__STUDIO_TEST_ACCELERATION===true)console.info('[STUDIO_CLOCK_PAUSE_BEGIN]',JSON.stringify({date:active.date}));
+   clock.running=false;clock.lastWallMs=Date.now();window.__studioClockTraceActive=true;window.saveWorldClock();window.__studioClockTraceActive=false;
+   window.__advanceBatchDebugState.stage='clock-pause-complete';
+   if(window.__STUDIO_TEST_ACCELERATION===true)console.info('[STUDIO_CLOCK_PAUSE_END]',JSON.stringify({date:active.date}));
+  }
+  window.__advanceBatchDebugState.stage='batch-start';
+  const testAcceleration=window.__STUDIO_TEST_ACCELERATION===true;
+  if(testAcceleration)console.info('[STUDIO_BATCH_START]',JSON.stringify({date:active.date,day:active.day,total,testAcceleration,clockRunning:!!clock?.running,clockFrozen:!!active.clockFrozen}));
+  while(completed<total){
+   const before=active.date,startedAt=Date.now();
+   // Test-only acceleration batches 30 consecutive days through the exact same
+   // daily advance pipeline. It changes scheduling/yield frequency only; no
+   // gameplay systems, daily rules, consequences or persistence checks are skipped.
+   const requested=Math.min(testAcceleration?30:1,total-completed);
+   // Preserve the real daily pipeline order even when the test batches browser yields.
+   // Each one-day call runs core simulation AND its wrapped world/phase integrations
+   // before the next date is processed. Only the UI yield/persistence cadence is batched.
+   let elapsed=0;
+   for(let dayIndex=0;dayIndex<requested;dayIndex++){
+    const dayBefore=active.date;
+    if(testAcceleration)console.info('[STUDIO_BATCH_DAY_BEGIN]',JSON.stringify({date:dayBefore,day:active.day,completed,total,dayIndex}));
+    advance(1,{silent:true,quiet:true,deferPersist:true});
+    if(testAcceleration)console.info('[STUDIO_BATCH_DAY_END]',JSON.stringify({before:dayBefore,after:active.date,day:active.day,completed,total,dayIndex}));
+    const dayElapsed=Math.max(0,Math.round((Date.parse(active.date+'T00:00:00Z')-Date.parse(dayBefore+'T00:00:00Z'))/86400000));
+    elapsed+=dayElapsed;
+    if(dayElapsed<1)break;
+   }
+   if(testAcceleration)console.info('[STUDIO_TEST_ACCELERATION]',JSON.stringify({requested,elapsed,date:active.date,ms:Date.now()-startedAt}));
+   completed+=elapsed;pendingPersist+=elapsed;
+   if(pendingPersist>=persistEvery||completed>=total){
+    if(active&&!persist()){saveFailed=true;break;}
+    if(window.__studioBatchDebug||pendingPersist>=persistEvery)console.info('[STUDIO_BATCH_PROGRESS]',JSON.stringify({completed,total,date:active.date,chunkDays:pendingPersist,chunkMs:Date.now()-progressMs,lastDayMs:Date.now()-startedAt}));
+    pendingPersist=0;progressMs=Date.now();
+   }else if(window.__studioBatchDebug){console.info('[STUDIO_BATCH_PROGRESS]',JSON.stringify({completed,total,date:active.date,chunkDays:elapsed,chunkMs:Date.now()-progressMs,lastDayMs:Date.now()-startedAt}));}
+   if(elapsed<1)break;
+   await new Promise(resolve=>setTimeout(resolve,0));
+  }
+ }catch(error){
+  window.__studioClockTraceActive=false;
+  window.__advanceBatchDebugState={...(window.__advanceBatchDebugState||{}),stage:'fatal-error',error:String(error&&error.message||error)};
+  console.error('[STUDIO_BATCH_FATAL]',error&&error.stack||String(error));
+  throw error;
+ }finally{
+  window.__studioClockTraceActive=false;
+  try{
+   if(wasRunning&&active&&!active.clockFrozen){
+    try{active.worldClock=active.worldClock||{};active.worldClock.running=true;active.worldClock.lastWallMs=Date.now();window.saveWorldClock()}
+    catch(error){console.error('[STUDIO_CLOCK_RESTORE_FAILURE]',error)}
+   }
+   if(active)saveFailed=!persist();
+   toast(saveFailed?'Advanced '+completed+' of '+total+' day(s), but saving failed. Export a backup immediately.':completed?'Advanced '+completed+' of '+total+' requested day(s).':'Clock did not advance.')
+  }finally{
+   window.__advanceBatchActive=false;
+   if(window.__advanceBatchDebugState)window.__advanceBatchDebugState={...window.__advanceBatchDebugState,stage:'finished',completed,total};
+  }
+ }
 }
 function exportSave(){if(!active){toast('No active campaign to export.');return}download(active.id)}
 function download(id){let s=saves.find(x=>x.id===id);if(!s)return;let blob=new Blob([JSON.stringify(s,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='THE-STUDIO-'+s.id+'.json';a.click();URL.revokeObjectURL(url)}
@@ -1435,8 +1512,8 @@ advance=function(n,options={}){
  const before=active.date;
  const result=baseAdvance(n,options);
  let cursor=before,guard=0;const previousDefer=window.__deferDailyPersist;window.__deferDailyPersist=true;
- try{while(cursor<active.date&&guard++<4000){cursor=addDays(cursor,1);if(window.StudioPhaseIntegration)window.StudioPhaseIntegration.beginDay(cursor);if(window.StudioPhase0?.phase1?.processWorldDay)window.StudioPhase0.phase1.processWorldDay(cursor);window.simulateLifeDay(cursor);window.Phase3Founder?.stepDay(cursor);if(!window.Phase4Company?.stepDay)throw Error('Phase 4 daily processor is unavailable on '+cursor);const phase4Day=window.Phase4Company.stepDay(cursor);const phase4State=window.Phase4Company.ensure();if(!phase4State||phase4State.lastProcessedDate!==cursor)throw Error('Phase 4 daily processor did not commit '+cursor+' (result: '+JSON.stringify(phase4Day)+', state: '+String(phase4State?.lastProcessedDate)+')');if(!window.Phase6Ecosystem?.stepDay)throw Error('Phase 6 daily processor is unavailable on '+cursor);const phase6Day=window.Phase6Ecosystem.stepDay(cursor);const phase6State=window.Phase6Ecosystem.ensure();if(!phase6State||phase6State.lastProcessedDate!==cursor||phase6State.audienceLastProcessedDate!==cursor)throw Error('Phase 6 ecosystem/audience processor did not commit '+cursor+' (result: '+JSON.stringify(phase6Day)+', ecosystem: '+String(phase6State?.lastProcessedDate)+', audience: '+String(phase6State?.audienceLastProcessedDate)+')');if(window.StudioPhaseIntegration)window.StudioPhaseIntegration.endDay(cursor);active.worldClock=active.worldClock||{};active.worldClock.lastWorldDate=cursor;}
- }finally{window.__deferDailyPersist=previousDefer;if(active.date!==before){active.worldClock=active.worldClock||{};active.worldClock.lastSimDate=active.date;persist();}}
+ try{while(cursor<active.date&&guard++<4000){cursor=addDays(cursor,1);const __worldStart=Date.now();let __worldMark=__worldStart;const __worldStage=name=>{if(window.__studioBatchDebug&&Number(active?.day||0)<=Number(window.__studioBatchDebugUntilDay||0)){const now=Date.now();console.info('[STUDIO_WORLD_STAGE]',JSON.stringify({date:cursor,stage:name,ms:now-__worldMark,totalMs:now-__worldStart}));__worldMark=now}};if(window.StudioPhaseIntegration)window.StudioPhaseIntegration.beginDay(cursor);__worldStage('integration-begin');if(window.StudioPhase0?.phase1?.processWorldDay)window.StudioPhase0.phase1.processWorldDay(cursor);__worldStage('phase1-world');window.simulateLifeDay(cursor);__worldStage('founder-life');window.Phase3Founder?.stepDay(cursor);__worldStage('phase3-founder');if(!window.Phase4Company?.stepDay)throw Error('Phase 4 daily processor is unavailable on '+cursor);const phase4Day=window.Phase4Company.stepDay(cursor);const phase4State=window.Phase4Company.ensure();if(!phase4State||phase4State.lastProcessedDate!==cursor)throw Error('Phase 4 daily processor did not commit '+cursor+' (result: '+JSON.stringify(phase4Day)+', state: '+String(phase4State?.lastProcessedDate)+')');__worldStage('phase4-company');if(!window.Phase6Ecosystem?.stepDay)throw Error('Phase 6 daily processor is unavailable on '+cursor);const phase6Day=window.Phase6Ecosystem.stepDay(cursor);const phase6State=window.Phase6Ecosystem.ensure();if(!phase6State||phase6State.lastProcessedDate!==cursor||phase6State.audienceLastProcessedDate!==cursor)throw Error('Phase 6 ecosystem/audience processor did not commit '+cursor+' (result: '+JSON.stringify(phase6Day)+', ecosystem: '+String(phase6State?.lastProcessedDate)+', audience: '+String(phase6State?.audienceLastProcessedDate)+')');__worldStage('phase6-ecosystem');if(window.StudioPhaseIntegration)window.StudioPhaseIntegration.endDay(cursor);__worldStage('integration-end');active.worldClock=active.worldClock||{};active.worldClock.lastWorldDate=cursor;}
+ }finally{window.__deferDailyPersist=previousDefer;if(active.date!==before){active.worldClock=active.worldClock||{};active.worldClock.lastSimDate=active.date;if(!options.deferPersist)persist();}}
  return result;
 };
 window.advance=advance;
@@ -1453,7 +1530,21 @@ function loadClock(){
  c.lastWallMs=Number(c.lastWallMs);c.accumulatorMs=Math.max(0,Number(c.accumulatorMs));
  active.worldClock=c;saveClock();return c;
 }
-function saveClock(){if(!active||!active.worldClock)return;try{localStorage.setItem(clockKey(active.id),JSON.stringify(active.worldClock))}catch(e){}}
+function saveClock(){
+ if(!active||!active.worldClock)return;
+ const diagnostic=window.__STUDIO_TEST_ACCELERATION===true&&window.__studioClockTraceActive===true,started=diagnostic?performance.now():0;
+ try{
+  if(diagnostic)console.info('[STUDIO_CLOCK_SAVE_BEGIN]',JSON.stringify({date:active.date,keys:Object.keys(active.worldClock),key:clockKey(active.id)}));
+  const serialized=JSON.stringify(active.worldClock);
+  if(diagnostic)console.info('[STUDIO_CLOCK_SAVE_SERIALIZED]',JSON.stringify({date:active.date,bytes:serialized.length,elapsedMs:Math.round(performance.now()-started)}));
+  if(diagnostic)console.info('[STUDIO_CLOCK_STORAGE_WRITE_BEGIN]',JSON.stringify({date:active.date,bytes:serialized.length}));
+  localStorage.setItem(clockKey(active.id),serialized);
+  if(diagnostic)console.info('[STUDIO_CLOCK_STORAGE_WRITE_END]',JSON.stringify({date:active.date,elapsedMs:Math.round(performance.now()-started)}));
+ }catch(e){
+  if(diagnostic)console.error('[STUDIO_CLOCK_SAVE_ERROR]',e&&e.stack||String(e));
+ }
+}
+window.saveWorldClock=saveClock;
 function setClock(running){
  if(!active){toast('Create a campaign first.');return}
  const c=active.worldClock||loadClock();if(active.clockFrozen&&running){toast('Unfreeze the sandbox clock first.');return}
