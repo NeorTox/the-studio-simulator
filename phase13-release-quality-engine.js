@@ -48,6 +48,7 @@ function syncAudit(){
   add(tests,'Regional hazard consequence integrity',!!risk&&risk.failed===0,auditDetail(risk));
   add(tests,'Digital-life and telecom integrity',!!digital&&digital.failed===0,auditDetail(digital));
   add(tests,'Financial empire and portfolio integrity',!!finance&&finance.failed===0,auditDetail(finance));
+  // Verify real campaign task execution; synthetic scheduler tests alone cannot prove integration.
   const autonomous=window.StudioAutonomy?.metrics?.(),autonomyState=active.autonomy||{},latestTick=autonomyState.history?.[0];
   add(tests,'Six autonomous simulation tasks registered',!!autonomous&&autonomous.registeredTasks===6,'Expected six NPC and global-media tasks; found '+String(autonomous?.registeredTasks??'unavailable')+'.');
   add(tests,'Autonomous scheduler completed the campaign date',!!autonomous&&autonomous.lastTickDate===active.date&&latestTick?.date===active.date&&latestTick.tasksRun===6&&latestTick.failed===0,'Campaign '+active.date+' · tick '+String(autonomous?.lastTickDate||'missing')+' · '+String(latestTick?.tasksRun??0)+' tasks run · '+String(latestTick?.failed??'unknown')+' failures.');
