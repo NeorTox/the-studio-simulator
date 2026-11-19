@@ -112,10 +112,18 @@ jobs:
         run: node --check autonomous-simulation-engine.js && node --check autonomous-simulation-qa.js && node autonomous-simulation-qa.js && node --check npc-autonomy-engine.js && node --check npc-autonomy-qa.js && node npc-autonomy-qa.js
       - name: Run three-year cross-phase integration stress test
         run: node integration-multiyear-qa.js
-      - name: Enforce one-year save round-trip result after full suite
+      - name: Report one-year save round-trip result
         if: always()
         run: |
-          if [ "${{ steps.phase3_save_roundtrip.outcome }}" != "success" ]; then
-            echo "One-year simulation/save regression failed; see its earlier log. All remaining phase checks were still executed."
+          outcome="${{ steps.phase3_save_roundtrip.outcome }}"
+          if [ "$outcome" = "failure" ]; then
+            echo "One-year simulation/save regression failed; see its earlier log."
+            exit 1
+          elif [ "$outcome" = "skipped" ]; then
+            echo "::warning::One-year simulation/save regression was skipped because an earlier workflow step failed; this is not an independent regression result."
+          elif [ "$outcome" = "success" ]; then
+            echo "One-year simulation/save round-trip passed."
+          else
+            echo "::error::Unexpected one-year simulation/save result: $outcome"
             exit 1
           fi
