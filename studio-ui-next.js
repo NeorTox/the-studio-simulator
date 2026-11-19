@@ -38,6 +38,7 @@
 
   nav.replaceChildren();
   nav.classList.add('stui-navigation');
+  nav.parentElement?.classList.add('stui-nav-container');
   groups.forEach(group => {
     const items = grouped.get(group.key);
     if (!items.length) return;
@@ -203,7 +204,9 @@
   const activePage = $('.page.active');
   const activeId = activePage?.id?.replace(/^page-/, '') || 'overview';
   updateActiveRoute(activeId);
-  const existingPageCount = $$('.page', content).length;
+  const pageTreatments = { personal: 'stui-life-page', world: 'stui-world-page', globaltravel: 'stui-travel-page', geography: 'stui-geography-page', population: 'stui-population-page', company: 'stui-company-page', finance: 'stui-finance-page', projects: 'stui-production-page' };
+  Object.entries(pageTreatments).forEach(([id, className]) => $('#page-' + id)?.classList.add(className));
+  const existingPageCount = $('.page', content).length;
   body.dataset.stuiPageCount = String(existingPageCount);
 
   // A visible opt-in label makes this preview mode unmistakable.
