@@ -29,7 +29,7 @@
     { key: 'world', title: 'World & travel', routes: ['world', 'time', 'geography', 'globaltravel', 'worldengine', 'worldsystems'] },
     { key: 'studio', title: 'Studio', routes: ['company', 'facilities', 'people', 'talent', 'projects', 'productionops', 'ip', 'distribution', 'media', 'awards', 'ecosystem'] },
     { key: 'empire', title: 'Empire', routes: ['finance', 'market', 'legal', 'sustainability', 'governance', 'competitors', 'technology'] },
-    { key: 'advanced', title: 'Advanced systems', routes: ['admin', 'manual', 'algorithms', 'integrity', 'architecture', 'worldengine', 'peopleintelligence', 'integrationhealth', 'releasequality', 'autonomy'] }
+    { key: 'advanced', title: 'Advanced systems', routes: ['admin', 'manual', 'algorithms', 'integrity', 'architecture', 'peopleintelligence', 'integrationhealth', 'releasequality', 'autonomy'] }
   ];
   const groupFor = new Map();
   groups.forEach(group => group.routes.forEach(route => groupFor.set(route, group.key)));
@@ -120,7 +120,7 @@
   }
 
   const pageNames = new Map();
-  buttons.forEach((button, id) => pageNames.set(id, button.textContent.trim().replace(/\s+/g, ' ')));
+  buttons.forEach((button, id) => { const copy = button.cloneNode(true); copy.querySelector('span')?.remove(); pageNames.set(id, copy.textContent.trim().replace(/\s+/g, ' ')); });
 
   const groupTitles = new Map(groups.map(group => [group.key, group.title]));
   $$('.page', content).forEach(page => {
@@ -237,7 +237,7 @@
   const activePage = $('.page.active');
   const activeId = activePage?.id?.replace(/^page-/, '') || 'overview';
   updateActiveRoute(activeId);
-  const pageTreatments = { personal: 'stui-life-page', population: 'stui-life-page', phone: 'stui-life-page', digital: 'stui-life-page', generations: 'stui-life-page', world: 'stui-world-page', worldengine: 'stui-world-page', worldsystems: 'stui-world-page', globaltravel: 'stui-travel-page', geography: 'stui-geography-page', population: 'stui-population-page', company: 'stui-company-page', finance: 'stui-finance-page', projects: 'stui-production-page' };
+  const pageTreatments = { personal: 'stui-life-page', population: 'stui-population-page', phone: 'stui-life-page', digital: 'stui-life-page', generations: 'stui-life-page', world: 'stui-world-page', worldengine: 'stui-world-page', worldsystems: 'stui-world-page', globaltravel: 'stui-travel-page', geography: 'stui-geography-page', company: 'stui-company-page', finance: 'stui-finance-page', projects: 'stui-production-page' };
   Object.entries(pageTreatments).forEach(([id, className]) => $('#page-' + id)?.classList.add(className));
   const existingPageCount = $('.page', content).length;
   body.dataset.stuiPageCount = String(existingPageCount);
