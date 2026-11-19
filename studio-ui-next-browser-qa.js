@@ -13,12 +13,18 @@ const assert = require('node:assert/strict');
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
   await page.addInitScript(() => { window.__STUDIO_DISABLE_AUTO_TUTORIAL = true; });
   try {
-    console.log('UI_QA_STAGE: opening preview');
+    console.log('UI_QA_STAGE: opening default game UI');
+    await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'domcontentloaded', timeout: 15000 });
+    await page.waitForTimeout(250);
+    assert.equal(await page.locator('body').evaluate(el => el.classList.contains('stui-next')), true, 'The full game interface is the default application experience');
+    assert.equal(await page.locator('.stui-game-ribbon').count(), 1, 'Default route mounts the persistent campaign HUD');
+    console.log('UI_QA_STAGE: default game UI launch passed');
+    console.log('UI_QA_STAGE: opening explicit game UI route');
     await page.goto('http://127.0.0.1:4173/index.html?ui=next', { waitUntil: 'domcontentloaded', timeout: 15000 });
-    console.log('UI_QA_STAGE: preview document loaded');
+    console.log('UI_QA_STAGE: game UI document loaded');
     await page.waitForTimeout(250);
     assert.equal(await page.locator('body').evaluate(el => el.classList.contains('stui-next')), true, 'Preview flag activates the redesigned shell');
-    assert.equal(await page.locator('.stui-preview-mode').innerText(), 'DESIGN PREVIEW');
+    assert.equal(await page.locator('.stui-game-mode').innerText(), 'LIVE SIMULATION');
     assert.equal(await page.locator('.stui-nav-group').count() >= 5, true, 'Primary navigation is grouped by player intent');
     for (const group of ['home', 'life', 'world', 'studio', 'empire', 'advanced']) {
       assert.equal(await page.locator('[data-nav-group="' + group + '"]').count(), 1, 'Navigation group exists: ' + group);
