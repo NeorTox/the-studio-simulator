@@ -155,23 +155,13 @@
     const stats = $('.grid.stats', overview);
     const columns = $('.grid.cols', overview);
     if (hero && stats && columns) {
+      hero.classList.add('stui-overview-intro');
       const heroCopy = hero.firstElementChild;
-      const heroActions = hero.lastElementChild;
-      const pulse = $('#studio-command-pulse', overview);
-      const intro = document.createElement('div');
-      intro.className = 'stui-overview-intro';
-      const introMain = document.createElement('div');
-      introMain.className = 'stui-intro-copy';
-      if (heroCopy) introMain.append(heroCopy);
       const context = document.createElement('div');
       context.className = 'stui-intro-context';
       context.innerHTML = '<span class="stui-kicker">YOUR WORLD</span><span class="stui-context-line">One life. One evolving world. An empire of your making.</span>';
-      introMain.append(context);
-      intro.append(introMain);
-      if (heroActions) {
-        heroActions.classList.add('stui-overview-actions');
-        intro.append(heroActions);
-      }
+      if (heroCopy) heroCopy.append(context);
+
       const workspaceLinks = document.createElement('div');
       workspaceLinks.className = 'stui-workspace-links';
       [
@@ -190,20 +180,20 @@
         link.addEventListener('click', () => window.nav(route));
         workspaceLinks.append(link);
       });
+      hero.insertAdjacentElement('afterend', workspaceLinks);
+
       const sectionLabel = document.createElement('div');
       sectionLabel.className = 'stui-section-label';
-      sectionLabel.textContent = 'World & company pulse';
+      sectionLabel.textContent = 'Company pulse';
+      const pulse = $('#studio-command-pulse', overview);
+      (pulse || stats).insertAdjacentElement('beforebegin', sectionLabel);
+      stats.classList.add('stui-kpis');
+
       const lowerLabel = document.createElement('div');
       lowerLabel.className = 'stui-section-label stui-lower-label';
       lowerLabel.textContent = 'Live operations';
-      stats.classList.add('stui-kpis');
       columns.classList.add('stui-overview-columns');
-
-      hero.remove();
-      overview.insertBefore(intro, pulse || stats);
-      overview.insertBefore(workspaceLinks, pulse || stats);
-      overview.insertBefore(sectionLabel, pulse || stats);
-      overview.insertBefore(lowerLabel, columns);
+      columns.insertAdjacentElement('beforebegin', lowerLabel);
     }
   }
 
