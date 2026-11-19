@@ -343,7 +343,7 @@
 
     const saveList = $('#savelist', campaignPage);
     const refreshCampaignLibrary = () => {
-      const rows = $('.saveitem', saveList || document);
+      const rows = $$('.saveitem', saveList || document);
       const count = $('#savecount', campaignPage)?.textContent || (rows.length + ' saves');
       const countNode = $('#stui-campaign-count', campaignPage);
       if (countNode) countNode.textContent = count.replace(/\\s+saves?$/i, '') || '0';
@@ -352,7 +352,7 @@
         row.classList.add('stui-campaign-entry');
         const title = $('b', row);
         const detail = $('.tiny', row);
-        const buttons = $('button', row);
+        const buttons = $$('button', row);
         const isActive = buttons.some(button => button.textContent.trim().toLowerCase() === 'active');
         row.classList.toggle('is-active', isActive);
         row.dataset.search = row.textContent.toLowerCase();
@@ -435,7 +435,7 @@
       note.textContent = 'A campaign defines its own historical starting point, founder, company and simulation rules. You can change how the world develops through play.';
       form.insertBefore(note, form.firstElementChild);
     }
-    $('.eyebrow', form).forEach((heading, index) => {
+    $$('.eyebrow', form).forEach((heading, index) => {
       heading.classList.add('stui-setup-section-label');
       heading.dataset.section = String(index + 1).padStart(2, '0');
       if (heading.nextElementSibling?.classList.contains('formgrid')) {
