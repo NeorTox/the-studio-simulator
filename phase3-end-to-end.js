@@ -83,7 +83,7 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
  // Legacy migration: remove Phase 3 additions and import a valid old-format campaign.
  const legacy=JSON.parse(JSON.stringify(exported));legacy.id='LEGACY-PHASE3-QA';legacy.founder.personalCash=5000;delete legacy.founder.phase3;delete legacy.founder.personalFinance;delete legacy.founder.dailyRoutine;delete legacy.founder.personalCalendar;delete legacy.founder.reputation;delete legacy.founder.succession;delete legacy.founder.wellbeing;
  const legacyPath=path.join(os.tmpdir(),'legacy-phase3-qa.json');fs.writeFileSync(legacyPath,JSON.stringify(legacy));
- await p.locator('#importfile').setInputFiles(legacyPath);await p.waitForTimeout(150);
+ await p.locator('#importfile').setInputFiles(legacyPath);await p.waitForFunction(()=>active?.id==='LEGACY-PHASE3-QA',{timeout:10000});
  const migrated=await p.evaluate(()=>({id:active.id,cash:active.founder.personalCash,version:active.founder.phase3?.version,cashAccount:active.founder.personalFinance.accounts.find(x=>x.id==='cash')?.balance}));
  console.log('LEGACY MIGRATION',JSON.stringify(migrated));
  assert.equal(migrated.id,'LEGACY-PHASE3-QA');assert.equal(migrated.cash,5000);assert.equal(migrated.version,'3.0.3');assert.equal(migrated.cashAccount,5000);
