@@ -134,9 +134,17 @@ function syncAlgorithmRegister(){
  ];
  extras.forEach(x=>{if(!algorithms.some(a=>a[0]===x[0]))algorithms.push(x)});
 }
+function renderCommandPulse(){
+ const page=$('page-overview');if(!page||!page.classList.contains('active'))return;
+ let root=$('studio-command-pulse');if(!root){root=document.createElement('section');root.id='studio-command-pulse';root.className='studio-command-pulse';const stats=page.querySelector('.grid.stats');if(stats)page.insertBefore(root,stats);else page.appendChild(root)}
+ const c=campaign();if(!c){root.innerHTML='<div class="pulse-head"><b>WORLD PULSE</b><span>AWAITING CAMPAIGN</span></div><p class="tiny">Create a campaign to activate the autonomous world, regional risk and decision systems.</p>';return}
+ const hazards=window.StudioWorldRisk?.metrics?.()||{active:0,recovered:0},decisions=window.StudioNPCDecisionConsequences?.metrics?.()||{situations:0,pending:0},depth=window.StudioSimulationDepth?.metrics?.()||{},cyber=depth.cybersecurity||{active:0},observed=window.StudioNPCDecisionConsequences?.observe?.(c.date)||[],open=observed.length;
+ root.innerHTML='<div class="pulse-head"><div><div class="eyebrow">LIVE SIMULATION · COMMAND CENTRE</div><b>World pulse</b></div><span class="pulse-date">'+esc(c.date)+'</span></div><div class="pulse-grid"><div class="pulse-stat"><span>ACTIVE REGIONAL HAZARDS</span><b>'+Number(hazards.active||0)+'</b><small>'+Number(hazards.recovered||0)+' recovered</small></div><div class="pulse-stat"><span>VISIBLE SITUATIONS</span><b>'+open+'</b><small>Optional · no forced actions</small></div><div class="pulse-stat"><span>DELAYED CONSEQUENCES</span><b>'+Number(decisions.pending||0)+'</b><small>'+Number(decisions.situations||0)+' recorded situations</small></div><div class="pulse-stat"><span>ACTIVE CYBER INCIDENTS</span><b>'+Number(cyber.active||0)+'</b><small>Background platform risk</small></div></div><div class="pulse-foot"><span>The world continues independently of your studio.</span><button class="btn" type="button" id="pulse-worldsystems">Open world systems ↗</button></div>';
+ const button=$('pulse-worldsystems');if(button)button.onclick=()=>window.nav('worldsystems');
+}
 function boot(){
  syncAlgorithmRegister();installHelp();installExperiencePages();installWorldRisk();
- const oldRender=window.render;if(typeof oldRender==='function'&&!oldRender.__experienceWrapped){const wrapped=function(){const out=oldRender.apply(this,arguments);renderSituations();installHelp();return out};wrapped.__experienceWrapped=true;window.render=wrapped}
+ const oldRender=window.render;if(typeof oldRender==='function'&&!oldRender.__experienceWrapped){const wrapped=function(){const out=oldRender.apply(this,arguments);renderSituations();installHelp();renderCommandPulse();return out};wrapped.__experienceWrapped=true;window.render=wrapped}
  if(!$('studio-tutorial-overlay')){let done=false;try{done=localStorage.getItem(STORE_KEY)==='completed'||localStorage.getItem(STORE_KEY)==='skipped'}catch(e){}if(!done&&!navigator.webdriver&&!window.__STUDIO_DISABLE_AUTO_TUTORIAL)setTimeout(()=>{if(!$('studio-tutorial-overlay')&&!window.__STUDIO_DISABLE_AUTO_TUTORIAL){tour.open=true;tour.index=0;renderTutorial()}},900)}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
