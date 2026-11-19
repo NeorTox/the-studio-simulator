@@ -7,7 +7,7 @@ const assert = require('node:assert/strict');
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
  await page.waitForTimeout(1200);
- assert.equal(await page.title(),'THE STUDIO — v4.44.0');
+ assert.equal(await page.title(),'THE STUDIO — v4.45.0');
  assert.equal(await page.locator('#studio-help-button').count(),1,'Help button must be available');
  assert.equal(await page.locator('#studio-tutorial-overlay').count(),0,'Automated browser runs should not be blocked by auto-onboarding');
  await page.locator('#studio-help-button').click();
