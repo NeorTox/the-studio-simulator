@@ -214,5 +214,9 @@
   const topRight = $('.topright', header || document);
   if (topRight) topRight.append(mode);
 
+  const refreshPresentation = () => { if (typeof window.render === 'function') window.render(); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', refreshPresentation, { once: true });
+  else refreshPresentation();
+
   console.info('[STUDIO_UI_NEXT] Preview shell active. Simulation engines and save data are unchanged.');
 })();
