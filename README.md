@@ -11,7 +11,7 @@ A film and entertainment company simulation game.
 - Phase 7: Smartphone & media — complete; app catalog, social creators, personalized feeds, daily engagement, digital advertising and save persistence verified
 - Phase 10: Autonomous competitors — complete; ten rival studios, autonomous financial/production cycles, bids, acquisitions, market-share dynamics and strategy controls verified
 - Phase 11: Technology & sustainability — complete; 12-node technology tree, research labs, patents/licensing, sustainability operations and three-year integration verified
-- Current work: game-interface overhaul and repository cleanup are in review; the active UI candidate must pass the full regression before release
+- Current work: the game-interface overhaul is on `ui/game-interface-overhaul` (PR #53); repository cleanup is on `chore/repository-cleanup` (PR #54). The game-interface candidate is not yet released because its one-year Phase 3 regression stops after 30 days.
 - Production: https://neortox.github.io/the-studio-simulator/
 
 ## Phase 6 scope
@@ -39,6 +39,8 @@ Regression evidence on the Phase 7 candidate:
 - Hosting: GitHub Pages
 - Production URL: https://neortox.github.io/the-studio-simulator/
 - Regression and browser QA: GitHub Actions
+- UI candidate: [PR #53 — Game interface overhaul](https://github.com/NeorTox/the-studio-simulator/pull/53)
+- Repository cleanup: [PR #54](https://github.com/NeorTox/the-studio-simulator/pull/54)
 
 ## Repository layout
 
