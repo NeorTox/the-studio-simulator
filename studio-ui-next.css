@@ -706,3 +706,5 @@ body.stui-next .stui-section-nav-item.active {
   body.stui-next .stui-section-nav { margin-top: -11px; margin-bottom: 17px; }
   body.stui-next .stui-section-nav-label { display: none; }
 }
+
+body.stui-next [hidden] { display: none !important; }
