@@ -446,7 +446,7 @@ body.stui-next textarea:focus-visible {
   body.stui-next .stui-overview-actions { justify-content: flex-start; max-width: none; }
   body.stui-next .stui-workspace-links { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   body.stui-next .shell { display: flex; flex-direction: column; }
   body.stui-next .side {
     position: sticky;
@@ -572,7 +572,7 @@ body.stui-next .stui-finance-page table td,
 body.stui-next .stui-finance-page table th {
   font-variant-numeric: tabular-nums;
 }
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   body.stui-next .stui-nav-container { flex: 0 0 auto; max-width: 100%; }
   body.stui-next .stui-nav-container .stui-navigation { flex: 0 0 auto; }
   body.stui-next .stui-travel-page #globaltravel-content > .grid.stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
