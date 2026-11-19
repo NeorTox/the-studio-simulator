@@ -28,6 +28,30 @@ const assert = require('node:assert/strict');
     assert(routeIds.includes('overview') && routeIds.includes('personal') && routeIds.includes('globaltravel') && routeIds.includes('company') && routeIds.includes('finance'));
     assert.equal(new Set(routeIds).size, routeIds.length, 'Every route appears exactly once in navigation');
 
+    // The game overhaul must feel and render like a landscape strategy game,
+    // not merely expose the earlier grouped SaaS navigation.
+    assert.equal(await page.locator('.stui-game-ribbon').count(), 1, 'Persistent campaign HUD is mounted');
+    assert.equal(await page.locator('.stui-command-brief').count(), 1, 'Overview has a game command briefing');
+    assert.equal(await page.locator('.stui-time-control-label').innerText(), 'SIMULATION CONTROLS');
+    assert.equal(await page.locator('.stui-workspace-index').count() >= 5, true, 'Workspaces carry game chapter markers');
+    assert.match(await page.locator('#page-overview .h1').innerText(), /Command your studio/i);
+    const gamePresentation = await page.evaluate(() => ({
+      shellColumns: getComputedStyle(document.querySelector('.shell')).gridTemplateColumns,
+      sidebarPosition: getComputedStyle(document.querySelector('.side')).position,
+      sidebarWidth: Math.round(document.querySelector('.side').getBoundingClientRect().width),
+      panelRadius: getComputedStyle(document.querySelector('#page-overview .card')).borderRadius,
+      buttonRadius: getComputedStyle(document.querySelector('#page-overview .btn')).borderRadius,
+      hudColumns: getComputedStyle(document.querySelector('.stui-game-ribbon')).gridTemplateColumns,
+      pageBackground: getComputedStyle(document.body).backgroundColor
+    }));
+    assert.match(gamePresentation.shellColumns, /^264px /, 'Game shell uses a dedicated command sidebar');
+    assert.equal(gamePresentation.sidebarPosition, 'sticky');
+    assert.equal(gamePresentation.sidebarWidth, 264);
+    assert.equal(gamePresentation.panelRadius, '3px', 'Panels use angular game framing instead of SaaS cards');
+    assert.equal(gamePresentation.buttonRadius, '3px', 'Controls use angular game styling');
+    assert.notEqual(gamePresentation.hudColumns, 'none');
+    console.log('UI_QA_STAGE: game presentation and live HUD passed');
+
     console.log('UI_QA_STAGE: shell and navigation assertions passed');
 
     // The redesigned Overview must preserve the live World Pulse renderer's
