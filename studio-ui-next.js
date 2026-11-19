@@ -369,7 +369,8 @@
           title.insertAdjacentElement('afterend', state);
         } else if (title) {
           const state = $('.stui-campaign-state', row);
-          state.textContent = isActive ? 'ACTIVE SESSION' : 'SAVED HISTORY';
+          const nextState = isActive ? 'ACTIVE SESSION' : 'SAVED HISTORY';
+          if (state.textContent !== nextState) state.textContent = nextState;
         }
         if (detail) detail.classList.add('stui-campaign-entry-detail');
       });
