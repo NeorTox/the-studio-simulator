@@ -61,6 +61,14 @@ const assert = require('node:assert/strict');
 
     console.log('UI_QA_STAGE: navigation search passed');
 
+    // The Company workspace must not invent corporate data before a campaign exists.
+    await page.locator('[data-page="company"]').click();
+    assert.equal(await page.locator('#stui-company-name').innerText(), 'No campaign loaded');
+    assert.equal(await page.locator('#stui-company-cash').innerText(), '—');
+    assert.equal(await page.locator('#stui-company-capital').innerText(), '—');
+    await page.locator('[data-page="overview"]').click();
+    console.log('UI_QA_STAGE: empty Company state passed');
+
     // Create a real campaign using the existing campaign form and save path.
     await page.locator('.stui-create-campaign').click();
     await page.locator('#page-campaign .hero .btn.primary').click();
@@ -134,6 +142,42 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('.stui-campaign-entry').isVisible(), true, 'Clearing search restores saved campaigns');
 
     console.log('UI_QA_STAGE: campaign library and search passed');
+
+    // Company summary is derived from the existing renderer output, and its
+    // contextual links must navigate to the real legacy workspaces.
+    await page.locator('[data-page="company"]').click();
+    const companyDossier = await page.evaluate(() => {
+      const details = document.querySelector('#companydetails');
+      const value = label => {
+        const row = [...(details?.querySelectorAll('.rowitem') || [])]
+          .find(item => (item.firstElementChild?.textContent || '').trim() === label);
+        return row?.lastElementChild?.textContent.trim() || '';
+      };
+      return {
+        name: document.querySelector('#stui-company-name')?.textContent.trim(),
+        sourceName: value('Legal name'),
+        headquarters: document.querySelector('#stui-company-headquarters')?.textContent.trim(),
+        sourceCash: value('Cash balance'),
+        summaryCash: document.querySelector('#stui-company-cash')?.textContent.trim(),
+        sourceCapital: value('Opening capital'),
+        summaryCapital: document.querySelector('#stui-company-capital')?.textContent.trim(),
+        status: document.querySelector('#stui-company-status')?.textContent.trim(),
+        sourceStatus: document.querySelector('#legalstatus')?.textContent.trim().toUpperCase(),
+        linkCount: document.querySelectorAll('.stui-company-link').length
+      };
+    });
+    assert.equal(companyDossier.name, 'UI Preview QA Studios');
+    assert.equal(companyDossier.name, companyDossier.sourceName, 'Company identity matches the existing company renderer');
+    assert.match(companyDossier.headquarters, /^Mumbai, India/);
+    assert.equal(companyDossier.summaryCash, companyDossier.sourceCash, 'Company cash is not duplicated from a separate data source');
+    assert.equal(companyDossier.summaryCapital, companyDossier.sourceCapital, 'Opening capital matches the corporate record');
+    assert.equal(companyDossier.status, companyDossier.sourceStatus, 'Incorporation status matches the existing legal-status field');
+    assert.equal(companyDossier.linkCount, 5, 'Company cross-workspace links are present');
+    await page.locator('.stui-company-link[data-route="finance"]').click();
+    assert.equal(await page.locator('#page-finance').evaluate(el => el.classList.contains('active')), true);
+    await page.locator('[data-page="company"]').click();
+    assert.equal(await page.locator('#page-company').evaluate(el => el.classList.contains('active')), true);
+    console.log('UI_QA_STAGE: Company dossier and contextual links passed');
 
     // Existing Life and Travel screens must still render their actual engine data.
     await page.locator('[data-page="personal"]').click();
