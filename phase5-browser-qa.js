@@ -2,20 +2,23 @@ const {chromium}=require('playwright'),assert=require('assert');
 (async()=>{const b=await chromium.launch({headless:true,args:['--no-sandbox']}),p=await b.newPage({viewport:{width:1440,height:900}}),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});await p.getByRole('button',{name:/New campaign/}).click();await p.getByRole('button',{name:/Create campaign/}).click();for(const [id,v] of [['nfounder','Phase Five QA'],['ncompany','Production QA Studios'],['ncountry','India'],['ncity','Mumbai']])await p.locator('#'+id).fill(v);await p.getByRole('button',{name:/Create and save campaign/}).click();await p.locator('[data-page="projects"]').click();await p.getByRole('button',{name:/New project/}).click();await p.locator('#ptitle').fill('The Last Orbit');await p.locator('#pgenre').fill('Science fiction drama');await p.locator('#pbudget').fill('4000000');await p.locator('#projform button').click();assert.equal(await p.evaluate(()=>typeof Phase5Production),'object','Phase 5 engine loads');assert.equal(await p.locator('#phase5-development').count(),1,'Phase 5 development room mounts');const id=await p.evaluate(()=>active.projects[0].id);await p.evaluate(()=>{active.company.cash=20000000;persist();});
 const hazardCheck=await p.evaluate(projectId=>{
  const region=window.StudioPhase0?.phase1?.regionFor?.('Mumbai');if(!region)throw Error('Mumbai did not resolve to a Phase 1 region');
- const world=active.world||(active.world={}),environment=world.environment||(world.environment={}),previousImpacts=environment.regionImpacts;
- const impacts={...(previousImpacts||{})},impact={hazardId:'QA-PRODUCTION-HAZARD',regionId:region.id,severity:100,transportReliabilityPct:42,productionCapacityPct:58,localBusinessActivityPct:68,insuranceLossIndex:135,householdCostIndex:122,publicServiceLoadPct:172,energyDemandIndex:118,waterStressIndex:18};
- environment.regionImpacts=impacts;environment.regionImpacts[region.id]=impact;
+ const world=active.world||(active.world={}),oldEnvironment=world.environment,environment={...(oldEnvironment||{}),regionImpacts:{...(oldEnvironment?.regionImpacts||{})}};
+ const impact={hazardId:'QA-PRODUCTION-HAZARD',regionId:region.id,severity:100,transportReliabilityPct:42,productionCapacityPct:58,localBusinessActivityPct:68,insuranceLossIndex:135,householdCostIndex:122,publicServiceLoadPct:172,energyDemandIndex:118,waterStressIndex:18};
+ environment.regionImpacts[region.id]=impact;world.environment=environment;
  const published=window.StudioWorldRisk?.getRegionalImpact?.(region.id);if(!published||published.hazardId!==impact.hazardId)throw Error('Production scheduler cannot read the published regional impact API');
- ensureOps();const project=active.projects.find(x=>x.id===projectId),date=active.date,seed=active.worldSeed||hashSeed(active.id),threshold=Math.max(0,100-Math.min(impact.productionCapacityPct,impact.transportReliabilityPct))/100*.35;
- let callId=null;for(let n=0;n<2000;n++){const candidate='QA-HAZARD-CALL-'+n;if(Number(stableUnit(seed,candidate+'|regional-hazard|'+date))<threshold){callId=candidate;break}}
+ const project=active.projects.find(x=>x.id===projectId),startDate=active.date,shootDate=addDays(startDate,1),seed=active.worldSeed||hashSeed(active.id),threshold=Math.max(0,100-Math.min(impact.productionCapacityPct,impact.transportReliabilityPct))/100*.35;
+ project.productionStats=Object.assign({scheduledDays:0,completedDays:0,delayedDays:0,reshoots:0,actualShootCost:'0',emissionsTonnes:'0'},project.productionStats||{});
+ let callId=null;for(let n=0;n<2000;n++){const candidate='QA-HAZARD-CALL-'+n;if(Number(stableUnit(seed,candidate+'|regional-hazard|'+shootDate))<threshold){callId=candidate;break}}
  if(!callId)throw Error('Could not construct a deterministic hazard-delay test case');
- const call={id:callId,projectId,projectTitle:project.title,date,scene:'Regional hazard integration test',location:'Mumbai',exterior:false,cast:1,crew:1,baseCost:'0',overtimeHours:'0',hourlyRate:'0',weatherRisk:0,availabilityRisk:0,energy:'0',water:'0',waste:'0',reshoot:false,status:'Scheduled',delays:0};
- active.productionOps.callSheets.push(call);const delayedBefore=project.productionStats.delayedDays;
- processProductionOpsDay(date);
- const result={region:region.name,regionId:region.id,threshold,random:Number(stableUnit(seed,callId+'|regional-hazard|'+date)),status:call.status,reason:call.reason||null,rescheduledDate:call.date,expectedDate:addDays(date,1),delays:call.delays,projectDelayDelta:project.productionStats.delayedDays-delayedBefore,history:active.productionOps.history[0]};
- if(previousImpacts===undefined)delete environment.regionImpacts;else environment.regionImpacts=previousImpacts;
+ const call={id:callId,projectId,projectTitle:project.title,date:shootDate,scene:'Regional hazard integration test',location:'Mumbai',exterior:false,cast:1,crew:1,baseCost:'0',overtimeHours:'0',hourlyRate:'0',weatherRisk:0,availabilityRisk:0,energy:'0',water:'0',waste:'0',reshoot:false,status:'Scheduled',delays:0};
+ const previousOps=active.productionOps;active.productionOps={callSheets:[call],history:[]};
+ window.advance(1);
+ const result={region:region.name,regionId:region.id,shootDate,actualDate:active.date,threshold,random:Number(stableUnit(seed,callId+'|regional-hazard|'+shootDate)),status:call.status,reason:call.reason||null,rescheduledDate:call.date,expectedDate:addDays(shootDate,1),delays:call.delays,projectDelayDelta:project.productionStats.delayedDays,history:active.productionOps.history[0]};
+ if(previousOps===undefined)delete active.productionOps;else active.productionOps=previousOps;
+ if(oldEnvironment===undefined)delete world.environment;else world.environment=oldEnvironment;
  return result;
 },id);
+assert.equal(hazardCheck.actualDate,hazardCheck.shootDate,'The real daily advance path must process the scheduled shoot date');
 assert.equal(hazardCheck.status,'Delayed','A severe regional hazard must delay the scheduled shoot');
 assert.equal(hazardCheck.reason,'Regional hazard disruption');
 assert.equal(hazardCheck.rescheduledDate,hazardCheck.expectedDate);
