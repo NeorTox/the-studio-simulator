@@ -699,9 +699,10 @@
         setMetric('stui-production-development', groups.development);
         setMetric('stui-production-shooting', groups.production);
         setMetric('stui-production-released', groups.released);
+        const projectWord = entries.length === 1 ? 'project' : 'projects';
         const label = noCampaign
           ? 'No campaign loaded'
-          : visible === entries.length ? entries.length + ' projects in slate' : visible + ' of ' + entries.length + ' projects shown';
+          : visible === entries.length ? entries.length + ' ' + projectWord + ' in slate' : visible + ' of ' + entries.length + ' projects shown';
         const labelNode = $('#stui-production-count-label', productionPage);
         const countNode = $('#stui-production-result-count', productionPage);
         if (labelNode && labelNode.textContent !== label) labelNode.textContent = label;
