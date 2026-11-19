@@ -63,7 +63,31 @@ const assert = require('node:assert/strict');
       ['ncountry', 'India'],
       ['ncity', 'Mumbai']
     ]) await page.locator('#' + id).fill(value);
-    await page.getByRole('button', { name: /Create and save campaign/ }).click();
+    const submitCampaign = page.getByRole('button', { name: /Create and save campaign/ });
+    await submitCampaign.scrollIntoViewIfNeeded();
+    try {
+      await submitCampaign.click({ timeout: 7000 });
+    } catch (error) {
+      const diagnostic = await page.evaluate(() => {
+        const button = document.querySelector('#newform button[type="submit"]');
+        const modal = document.querySelector('#modal .modal');
+        if (!button) return { button: false };
+        const rect = button.getBoundingClientRect();
+        const x = rect.left + rect.width / 2, y = rect.top + rect.height / 2;
+        const target = document.elementFromPoint(x, y);
+        return {
+          button: true, rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+          target: target?.outerHTML?.slice(0, 500) || null,
+          targetIsButton: target === button || button.contains(target),
+          modal: modal ? { scrollTop: modal.scrollTop, scrollHeight: modal.scrollHeight, clientHeight: modal.clientHeight } : null,
+          modalVisible: document.querySelector('#modal')?.classList.contains('show'),
+          activeCampaign: !!window.active,
+          errors: window.__studioUiQaErrors || []
+        };
+      });
+      console.error('[CAMPAIGN_SUBMIT_CLICK_DIAGNOSTIC]', JSON.stringify(diagnostic));
+      throw error;
+    }
     await page.locator('#studio-command-pulse').waitFor();
     const savedCampaign = await page.evaluate(() => ({
       active: !!active,
