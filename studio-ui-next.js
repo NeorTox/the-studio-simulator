@@ -181,6 +181,43 @@
     if (crumb) crumb.textContent = label.toUpperCase();
   }
 
+  // Engine extensions may register additional destinations after DOMContentLoaded.
+  // Keep those late-created routes inside the same navigation and active-state model.
+  const dynamicNavObserver = new MutationObserver(records => {
+    records.forEach(record => record.addedNodes.forEach(node => {
+      if (!(node instanceof Element)) return;
+      const candidates = node.matches('button[data-page]')
+        ? [node]
+        : Array.from(node.querySelectorAll('button[data-page]'));
+      candidates.forEach(button => {
+        if (button.parentElement !== nav) return;
+        const route = button.dataset.page;
+        const key = groupFor.get(route) || 'advanced';
+        let section = nav.querySelector('[data-nav-group="' + key + '"]');
+        if (!section) {
+          section = document.createElement('section');
+          section.className = 'stui-nav-group';
+          section.dataset.navGroup = key;
+          const heading = document.createElement('div');
+          heading.className = 'stui-nav-heading';
+          heading.textContent = groupTitles.get(key) || 'Advanced systems';
+          section.append(heading);
+          nav.append(section);
+        }
+        button.classList.add('stui-nav-item');
+        button.setAttribute('aria-label', button.textContent.trim().replace(/\\s+/g, ' '));
+        button.querySelector('span')?.setAttribute('aria-hidden', 'true');
+        buttons.set(route, button);
+        const copy = button.cloneNode(true);
+        copy.querySelector('span')?.remove();
+        pageNames.set(route, copy.textContent.trim().replace(/\\s+/g, ' '));
+        button.addEventListener('click', () => updateActiveRoute(route));
+        section.append(button);
+      });
+    }));
+  });
+  dynamicNavObserver.observe(nav, { childList: true });
+
   // Recompose the existing overview without changing the direct-child
   // contract used by the World Pulse renderer (it inserts before .grid.stats).
   // Existing metric/activity nodes and their IDs remain in place.
