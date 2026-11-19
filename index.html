@@ -591,7 +591,8 @@ async function advanceInChunks(total,persistEvery=30){
  if(active.clockFrozen){toast('Simulation clock is frozen. Use TIME UNFREEZE in Sandbox.');return}
  total=Math.max(1,Math.min(3650,Math.floor(Number(total)||1)));persistEvery=Math.max(1,Math.min(30,Math.floor(Number(persistEvery)||30)));
  window.__advanceBatchActive=true;let completed=0,pendingPersist=0,progressMs=Date.now(),saveFailed=false;const clock=active.worldClock||null,wasRunning=!!clock?.running&&!active.clockFrozen;
- if(wasRunning){clock.running=false;clock.lastWallMs=Date.now();saveClock()}
+ if(window.__STUDIO_TEST_ACCELERATION===true)console.info('[STUDIO_BATCH_ENTER]',JSON.stringify({date:active.date,day:active.day,total,wasRunning,clockPresent:!!clock}));
+ if(wasRunning){if(window.__STUDIO_TEST_ACCELERATION===true)console.info('[STUDIO_CLOCK_PAUSE_BEGIN]',JSON.stringify({date:active.date}));clock.running=false;clock.lastWallMs=Date.now();saveClock();if(window.__STUDIO_TEST_ACCELERATION===true)console.info('[STUDIO_CLOCK_PAUSE_END]',JSON.stringify({date:active.date}));}
  try{
   const testAcceleration=window.__STUDIO_TEST_ACCELERATION===true;
   if(testAcceleration)console.info('[STUDIO_BATCH_START]',JSON.stringify({date:active.date,day:active.day,total,testAcceleration,clockRunning:!!clock?.running,clockFrozen:!!active.clockFrozen}));
