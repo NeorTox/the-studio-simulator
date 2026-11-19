@@ -597,7 +597,7 @@ async function advanceInChunks(total,persistEvery=30){
   if(wasRunning){
    window.__advanceBatchDebugState.stage='clock-pause-begin';
    if(window.__STUDIO_TEST_ACCELERATION===true)console.info('[STUDIO_CLOCK_PAUSE_BEGIN]',JSON.stringify({date:active.date}));
-   clock.running=false;clock.lastWallMs=Date.now();window.__studioClockTraceActive=true;saveClock();window.__studioClockTraceActive=false;
+   clock.running=false;clock.lastWallMs=Date.now();window.__studioClockTraceActive=true;window.saveWorldClock();window.__studioClockTraceActive=false;
    window.__advanceBatchDebugState.stage='clock-pause-complete';
    if(window.__STUDIO_TEST_ACCELERATION===true)console.info('[STUDIO_CLOCK_PAUSE_END]',JSON.stringify({date:active.date}));
   }
@@ -642,7 +642,7 @@ async function advanceInChunks(total,persistEvery=30){
   window.__studioClockTraceActive=false;
   try{
    if(wasRunning&&active&&!active.clockFrozen){
-    try{active.worldClock=active.worldClock||{};active.worldClock.running=true;active.worldClock.lastWallMs=Date.now();saveClock()}
+    try{active.worldClock=active.worldClock||{};active.worldClock.running=true;active.worldClock.lastWallMs=Date.now();window.saveWorldClock()}
     catch(error){console.error('[STUDIO_CLOCK_RESTORE_FAILURE]',error)}
    }
    if(active)saveFailed=!persist();
@@ -1544,6 +1544,7 @@ function saveClock(){
   if(diagnostic)console.error('[STUDIO_CLOCK_SAVE_ERROR]',e&&e.stack||String(e));
  }
 }
+window.saveWorldClock=saveClock;
 function setClock(running){
  if(!active){toast('Create a campaign first.');return}
  const c=active.worldClock||loadClock();if(active.clockFrozen&&running){toast('Unfreeze the sandbox clock first.');return}
