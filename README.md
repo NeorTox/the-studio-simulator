@@ -11,7 +11,7 @@ A film and entertainment company simulation game.
 - Phase 7: Smartphone & media — complete; app catalog, social creators, personalized feeds, daily engagement, digital advertising and save persistence verified
 - Phase 10: Autonomous competitors — complete; ten rival studios, autonomous financial/production cycles, bids, acquisitions, market-share dynamics and strategy controls verified
 - Phase 11: Technology & sustainability — complete; 12-node technology tree, research labs, patents/licensing, sustainability operations and three-year integration verified
-- Next milestone: complete landscape-first UI overhaul; the advanced algorithms/autonomous-systems package follows the completed 14-phase roadmap
+- Current work: game-interface overhaul and repository cleanup are in review; the active UI candidate must pass the full regression before release
 - Production: https://neortox.github.io/the-studio-simulator/
 
 ## Phase 6 scope
@@ -40,13 +40,19 @@ Regression evidence on the Phase 7 candidate:
 - Production URL: https://neortox.github.io/the-studio-simulator/
 - Regression and browser QA: GitHub Actions
 
-## Source of truth
+## Repository layout
+
+- Application shell and PWA files: repository root (`index.html`, `manifest.webmanifest`, `icon.svg`, `sw.js`).
+- UI stylesheets and script: repository root, referenced by the application shell and Pages build.
+- Simulation engines: repository root for now; moving these requires coordinated updates to script loading, QA harnesses, and deployment packaging.
+- Documentation: `docs/ui/`, `docs/phases/`, `docs/data/`, `docs/development/`, and `docs/ROADMAP_STATUS.md`.
+- Regression and browser tests: repository root for now because the current GitHub Actions workflow invokes them by path. Do not move them without updating the workflow and validating the full suite.
 
 This repository holds the application source, engines, static assets, tests, and roadmap documentation. Shared systems such as the simulation clock, finance ledger, campaign calendar, production projects and company records must be reused rather than duplicated by individual phases.
 
 ## Release policy
 
-Production deployments must pass the existing engine, browser, save/load, integration, and multi-year simulation checks. Preserve existing saves and the current production build until a candidate passes verification.
+Production deployments must pass the existing engine, browser, save/load, integration, and multi-year simulation checks. A passing subset of tests is not a passing workflow. See [`docs/development/INTEGRATION-STATUS.md`](docs/development/INTEGRATION-STATUS.md) for the latest candidate regression result. Preserve existing saves and the current production build until a candidate passes verification.
 
 
 ## Phase 8 — Financial empire
