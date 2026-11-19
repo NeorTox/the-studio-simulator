@@ -167,14 +167,14 @@
   }
 
   function updateActiveRoute(id) {
-    $('.stui-nav-item', nav).forEach(button => {
+    $$('.stui-nav-item', nav).forEach(button => {
       const active = button.dataset.page === id;
       button.classList.toggle('active', active);
       if (active) button.setAttribute('aria-current', 'page');
       else button.removeAttribute('aria-current');
     });
     const label = pageNames.get(id) || id;
-    $('.stui-section-nav-item').forEach(item => {
+    $$('.stui-section-nav-item').forEach(item => {
       const active = item.dataset.route === id;
       item.classList.toggle('active', active);
       if (active) item.setAttribute('aria-current', 'page');
