@@ -7,7 +7,7 @@ const assert = require('node:assert/strict');
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
  await page.waitForTimeout(1200);
- assert.equal(await page.title(),'THE STUDIO — v4.43.0');
+ assert.equal(await page.title(),'THE STUDIO — v4.44.0');
  assert.equal(await page.locator('#studio-help-button').count(),1,'Help button must be available');
  assert.equal(await page.locator('#studio-tutorial-overlay').count(),0,'Automated browser runs should not be blocked by auto-onboarding');
  await page.locator('#studio-help-button').click();
@@ -23,6 +23,8 @@ const assert = require('node:assert/strict');
  await page.getByRole('button',{name:/Create campaign/}).click();
  for(const [id,value] of [['nfounder','Weather QA Founder'],['ncompany','Weather QA Studios'],['ncountry','India'],['ncity','Mumbai']])await page.locator('#'+id).fill(value);
  await page.getByRole('button',{name:/Create and save campaign/}).click();
+ await page.locator('#studio-command-pulse').waitFor();
+ assert.match(await page.locator('#studio-command-pulse').innerText(),/WORLD PULSE|World pulse/i,'Overview should expose the live simulation command centre');
  const depth=await page.evaluate(()=>{
   const date=active.date,pop=window.StudioPopulationEngine.ensure();pop.npcs=pop.npcs||[];
   const a={id:'QA-REL-A',name:'QA Person A',age:28,birthDate:'1998-01-01',alive:true,status:'Independent',country:'India',region:'South Asia',city:'Mumbai',socialLinks:[],needs:{health:70,energy:65,social:60,security:65,purpose:70},family:{partnerId:null},home:{monthlyRent:500,conditionIndex:70},finances:{monthlyIncome:2500,cash:5000},career:{performance:60,satisfaction:70,monthlyIncome:2500},skills:{creative:60,technical:65,leadership:50,communication:70,commercial:55},stress:20};
