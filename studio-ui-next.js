@@ -167,14 +167,14 @@
   }
 
   function updateActiveRoute(id) {
-    $$('.stui-nav-item', nav).forEach(button => {
+    $('.stui-nav-item', nav).forEach(button => {
       const active = button.dataset.page === id;
       button.classList.toggle('active', active);
       if (active) button.setAttribute('aria-current', 'page');
       else button.removeAttribute('aria-current');
     });
     const label = pageNames.get(id) || id;
-    $$('.stui-section-nav-item').forEach(item => {
+    $('.stui-section-nav-item').forEach(item => {
       const active = item.dataset.route === id;
       item.classList.toggle('active', active);
       if (active) item.setAttribute('aria-current', 'page');
@@ -183,6 +183,18 @@
     const crumb = $('#crumb');
     if (crumb) crumb.textContent = label.toUpperCase();
   }
+
+  // Keep accessibility state correct even when later engine scripts wrap or
+  // replace the legacy global navigator. The nav's bubble phase runs after
+  // the clicked button's existing inline/engine handlers have activated a page.
+  nav.addEventListener('click', event => {
+    if (!(event.target instanceof Element)) return;
+    const button = event.target.closest('.stui-nav-item[data-page]');
+    if (!button) return;
+    const activePage = $('.page.active');
+    const activeId = activePage?.id?.replace(/^page-/, '') || button.dataset.page;
+    updateActiveRoute(activeId);
+  });
 
   // Engine extensions may register additional destinations after DOMContentLoaded.
   // Keep those late-created routes inside the same navigation and active-state model.
