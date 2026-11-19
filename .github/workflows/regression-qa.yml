@@ -43,6 +43,7 @@ jobs:
             sleep 1
           done
       - name: Run redesigned UI preview browser regression
+        timeout-minutes: 6
         run: node studio-ui-next-browser-qa.js
       - name: Run player experience browser smoke test
         run: node player-experience-browser-qa.js
