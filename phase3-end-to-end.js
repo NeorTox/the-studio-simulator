@@ -28,7 +28,7 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
  const before=await p.evaluate(()=>({date:active.date,cash:Number(active.founder.personalCash),recurring:active.founder.personalFinance.recurring.length}));
  await p.getByRole('button',{name:/Overview/}).click();
  await p.evaluate(()=>{window.__studioBatchDebug=true;window.__studioBatchDebugUntilDay=active.day+5;console.info('[STUDIO_BATCH_PROFILE]',JSON.stringify({date:active.date,day:active.day,npcs:active.world?.population?.npcs?.length||0,virtualResidents:active.world?.population?.virtualResidents||0,projects:active.projects?.length||0,employees:active.employees?.length||0,equities:active.market?.equities?.length||0,events:active.world?.events?.length||0,ledger:active.ledger?.length||0,phase2Last:active.world?.population?.phase2?.lastProcessedDate||null}))});
- await p.getByRole('button',{name:/\+1 year/}).click({timeout:120000});
+ await p.getByRole('button',{name:/(?:\+1 year|YEAR \+1)/i}).click({timeout:120000});
  await p.waitForFunction(()=>!window.__advanceBatchActive,null,{timeout:900000});
  const simulated=await p.evaluate(()=>({date:active.date,clockFrozen:active.clockFrozen,batchActive:!!window.__advanceBatchActive,toast:document.querySelector('#toast')?.textContent||''}));
  console.log('YEAR ADVANCE COMPLETION',JSON.stringify(simulated));
