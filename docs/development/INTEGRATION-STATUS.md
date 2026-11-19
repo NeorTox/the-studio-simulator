@@ -15,6 +15,8 @@ Verified passing groups included the new UI browser QA, player-experience browse
 
 The run failed in the Phase 3 end-to-end year-advance test. It started on 2026-11-14 and stopped on 2026-12-14 after advancing only 30 of the requested 365 days. The subsequent one-year recurring-finance, save/export/import, and legacy migration assertions were not reached. They must not be reported as passed by this run.
 
+The repository-cleanup branch regression (run 44533769318, commit `c35ee953a0e1335b3fef4e33e36d3ae05c69b56c`) repeated the same Phase 3 year-advance failure. Its engine/finance checks, UI browser QA, player-experience QA, world-system runtime checks, all individual phase tests, and the three-year integration stress test passed. The workflow's final one-year save-round-trip reporting step failed because the earlier Phase 3 year-advance step had already failed; it is not a separate save-round-trip failure.
+
 ## Integration principles
 
 - Keep one authoritative simulation clock, finance ledger, campaign calendar, production registry, and company record.
