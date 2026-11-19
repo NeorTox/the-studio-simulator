@@ -310,24 +310,33 @@ const assert = require('node:assert/strict');
         sideHeight: side.height,
         contentWidth: content.width,
         bodyWidth: document.body.scrollWidth,
-        navScrollable: document.querySelector('.nav').scrollWidth >= document.querySelector('.nav').clientWidth
+        navScrollable: document.querySelector('.nav').scrollHeight > document.querySelector('.nav').clientHeight,
+        sideWidth: side.width
       };
     });
-    assert(handheld.sideHeight < 390, 'Landscape navigation does not consume the whole viewport');
+    assert.equal(Math.round(handheld.sideWidth), 184, 'Landscape command sidebar stays in the left rail');
+    assert(handheld.sideHeight <= 390, 'Landscape sidebar fits the viewport');
     assert(handheld.contentWidth > 0);
     assert(handheld.bodyWidth <= handheld.width + 2, 'No horizontal page overflow on landscape handheld');
-    assert.equal(handheld.navScrollable, true, 'Grouped navigation can scroll horizontally on handheld');
+    assert.equal(handheld.navScrollable, true, 'Game navigation scrolls vertically inside the command rail');
 
     console.log('UI_QA_STAGE: landscape layout passed');
 
-    // The default production presentation is unchanged without the opt-in flag.
+    // The full game interface is now the default. Classic remains an explicit
+    // recovery/comparison route, never the normal player experience.
     const standard = await browser.newPage({ viewport: { width: 1365, height: 850 } });
     await standard.addInitScript(() => { window.__STUDIO_DISABLE_AUTO_TUTORIAL = true; });
     await standard.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'networkidle' });
-    assert.equal(await standard.locator('body').evaluate(el => el.classList.contains('stui-next')), false);
-    assert.equal(await standard.locator('.stui-preview-mode').count(), 0);
-    console.log('UI_QA_STAGE: default-mode isolation passed');
-    console.log('PASS redesigned shell, overview, campaign, Company, Finance, Productions, life, travel, geography, all routes, landscape layout and default-mode isolation');
+    assert.equal(await standard.locator('body').evaluate(el => el.classList.contains('stui-next')), true);
+    assert.equal(await standard.locator('.stui-game-ribbon').count(), 1);
+    assert.equal(await standard.locator('.stui-game-mode').innerText(), 'LIVE SIMULATION');
+    const classic = await browser.newPage({ viewport: { width: 1365, height: 850 } });
+    await classic.addInitScript(() => { window.__STUDIO_DISABLE_AUTO_TUTORIAL = true; });
+    await classic.goto('http://127.0.0.1:4173/index.html?ui=classic', { waitUntil: 'networkidle' });
+    assert.equal(await classic.locator('body').evaluate(el => el.classList.contains('stui-next')), false, 'Classic fallback is explicit, not the default');
+    assert.equal(await classic.locator('.stui-game-ribbon').count(), 0);
+    console.log('UI_QA_STAGE: default game mode and classic fallback passed');
+    console.log('PASS full game shell, live HUD, overview, campaign, Company, Finance, Productions, life, travel, geography, all routes, landscape layout, default game UI and classic fallback');
   } finally {
     await browser.close();
   }
