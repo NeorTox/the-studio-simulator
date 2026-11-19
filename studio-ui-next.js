@@ -364,7 +364,8 @@
         if (title && !$('.stui-campaign-state', row)) {
           const state = document.createElement('span');
           state.className = 'stui-campaign-state';
-          state.textContent = isActive ? 'ACTIVE SESSION' : 'SAVED HISTORY';
+          const nextState = isActive ? 'ACTIVE SESSION' : 'SAVED HISTORY';
+          if (state.textContent !== nextState) state.textContent = nextState;
           title.insertAdjacentElement('afterend', state);
         } else if (title) {
           const state = $('.stui-campaign-state', row);
