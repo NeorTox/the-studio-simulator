@@ -4,6 +4,11 @@
  */
 (() => {
   'use strict';
+  const stylesheet = document.createElement('link');
+  stylesheet.rel = 'stylesheet';
+  stylesheet.href = './studio-ui-next.css';
+  document.head.append(stylesheet);
+
   const params = new URLSearchParams(window.location.search);
   if (params.get('ui') !== 'next') return;
 
