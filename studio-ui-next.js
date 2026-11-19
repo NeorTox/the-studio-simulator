@@ -103,7 +103,7 @@
   newCampaign.addEventListener('click', () => {
     if (typeof window.nav === 'function') window.nav('campaign');
   });
-  side.insertBefore(newCampaign, oldFoot || null);
+  side.insertBefore(newCampaign, nav.parentElement || oldFoot || null);
 
   const header = $('.top', main);
   if (header) {
