@@ -171,7 +171,7 @@
       else button.removeAttribute('aria-current');
     });
     const label = pageNames.get(id) || id;
-    $('.stui-section-nav-item').forEach(item => {
+    $$('.stui-section-nav-item').forEach(item => {
       const active = item.dataset.route === id;
       item.classList.toggle('active', active);
       if (active) item.setAttribute('aria-current', 'page');
@@ -239,7 +239,7 @@
   updateActiveRoute(activeId);
   const pageTreatments = { personal: 'stui-life-page', population: 'stui-population-page', phone: 'stui-life-page', digital: 'stui-life-page', generations: 'stui-life-page', world: 'stui-world-page', worldengine: 'stui-world-page', worldsystems: 'stui-world-page', globaltravel: 'stui-travel-page', geography: 'stui-geography-page', company: 'stui-company-page', finance: 'stui-finance-page', projects: 'stui-production-page' };
   Object.entries(pageTreatments).forEach(([id, className]) => $('#page-' + id)?.classList.add(className));
-  const existingPageCount = $('.page', content).length;
+  const existingPageCount = $$('.page', content).length;
   body.dataset.stuiPageCount = String(existingPageCount);
 
   // A visible opt-in label makes this preview mode unmistakable.
