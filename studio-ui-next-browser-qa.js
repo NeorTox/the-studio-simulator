@@ -53,6 +53,10 @@ const assert = require('node:assert/strict');
     // Create a real campaign using the existing campaign form and save path.
     await page.locator('.stui-create-campaign').click();
     await page.locator('#page-campaign .hero .btn.primary').click();
+
+    assert.equal(await page.locator('#modal.stui-campaign-setup-modal').count(), 1, 'Campaign creation receives the redesigned setup treatment');
+    assert.equal(await page.locator('#newform.stui-campaign-setup .stui-setup-section-label').count(), 4, 'World, founder, attributes and company sections are preserved');
+    assert.equal(await page.locator('#newform .field').count() >= 25, true, 'Full founder and company setup remains available');
     for (const [id, value] of [
       ['nfounder', 'UI Preview QA Founder'],
       ['ncompany', 'UI Preview QA Studios'],

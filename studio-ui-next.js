@@ -416,6 +416,39 @@
     refreshCampaignLibrary();
   }
 
+
+  // Give the existing full campaign-creation form a clear, structured setup
+  // treatment while leaving its fields, validation and submit path untouched.
+  const campaignModal = $('#modal');
+  const campaignModalBody = $('#mbody');
+  const enhanceCampaignSetup = () => {
+    const form = $('#newform', campaignModalBody || document);
+    if (!form) {
+      campaignModal?.classList.remove('stui-campaign-setup-modal');
+      return;
+    }
+    campaignModal?.classList.add('stui-campaign-setup-modal');
+    form.classList.add('stui-campaign-setup');
+    if (!$('.stui-campaign-setup-note', form)) {
+      const note = document.createElement('p');
+      note.className = 'stui-campaign-setup-note';
+      note.textContent = 'A campaign defines its own historical starting point, founder, company and simulation rules. You can change how the world develops through play.';
+      form.insertBefore(note, form.firstElementChild);
+    }
+    $('.eyebrow', form).forEach((heading, index) => {
+      heading.classList.add('stui-setup-section-label');
+      heading.dataset.section = String(index + 1).padStart(2, '0');
+      if (heading.nextElementSibling?.classList.contains('formgrid')) {
+        heading.nextElementSibling.classList.add('stui-setup-field-grid');
+      }
+    });
+    $('button[type="submit"]', form)?.classList.add('stui-setup-submit');
+  };
+  if (campaignModalBody) {
+    new MutationObserver(enhanceCampaignSetup).observe(campaignModalBody, { childList: true, subtree: true });
+    enhanceCampaignSetup();
+  }
+
   const refreshPresentation = () => { if (typeof window.render === 'function') window.render(); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', refreshPresentation, { once: true });
   else refreshPresentation();
