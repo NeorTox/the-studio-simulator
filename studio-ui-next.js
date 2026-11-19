@@ -5,7 +5,7 @@
 (() => {
   'use strict';
   const params = new URLSearchParams(window.location.search);
-  if (params.get('ui') !== 'next') return;
+  if (params.get('ui') === 'classic') return;
 
   const stylesheet = document.createElement('link');
   stylesheet.rel = 'stylesheet';
@@ -296,8 +296,8 @@
 
   // A visible opt-in label makes this preview mode unmistakable.
   const mode = document.createElement('span');
-  mode.className = 'stui-preview-mode';
-  mode.textContent = 'DESIGN PREVIEW';
+  mode.className = 'stui-game-mode';
+  mode.textContent = 'LIVE SIMULATION';
   const topRight = $('.topright', header || document);
   if (topRight) topRight.append(mode);
 
@@ -730,7 +730,7 @@
    simulation DOM nodes and every action remains owned by the original engine. */
 (() => {
   'use strict';
-  if (new URLSearchParams(window.location.search).get('ui') !== 'next') return;
+  if (new URLSearchParams(window.location.search).get('ui') === 'classic') return;
   const $ = (selector, root = document) => root.querySelector(selector);
   const main = $('.main');
   const top = $('.top');
