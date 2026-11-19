@@ -4,7 +4,7 @@ A film and entertainment company simulation game.
 
 ## Project baseline
 
-- Game version: 4.25.0
+- Game version: 4.45.0
 - Engine versions: Phase 6 Ecosystem 6.1.0; Phase 6 Audience version is reported by its runtime module
 - Completed development phases: 0–13; all fourteen phase contracts connected and the 1,095-day cross-phase stress test passed
 - Phase 6: Entertainment ecosystem — complete; financial retries, media, awards and multi-year integration verified
