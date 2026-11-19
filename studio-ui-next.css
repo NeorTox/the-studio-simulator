@@ -2548,3 +2548,44 @@ body.stui-next .stui-workspace-index::before {
   body.stui-next .stui-hud-stat strong {font-size:10px}
   body.stui-next .stui-command-brief-tag {display:none}
 }
+
+
+/* Handheld landscape: reserve the rail's remaining height for the scrollable
+   route list. The footer is intentionally suppressed here so it cannot sit
+   over the final navigation rows or steal pointer events. */
+@media (max-width:850px) and (orientation:landscape) {
+  body.stui-next .side {
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:0!important;
+  }
+  body.stui-next .stui-create-campaign {
+    position:relative!important;
+    flex:0 0 auto!important;
+    z-index:2;
+  }
+  body.stui-next .stui-nav-container {
+    display:flex!important;
+    flex:1 1 0!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    position:relative!important;
+    z-index:1;
+  }
+  body.stui-next .stui-nav-container .nav {
+    display:block!important;
+    flex:1 1 0!important;
+    height:0!important;
+    min-height:0!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain;
+    padding-bottom:8px!important;
+  }
+  body.stui-next .sidefoot,
+  body.stui-next .stui-side-note {
+    display:none!important;
+    pointer-events:none!important;
+  }
+}
