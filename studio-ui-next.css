@@ -503,3 +503,78 @@ body.stui-next textarea:focus-visible {
     transition-duration: .01ms !important;
   }
 }
+
+
+/* Keep the long, grouped route list inside the available sidebar height. */
+body.stui-next .stui-nav-container {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+}
+body.stui-next .stui-nav-container .stui-navigation { flex: 1 1 auto; }
+body.stui-next .stui-life-page .card,
+body.stui-next .stui-world-page .card,
+body.stui-next .stui-travel-page .card,
+body.stui-next .stui-geography-page .card,
+body.stui-next .stui-population-page .card,
+body.stui-next .stui-company-page .card,
+body.stui-next .stui-finance-page .card,
+body.stui-next .stui-production-page .card {
+  background: linear-gradient(155deg, rgba(25,33,41,.98), rgba(16,22,28,.98));
+}
+body.stui-next .stui-travel-page #globaltravel-content > .grid.stats {
+  gap: 9px;
+  margin: 0 0 14px;
+}
+body.stui-next .stui-travel-page #globaltravel-content > .grid.stats .card {
+  min-height: 104px;
+  border-top: 2px solid rgba(142,175,207,.34);
+}
+body.stui-next .stui-travel-page #globaltravel-content > .grid.cols {
+  align-items: start;
+  gap: 13px;
+}
+body.stui-next .stui-travel-page #globaltravel-content > .grid.cols > .card {
+  min-height: 100%;
+}
+body.stui-next .stui-travel-page #globaltravel-content > .card {
+  margin-top: 13px;
+}
+body.stui-next .stui-travel-page #globaltravel-content .field {
+  margin-top: 10px;
+}
+body.stui-next .stui-travel-page #globaltravel-content .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+body.stui-next .stui-travel-page #globaltravel-content .rowitem {
+  align-items: flex-start;
+  padding: 12px 0;
+}
+body.stui-next .stui-travel-page #globaltravel-content .hint {
+  max-width: 680px;
+}
+body.stui-next .stui-life-page #lifedashboard {
+  align-items: start;
+}
+body.stui-next .stui-life-page #lifemetrics .card {
+  min-height: 92px;
+  padding: 13px;
+}
+body.stui-next .stui-world-page .worldbox {
+  border-color: rgba(142,175,207,.24);
+  background: linear-gradient(110deg, rgba(45,65,78,.32), rgba(23,31,39,.78));
+}
+body.stui-next .stui-finance-page table td,
+body.stui-next .stui-finance-page table th {
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 760px) {
+  body.stui-next .stui-nav-container { flex: 0 0 auto; max-width: 100%; }
+  body.stui-next .stui-nav-container .stui-navigation { flex: 0 0 auto; }
+  body.stui-next .stui-travel-page #globaltravel-content > .grid.stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body.stui-next .stui-travel-page #globaltravel-content > .grid.cols { grid-template-columns: minmax(0, 1fr); }
+}
