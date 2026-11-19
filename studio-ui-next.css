@@ -993,3 +993,188 @@ body.stui-next .stui-campaign-setup .stui-setup-submit {
   body.stui-next .stui-campaign-setup .field.full { grid-column: auto; }
   body.stui-next .stui-campaign-setup .stui-setup-submit { width: 100%; }
 }
+
+
+/* Company dossier — an editorial identity band above the existing live records. */
+body.stui-next .stui-company-dossier-overview {
+  display: grid;
+  grid-template-columns: minmax(240px, .92fr) minmax(0, 1.65fr);
+  gap: 22px;
+  align-items: stretch;
+  margin: 0 0 12px;
+  padding: 21px 23px;
+  border: 1px solid var(--stui-line);
+  border-radius: 12px;
+  background:
+    linear-gradient(115deg, rgba(200, 168, 120, .075), transparent 46%),
+    var(--stui-panel);
+}
+body.stui-next .stui-company-identity {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+body.stui-next .stui-company-kicker {
+  color: var(--stui-brass);
+  font-size: 9px;
+  font-weight: 760;
+  letter-spacing: .19em;
+}
+body.stui-next .stui-company-identity h2 {
+  margin: 8px 0 5px;
+  color: var(--stui-ink);
+  font-size: clamp(21px, 2vw, 29px);
+  font-weight: 630;
+  letter-spacing: -.035em;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+body.stui-next .stui-company-identity p {
+  margin: 0;
+  color: var(--stui-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+body.stui-next .stui-company-identity-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  margin-top: 15px;
+  color: var(--stui-muted);
+  font-size: 10px;
+}
+body.stui-next .stui-company-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 23px;
+  padding: 4px 8px;
+  border: 1px solid rgba(200, 168, 120, .38);
+  border-radius: 4px;
+  background: rgba(200, 168, 120, .08);
+  color: var(--stui-brass-bright);
+  font-size: 8px;
+  font-weight: 780;
+  letter-spacing: .11em;
+}
+body.stui-next .stui-company-status.is-incorporated {
+  border-color: rgba(131, 185, 155, .35);
+  background: rgba(131, 185, 155, .08);
+  color: var(--stui-green);
+}
+body.stui-next .stui-company-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: center;
+  gap: 0;
+  border-left: 1px solid var(--stui-line);
+}
+body.stui-next .stui-company-facts > div {
+  display: flex;
+  min-width: 0;
+  min-height: 62px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 9px 17px;
+}
+body.stui-next .stui-company-facts > div:nth-child(odd) {
+  border-right: 1px solid var(--stui-line-soft);
+}
+body.stui-next .stui-company-facts > div:nth-child(n+3) {
+  border-top: 1px solid var(--stui-line-soft);
+}
+body.stui-next .stui-company-facts span {
+  color: var(--stui-dim);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+body.stui-next .stui-company-facts strong {
+  color: var(--stui-ink);
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+body.stui-next .stui-company-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 16px;
+}
+body.stui-next .stui-company-link {
+  min-height: 30px;
+  padding: 6px 10px;
+  border: 1px solid var(--stui-line);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--stui-muted);
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+  transition: border-color .15s ease, color .15s ease, background .15s ease;
+}
+body.stui-next .stui-company-link::after {
+  content: " ↗";
+  color: var(--stui-brass);
+}
+body.stui-next .stui-company-link:hover {
+  border-color: rgba(200, 168, 120, .48);
+  background: rgba(200, 168, 120, .06);
+  color: var(--stui-ink);
+}
+body.stui-next .stui-company-dossier-grid {
+  align-items: start;
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, .8fr);
+}
+body.stui-next .stui-company-dossier-grid > .card {
+  min-width: 0;
+}
+body.stui-next #page-company .hero .actions {
+  gap: 7px;
+}
+body.stui-next #page-company .hero .actions .btn {
+  min-height: 34px;
+  padding: 8px 10px;
+  font-size: 10px;
+}
+body.stui-next #companydetails .divider {
+  margin: 16px 0 9px;
+  border-color: var(--stui-line);
+}
+body.stui-next #companydetails > b {
+  display: block;
+  margin: 4px 0 7px;
+  color: var(--stui-brass-bright);
+  font-size: 10px;
+  font-weight: 720;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+@media (max-width: 1120px) {
+  body.stui-next .stui-company-dossier-overview {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 13px;
+  }
+  body.stui-next .stui-company-facts {
+    border-top: 1px solid var(--stui-line);
+    border-left: 0;
+  }
+}
+@media (max-width: 760px) {
+  body.stui-next .stui-company-dossier-overview { padding: 16px; }
+  body.stui-next .stui-company-facts > div { padding: 9px 11px; }
+  body.stui-next .stui-company-facts strong { font-size: 13px; }
+  body.stui-next .stui-company-dossier-grid { grid-template-columns: minmax(0, 1fr); }
+  body.stui-next #page-company .hero .actions { justify-content: flex-start; }
+  body.stui-next #page-company .hero .actions .btn { flex: 1 1 auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.stui-next .stui-company-link { transition: none; }
+}
