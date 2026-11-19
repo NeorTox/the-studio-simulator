@@ -6,7 +6,7 @@ concurrency:
 
 on:
   push:
-    branches: [main, 'algorithms/**', 'refinement/**', 'systems/**']
+    branches: [main, 'algorithms/**', 'refinement/**', 'systems/**', 'fix/**']
   workflow_dispatch:
 
 permissions:
@@ -51,10 +51,13 @@ jobs:
           node --check phase1-global-geography-engine.js
           node --check phase1-global-mobility-engine.js
           node --check phase1-global-geography-travel-qa.js
+      - name: Validate Phase 0 registry, architecture and integration syntax
+        run: node --check phase0-registry.js && node --check phase0-architecture.js && node --check phase-integration-engine.js
       - name: Validate Phase 7 digital-life syntax early
         run: node --check phase7-digital-life-engine.js && node --check phase7-digital-life-qa.js
       - name: Run actual application form regression
         run: node actual-phase3-submit-qa.js
+      # The browser harness opts into test-only 30-day batching; production defaults remain one day per task.
       - name: Run simulation and save round-trip regression
         id: phase3_save_roundtrip
         continue-on-error: true

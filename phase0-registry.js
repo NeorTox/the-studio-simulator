@@ -7,17 +7,18 @@ P.domains.forEach(d=>P.registerModule(d));
 P.moduleRegistry=P.domains.map(d=>({id:d.id,name:d.name,dependencies:[...d.deps],owns:[...d.owns],status:d.status}));
 function createKernelScheduler(state,dispatch){
 if(!state||typeof state!=='object')throw Error('Scheduler state must be an object.');
+const validISODate=value=>{const s=String(value);if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;const d=new Date(s+'T00:00:00.000Z');return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===s;};
 state.version=1;state.sequence=Number(state.sequence||0);state.queue=Array.isArray(state.queue)?state.queue:[];state.history=Array.isArray(state.history)?state.history:[];
 return {
 schedule(type,dueDate,payload={},source='system'){
 if(typeof type!=='string'||!type.trim())throw Error('Event type is required.');
-if(!/^\d{4}-\d{2}-\d{2}$/.test(String(dueDate)))throw Error('Event due date must use YYYY-MM-DD.');
+if(!validISODate(dueDate))throw Error('Event due date must be a real calendar date in YYYY-MM-DD format.');
 const copy=JSON.parse(JSON.stringify(payload));
 state.sequence++;const event={id:'KERNEL-EVT-'+String(state.sequence).padStart(9,'0'),type:type.trim(),dueDate,payload:copy,source,sequence:state.sequence,status:'queued'};
 state.queue.push(event);state.queue.sort((a,b)=>a.dueDate.localeCompare(b.dueDate)||a.sequence-b.sequence);return event.id;
 },
 cancel(id){const event=state.queue.find(x=>x.id===id&&x.status==='queued');if(!event)return false;event.status='cancelled';state.history.unshift({...event,completedAt:new Date().toISOString()});return true;},
-runDue(date){const due=state.queue.filter(x=>x.status==='queued'&&x.dueDate<=date).sort((a,b)=>a.dueDate.localeCompare(b.dueDate)||a.sequence-b.sequence),out=[];for(const event of due){try{if(typeof dispatch!=='function')throw Error('No event dispatcher is configured.');dispatch(event);event.status='completed';event.completedAt=new Date().toISOString();out.push({id:event.id,status:'completed'});}catch(e){event.status='failed';event.error=String(e&&e.message||e);event.completedAt=new Date().toISOString();out.push({id:event.id,status:'failed',error:event.error});}state.history.unshift({...event});}state.history=state.history.slice(0,500);return out;},
+runDue(date){if(!validISODate(date))throw Error('Scheduler run date must be a real calendar date in YYYY-MM-DD format.');const due=state.queue.filter(x=>x.status==='queued'&&x.dueDate<=date).sort((a,b)=>a.dueDate.localeCompare(b.dueDate)||a.sequence-b.sequence),out=[];for(const event of due){try{if(typeof dispatch!=='function')throw Error('No event dispatcher is configured.');dispatch(event);event.status='completed';event.completedAt=new Date().toISOString();out.push({id:event.id,status:'completed'});}catch(e){event.status='failed';event.error=String(e&&e.message||e);event.completedAt=new Date().toISOString();out.push({id:event.id,status:'failed',error:event.error});}state.history.unshift({...event});}state.history=state.history.slice(0,500);return out;},
 list(){return state.queue.map(x=>({...x}));},
 snapshot(){return JSON.parse(JSON.stringify(state));}
 };
@@ -35,6 +36,7 @@ const add=(name,fn)=>{try{result.push({name,pass:true,detail:String(fn()||'Passe
 add('All domain modules registered',()=>{if(P.moduleRegistry.length!==P.domains.length)throw Error('Module registry incomplete');return P.moduleRegistry.length+' domain modules registered.'});
 add('Kernel scheduler date ordering',()=>{const state={sequence:0,queue:[],history:[]},seen=[],q=createKernelScheduler(state,e=>seen.push(e.type));q.schedule('later','2026-01-03');q.schedule('earlier','2026-01-01');q.runDue('2026-01-01');if(seen.length!==1||seen[0]!=='earlier')throw Error('Due events were not ordered by date');return 'Only due events dispatch, ordered by due date.'});
 add('Kernel scheduler deterministic sequence',()=>{const state={sequence:0,queue:[],history:[]},q=createKernelScheduler(state,()=>{}),a=q.schedule('a','2026-01-01'),b=q.schedule('b','2026-01-01');if(a===b||state.sequence!==2)throw Error('Event sequence is not unique');return 'Monotonic event IDs are unique.'});
+add('Kernel scheduler rejects impossible calendar dates',()=>{const state={sequence:0,queue:[],history:[]},q=createKernelScheduler(state,()=>{});let rejected=false;try{q.schedule('invalid','2026-02-31')}catch(e){rejected=/real calendar date/.test(e.message)}if(!rejected)throw Error('Impossible due date was accepted');rejected=false;try{q.runDue('2026-02-31')}catch(e){rejected=/real calendar date/.test(e.message)}if(!rejected)throw Error('Impossible run date was accepted');return 'Impossible calendar dates are rejected for scheduling and dispatch.'});
 add('Kernel scheduler cancellation',()=>{const state={sequence:0,queue:[],history:[]},q=createKernelScheduler(state,()=>{}),id=q.schedule('cancel-me','2026-01-01');if(!q.cancel(id)||q.runDue('2026-01-02').length)throw Error('Cancelled event dispatched');return 'Cancelled event is excluded from dispatch.'});
 return result;
 };

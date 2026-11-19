@@ -1,7 +1,7 @@
 const assert=require('assert');const {chromium}=require('playwright');
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
- const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];
+ const page=await browser.newPage({viewport:{width:844,height:390}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
  await page.getByRole('button',{name:/New campaign/}).click();

@@ -24,12 +24,16 @@ function beginDay(date){
  const s=state();if(!s)return false;
  const d=s.days[date]||{date,status:'started',steps:[],startedAt:new Date().toISOString()};
  if(d.status==='completed')return false;
- d.status='started';d.steps.push({name:'world-before-life',at:new Date().toISOString()});s.days[date]=d;
+ d.status='started';
+ if(!d.steps.some(step=>step.name==='world-before-life'))d.steps.push({name:'world-before-life',at:new Date().toISOString()});
+ s.days[date]=d;
  return true;
 }
 function endDay(date){
  const s=state();if(!s)return false;
  const d=s.days[date]||{date,status:'started',steps:[]};
+ const population=active.world?.population?.phase2;
+ if(!population||population.lastProcessedDate!==date)throw Error('Cannot complete integration day '+date+': Phase 2 population processor did not commit.');
  const ecosystem=active.ecosystem;
  if(!ecosystem||ecosystem.lastProcessedDate!==date)throw Error('Cannot complete integration day '+date+': Phase 6 ecosystem did not commit.');
  if(ecosystem.audienceLastProcessedDate!==date)throw Error('Cannot complete integration day '+date+': Phase 6 audience model did not commit.');
@@ -38,7 +42,8 @@ function endDay(date){
  const globalEconomy=window.Phase9GlobalEconomy?.ensure?.();if(!globalEconomy||globalEconomy.lastProcessedDate!==date)throw Error('Cannot complete integration day '+date+': Phase 9 global economy processor did not commit.');
  const competitors=window.Phase10Competitors?.ensure?.();if(!competitors||competitors.lastProcessedDate!==date)throw Error('Cannot complete integration day '+date+': Phase 10 autonomous competitor processor did not commit.');
  const technology=window.Phase11Technology?.ensure?.();if(!technology||technology.lastProcessedDate!==date)throw Error('Cannot complete integration day '+date+': Phase 11 technology and sustainability processor did not commit.');
- d.steps.push({name:'population-founder-company',at:new Date().toISOString()});
+ if(!d.steps.some(step=>step.name==='phase2-population'))d.steps.push({name:'phase2-population',at:new Date().toISOString()});
+ if(!d.steps.some(step=>step.name==='population-founder-company'))d.steps.push({name:'population-founder-company',at:new Date().toISOString()});
  d.steps.push({name:'phase6-ecosystem',at:new Date().toISOString()});
  d.steps.push({name:'phase6-audience',at:new Date().toISOString()});
  d.steps.push({name:'phase7-smartphone',at:new Date().toISOString()});
@@ -66,6 +71,8 @@ function audit(){
   add('Daily integration telemetry',!!s,'Serializable integration state is attached to the campaign.');
   const dates=Object.values(s.days),incomplete=dates.filter(d=>d.status!=='completed');
   add('No incomplete daily pipelines',incomplete.length===0,incomplete.length?incomplete.map(d=>d.date).join(', '):dates.length+' completed day records.');
+  const currentDay=s.days[active.date];
+  add('Current completed day includes Phase 2 population processing',!currentDay||currentDay.status!=='completed'||currentDay.steps.some(x=>x.name==='phase2-population'),'Current campaign date: '+active.date);
   const duplicate=dates.some(d=>new Set(d.steps.map(x=>x.name)).size!==d.steps.length);
   add('No duplicate pipeline steps',!duplicate,'Each tracked daily stage appears once per date.');
   const required=['world-before-life','population-founder-company','phase6-ecosystem','phase6-audience','phase7-smartphone','phase8-financial-empire','phase9-global-economy','phase10-competitors','phase11-technology-sustainability'];
@@ -99,7 +106,8 @@ function audit(){
   add('Ledger entries have finite amounts',ledger.every(x=>Number.isFinite(Number(x.amount??x.value??0))),'All recorded ledger amounts are finite numbers.');
   const household=window.StudioHouseholdEconomics?.audit?.();add('Household & consumer economics integrity',!!household&&household.failed===0,household?(household.passed+' passed / '+household.failed+' failed'):'Household economics audit API unavailable.');
   const householdDate=active.world?.householdEconomics?.lastProcessedDate;add('Household monthly checkpoint synchronized',active.date.slice(8,10)!=='01'||!active.world?.population?.phase2||active.world.population.phase2.lastProcessedDate!==active.date||householdDate===active.date,'Household month '+String(householdDate||'not yet processed')+' · campaign '+active.date);
-  add('Phase 2 date does not lead world date',!active.population?.phase2?.lastProcessedDate||!active.world?.time?.lastProcessedDate||active.population.phase2.lastProcessedDate<=active.world.time.lastProcessedDate,'Population processing must not run ahead of world time.');
+  const populationDate=active.world?.population?.phase2?.lastProcessedDate;
+  add('Phase 2 population checkpoint matches completed world time',!populationDate||!active.world?.time?.lastProcessedDate||populationDate<=active.world.time.lastProcessedDate,String(populationDate||'No population checkpoint')+' / '+String(active.world?.time?.lastProcessedDate||'No world checkpoint'));
  }
  const passed=results.filter(x=>x.ok).length,failed=results.length-passed;
  const report={date:active?.date||null,passed,failed,modules,tests:results};
