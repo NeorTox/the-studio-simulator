@@ -301,6 +301,121 @@
   const topRight = $('.topright', header || document);
   if (topRight) topRight.append(mode);
 
+
+  // Campaign workspace: present the existing local-save renderer as a usable
+  // library without changing save objects, storage keys or legacy actions.
+  const campaignPage = $('#page-campaign');
+  if (campaignPage) {
+    campaignPage.classList.add('stui-campaign-page');
+    const campaignHero = $('.hero', campaignPage);
+    if (campaignHero && !$('.stui-campaign-overview', campaignPage)) {
+      const overviewPanel = document.createElement('section');
+      overviewPanel.className = 'stui-campaign-overview';
+      overviewPanel.setAttribute('aria-label', 'Campaign library overview');
+      overviewPanel.innerHTML = `
+        <div class="stui-campaign-overview-head">
+          <div><span class="stui-campaign-kicker">LOCAL ARCHIVE</span><h2>Campaign library</h2><p>Each history is its own studio, founder and evolving world. Manage the saves stored in this browser.</p></div>
+          <span class="stui-campaign-device"><span class="stui-live-dot"></span> THIS DEVICE</span>
+        </div>
+        <div class="stui-campaign-metrics">
+          <div class="stui-campaign-metric"><span>SAVED HISTORIES</span><strong id="stui-campaign-count">0</strong><small>Local campaign saves</small></div>
+          <div class="stui-campaign-metric"><span>ACTIVE HISTORY</span><strong id="stui-campaign-active">No campaign loaded</strong><small id="stui-campaign-active-detail">Create or load a history to begin</small></div>
+          <div class="stui-campaign-metric"><span>BACKUP LOCATION</span><strong>Browser storage</strong><small>Export JSON to keep an independent backup</small></div>
+        </div>`;
+      campaignHero.insertAdjacentElement('afterend', overviewPanel);
+    }
+
+    const libraryCard = $('.card', campaignPage);
+    if (libraryCard) {
+      libraryCard.classList.add('stui-campaign-library-card');
+      const cardHead = $('.cardhead', libraryCard);
+      if (cardHead && !$('.stui-campaign-search', libraryCard)) {
+        const searchWrap = document.createElement('label');
+        searchWrap.className = 'stui-campaign-search';
+        searchWrap.innerHTML = '<span aria-hidden="true">⌕</span><input type="search" id="stui-campaign-search" placeholder="Search studio, founder, date or save ID" autocomplete="off" aria-label="Search saved campaigns">';
+        cardHead.insertAdjacentElement('afterend', searchWrap);
+      }
+      const actions = $('.actions', libraryCard);
+      if (actions) actions.classList.add('stui-campaign-backup-actions');
+      const hint = $('.hint', libraryCard);
+      if (hint) hint.classList.add('stui-campaign-backup-note');
+    }
+
+    const saveList = $('#savelist', campaignPage);
+    const refreshCampaignLibrary = () => {
+      const rows = $('.saveitem', saveList || document);
+      const count = $('#savecount', campaignPage)?.textContent || (rows.length + ' saves');
+      const countNode = $('#stui-campaign-count', campaignPage);
+      if (countNode) countNode.textContent = count.replace(/\\s+saves?$/i, '') || '0';
+      let activeRow = null;
+      rows.forEach(row => {
+        row.classList.add('stui-campaign-entry');
+        const title = $('b', row);
+        const detail = $('.tiny', row);
+        const buttons = $('button', row);
+        const isActive = buttons.some(button => button.textContent.trim().toLowerCase() === 'active');
+        row.classList.toggle('is-active', isActive);
+        row.dataset.search = row.textContent.toLowerCase();
+        if (isActive) activeRow = row;
+        const info = row.firstElementChild;
+        if (info) info.classList.add('stui-campaign-entry-info');
+        const actionGroup = $('.actions', row);
+        if (actionGroup) actionGroup.classList.add('stui-campaign-entry-actions');
+        if (title && !$('.stui-campaign-state', row)) {
+          const state = document.createElement('span');
+          state.className = 'stui-campaign-state';
+          state.textContent = isActive ? 'ACTIVE SESSION' : 'SAVED HISTORY';
+          title.insertAdjacentElement('afterend', state);
+        } else if (title) {
+          const state = $('.stui-campaign-state', row);
+          state.textContent = isActive ? 'ACTIVE SESSION' : 'SAVED HISTORY';
+        }
+        if (detail) detail.classList.add('stui-campaign-entry-detail');
+      });
+      const activeName = activeRow ? $('b', activeRow)?.textContent.trim() : 'No campaign loaded';
+      const activeDetail = activeRow ? $('.tiny', activeRow)?.textContent.trim() : 'Create or load a history to begin';
+      const activeNode = $('#stui-campaign-active', campaignPage);
+      const detailNode = $('#stui-campaign-active-detail', campaignPage);
+      if (activeNode) activeNode.textContent = activeName || 'Untitled Studio';
+      if (detailNode) detailNode.textContent = activeDetail || 'Current local save';
+      if (saveList) {
+        const query = ($('#stui-campaign-search', campaignPage)?.value || '').trim().toLowerCase();
+        let visible = 0;
+        rows.forEach(row => {
+          const match = !query || (row.dataset.search || '').includes(query);
+          row.hidden = !match;
+          if (match) visible++;
+        });
+        let noMatch = $('.stui-campaign-no-match', saveList);
+        if (query && rows.length && visible === 0) {
+          if (!noMatch) {
+            noMatch = document.createElement('div');
+            noMatch.className = 'stui-campaign-no-match';
+            noMatch.textContent = 'No saved campaigns match that search.';
+            saveList.append(noMatch);
+          }
+        } else if (noMatch) noMatch.remove();
+        const empty = rows.length === 0;
+        saveList.classList.toggle('stui-campaign-empty', empty);
+        if (empty && !$('.stui-campaign-empty-action', saveList)) {
+          const create = document.createElement('button');
+          create.type = 'button';
+          create.className = 'btn primary stui-campaign-empty-action';
+          create.textContent = '＋ Create your first campaign';
+          create.addEventListener('click', () => $('.hero .btn.primary', campaignPage)?.click());
+          saveList.append(create);
+        }
+      }
+    };
+
+    const campaignSearch = $('#stui-campaign-search', campaignPage);
+    campaignSearch?.addEventListener('input', refreshCampaignLibrary);
+    if (saveList) {
+      new MutationObserver(refreshCampaignLibrary).observe(saveList, { childList: true, subtree: true });
+    }
+    refreshCampaignLibrary();
+  }
+
   const refreshPresentation = () => { if (typeof window.render === 'function') window.render(); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', refreshPresentation, { once: true });
   else refreshPresentation();

@@ -74,6 +74,22 @@ const assert = require('node:assert/strict');
     assert.equal(savedCampaign.company, 'UI Preview QA Studios');
     assert.match(savedCampaign.pulse, /World pulse/i);
 
+
+    // Campaign library must reflect the actual local save register and retain
+    // its original load/export/delete actions.
+    await page.locator('[data-page="campaign"]').click();
+    assert.equal(await page.locator('.stui-campaign-overview').count(), 1, 'Campaign library overview is composed');
+    assert.equal(await page.locator('.stui-campaign-entry').count(), 1, 'New campaign appears in the saved library');
+    assert.equal(await page.locator('.stui-campaign-entry.is-active').count(), 1, 'Current campaign is clearly identified');
+    assert.equal(await page.locator('#stui-campaign-active').innerText(), 'UI Preview QA Studios');
+    assert.match(await page.locator('#stui-campaign-count').innerText(), /1/);
+    assert.equal(await page.locator('.stui-campaign-entry-actions button').count(), 3, 'Load, export and delete actions remain available');
+    await page.locator('#stui-campaign-search').fill('no such studio');
+    assert.equal(await page.locator('.stui-campaign-entry').isVisible(), false, 'Campaign search filters the library');
+    assert.match(await page.locator('.stui-campaign-no-match').innerText(), /No saved campaigns match/);
+    await page.locator('#stui-campaign-search').fill('');
+    assert.equal(await page.locator('.stui-campaign-entry').isVisible(), true, 'Clearing search restores saved campaigns');
+
     // Existing Life and Travel screens must still render their actual engine data.
     await page.locator('[data-page="personal"]').click();
     assert.equal(await page.locator('#page-personal').evaluate(el => el.classList.contains('active')), true);
