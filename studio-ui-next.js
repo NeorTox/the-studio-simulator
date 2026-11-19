@@ -123,7 +123,7 @@
   buttons.forEach((button, id) => pageNames.set(id, button.textContent.trim().replace(/\s+/g, ' ')));
 
   const groupTitles = new Map(groups.map(group => [group.key, group.title]));
-  $('.page', content).forEach(page => {
+  $$('.page', content).forEach(page => {
     const id = page.id.replace(/^page-/, '');
     const groupKey = groupFor.get(id) || 'advanced';
     const routes = (groups.find(group => group.key === groupKey)?.routes || [])
