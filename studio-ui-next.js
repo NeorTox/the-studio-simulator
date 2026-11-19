@@ -205,12 +205,12 @@
           nav.append(section);
         }
         button.classList.add('stui-nav-item');
-        button.setAttribute('aria-label', button.textContent.trim().replace(/\\s+/g, ' '));
+        button.setAttribute('aria-label', button.textContent.trim().replace(/\s+/g, ' '));
         button.querySelector('span')?.setAttribute('aria-hidden', 'true');
         buttons.set(route, button);
         const copy = button.cloneNode(true);
         copy.querySelector('span')?.remove();
-        pageNames.set(route, copy.textContent.trim().replace(/\\s+/g, ' '));
+        pageNames.set(route, copy.textContent.trim().replace(/\s+/g, ' '));
         button.addEventListener('click', () => updateActiveRoute(route));
         section.append(button);
       });
