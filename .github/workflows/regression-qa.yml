@@ -28,7 +28,7 @@ jobs:
       - name: Install browser test runtime
         run: |
           npm install --no-save playwright
-          npx playwright install --with-deps chromium
+          npx playwright install chromium
       - name: Run Phase 3 engine and finance tests
         run: |
           node --check phase3-founder-engine.js
