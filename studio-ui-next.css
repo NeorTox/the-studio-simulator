@@ -578,3 +578,80 @@ body.stui-next .stui-finance-page table th {
   body.stui-next .stui-travel-page #globaltravel-content > .grid.stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   body.stui-next .stui-travel-page #globaltravel-content > .grid.cols { grid-template-columns: minmax(0, 1fr); }
 }
+
+
+/* Existing World Pulse remains a first-class, direct-child overview panel. */
+body.stui-next .stui-workspace-links { margin: 2px 0 5px; }
+body.stui-next .studio-command-pulse {
+  margin: 5px 0 2px;
+  padding: 17px 19px 13px;
+  border: 1px solid rgba(200,168,120,.24);
+  border-radius: 10px;
+  background: linear-gradient(115deg, rgba(37,35,29,.72), rgba(19,26,32,.96) 54%);
+}
+body.stui-next .studio-command-pulse .pulse-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid rgba(200,168,120,.15);
+}
+body.stui-next .studio-command-pulse .pulse-head b {
+  display: block;
+  margin-top: 3px;
+  color: #e8e2d5;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -.02em;
+}
+body.stui-next .studio-command-pulse .pulse-date {
+  color: #a9b4ba;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+body.stui-next .studio-command-pulse .pulse-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  padding: 13px 0 9px;
+}
+body.stui-next .studio-command-pulse .pulse-stat {
+  display: grid;
+  gap: 5px;
+  padding: 3px 14px;
+  border-right: 1px solid var(--stui-line-soft);
+}
+body.stui-next .studio-command-pulse .pulse-stat:first-child { padding-left: 0; }
+body.stui-next .studio-command-pulse .pulse-stat:last-child { padding-right: 0; border-right: 0; }
+body.stui-next .studio-command-pulse .pulse-stat span {
+  color: #84929d;
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: .09em;
+}
+body.stui-next .studio-command-pulse .pulse-stat b {
+  color: #eeeae1;
+  font-size: 22px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+body.stui-next .studio-command-pulse .pulse-stat small { color: #8997a0; font-size: 9px; }
+body.stui-next .studio-command-pulse .pulse-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--stui-line-soft);
+  color: #9aa6ad;
+  font-size: 9px;
+}
+body.stui-next .stui-section-label { margin-top: 7px; }
+@media (max-width: 760px) {
+  body.stui-next .studio-command-pulse { padding: 13px; }
+  body.stui-next .studio-command-pulse .pulse-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 12px; }
+  body.stui-next .studio-command-pulse .pulse-stat:nth-child(2) { border-right: 0; }
+  body.stui-next .studio-command-pulse .pulse-stat:nth-child(3) { padding-left: 0; }
+  body.stui-next .studio-command-pulse .pulse-foot { align-items: flex-start; flex-direction: column; }
+}
