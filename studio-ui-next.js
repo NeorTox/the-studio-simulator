@@ -121,6 +121,34 @@
 
   const pageNames = new Map();
   buttons.forEach((button, id) => pageNames.set(id, button.textContent.trim().replace(/\s+/g, ' ')));
+
+  const groupTitles = new Map(groups.map(group => [group.key, group.title]));
+  $('.page', content).forEach(page => {
+    const id = page.id.replace(/^page-/, '');
+    const groupKey = groupFor.get(id) || 'advanced';
+    const routes = (groups.find(group => group.key === groupKey)?.routes || [])
+      .filter(route => buttons.has(route) && $('#page-' + route));
+    if (id === 'overview' || routes.length < 2 || $('.stui-section-nav', page)) return;
+    const hero = $('.hero', page);
+    if (!hero) return;
+    const sectionNav = document.createElement('nav');
+    sectionNav.className = 'stui-section-nav';
+    sectionNav.setAttribute('aria-label', (groupTitles.get(groupKey) || 'Workspace') + ' workspaces');
+    const label = document.createElement('span');
+    label.className = 'stui-section-nav-label';
+    label.textContent = groupTitles.get(groupKey) || 'Workspace';
+    sectionNav.append(label);
+    routes.forEach(route => {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'stui-section-nav-item';
+      item.dataset.route = route;
+      item.textContent = pageNames.get(route) || route;
+      item.addEventListener('click', () => window.nav(route));
+      sectionNav.append(item);
+    });
+    hero.insertAdjacentElement('afterend', sectionNav);
+  });
   const originalNav = window.nav;
   if (typeof originalNav === 'function') {
     window.nav = function (id) {
@@ -143,6 +171,12 @@
       else button.removeAttribute('aria-current');
     });
     const label = pageNames.get(id) || id;
+    $('.stui-section-nav-item').forEach(item => {
+      const active = item.dataset.route === id;
+      item.classList.toggle('active', active);
+      if (active) item.setAttribute('aria-current', 'page');
+      else item.removeAttribute('aria-current');
+    });
     const crumb = $('#crumb');
     if (crumb) crumb.textContent = label.toUpperCase();
   }
