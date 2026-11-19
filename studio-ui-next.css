@@ -1477,7 +1477,7 @@ body.stui-next {
   font-family:Inter,"Segoe UI",system-ui,sans-serif;
   letter-spacing:.008em;
 }
-body.stui-next::before {
+body.stui-next::after {
   content:"";
   position:fixed;
   inset:0;
@@ -2280,7 +2280,7 @@ body.stui-next textarea:focus-visible {
   body.stui-next .stui-workspace-links {grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:850px) and (orientation:landscape) {
-  body.stui-next .shell {display:grid;grid-template-columns:184px minmax(0,1fr)}
+  body.stui-next .shell {display:grid;grid-template-columns:minmax(0,1fr)}
   body.stui-next .side {
     position:fixed!important;inset:0 auto 0 0;
     display:flex!important;width:184px;height:100dvh;min-height:0;
@@ -2305,7 +2305,7 @@ body.stui-next textarea:focus-visible {
   body.stui-next .stui-nav-item span {width:20px!important;font-size:12px}
   body.stui-next .sidefoot,
   body.stui-next .stui-side-note {display:block!important;margin-top:4px;padding:6px;font-size:6px}
-  body.stui-next .main {grid-column:2;margin-left:184px;min-height:100dvh;padding-bottom:0}
+  body.stui-next .main {grid-column:1;margin-left:184px;min-height:100dvh;padding-bottom:0}
   body.stui-next .top {height:48px;min-height:48px;padding:0 12px}
   body.stui-next .crumb {font-size:7px}
   body.stui-next .pill {min-height:21px;padding:4px 6px;font-size:6px}
@@ -2346,7 +2346,8 @@ body.stui-next textarea:focus-visible {
 
 /* Campaign HUD — the persistent status rail that anchors the game world. */
 body.stui-next .stui-game-ribbon {
-  position:relative;
+  position:sticky;
+  top:66px;
   z-index:4;
   display:grid;
   grid-template-columns:minmax(180px,1.1fr) minmax(0,3fr) auto;
@@ -2517,6 +2518,7 @@ body.stui-next .stui-workspace-index::before {
 }
 @media(max-width:850px) and (orientation:landscape) {
   body.stui-next .stui-game-ribbon {
+    top:48px;
     grid-template-columns:minmax(110px,.85fr) minmax(0,2.5fr) auto;
     min-height:49px;
   }
@@ -2537,7 +2539,7 @@ body.stui-next .stui-workspace-index::before {
   body.stui-next .stui-workspace-index {margin-bottom:4px;font-size:5px}
 }
 @media(max-width:620px) {
-  body.stui-next .stui-game-ribbon {grid-template-columns:minmax(0,1fr) auto}
+  body.stui-next .stui-game-ribbon {top:0;grid-template-columns:minmax(0,1fr) auto}
   body.stui-next .stui-game-identity {grid-column:1/2}
   body.stui-next .stui-game-resources {grid-column:1/-1;grid-row:2}
   body.stui-next .stui-game-clock {grid-column:2;grid-row:1}
