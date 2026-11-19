@@ -894,3 +894,206 @@ body.stui-next textarea:focus-visible {
   body.stui-next .page.active {animation:none}
   body.stui-next * {scroll-behavior:auto!important;transition:none!important}
 }
+
+
+/* Campaign HUD — the persistent status rail that anchors the game world. */
+body.stui-next .stui-game-ribbon {
+  position:relative;
+  z-index:4;
+  display:grid;
+  grid-template-columns:minmax(180px,1.1fr) minmax(0,3fr) auto;
+  align-items:stretch;
+  min-height:69px;
+  border-bottom:1px solid #344d63;
+  background:linear-gradient(90deg,#14283a,#0d1b29 58%,#101b27);
+  box-shadow:0 8px 20px rgba(0,0,0,.2);
+}
+body.stui-next .stui-game-identity {
+  display:flex;
+  min-width:0;
+  flex-direction:column;
+  justify-content:center;
+  padding:9px 18px 9px 24px;
+  border-right:1px solid #2e455a;
+}
+body.stui-next .stui-game-overline {
+  color:#d1ad72;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.2em;
+}
+body.stui-next .stui-game-identity strong {
+  overflow:hidden;
+  color:#f4f2e9;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.07em;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+body.stui-next .stui-game-identity small {
+  overflow:hidden;
+  margin-top:3px;
+  color:#839db3;
+  font-size:8px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+body.stui-next .stui-game-resources {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  min-width:0;
+}
+body.stui-next .stui-hud-stat {
+  display:flex;
+  min-width:0;
+  flex-direction:column;
+  justify-content:center;
+  gap:5px;
+  padding:8px 16px;
+  border-right:1px solid rgba(116,151,178,.17);
+}
+body.stui-next .stui-hud-stat span {
+  color:#7f9bb3;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.16em;
+}
+body.stui-next .stui-hud-stat strong {
+  overflow:hidden;
+  color:#eff5fa;
+  font-size:12px;
+  font-weight:900;
+  font-variant-numeric:tabular-nums;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+body.stui-next .stui-hud-stat:first-child strong {color:#e8c17c}
+body.stui-next .stui-game-clock {
+  display:flex;
+  min-width:110px;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:8px 14px;
+  color:#a6bacb;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.14em;
+  white-space:nowrap;
+}
+body.stui-next .stui-game-clock .stui-live-dot {background:#9babb9;box-shadow:none}
+body.stui-next .stui-game-clock.is-running .stui-live-dot {
+  background:#74dbb4;
+  box-shadow:0 0 10px rgba(116,219,180,.8);
+  animation:stui-pulse 1.4s infinite;
+}
+@keyframes stui-pulse {50%{opacity:.38;box-shadow:0 0 2px rgba(116,219,180,.25)}}
+body.stui-next .stui-command-brief {
+  display:flex;
+  align-items:center;
+  gap:13px;
+  min-height:55px;
+  margin:0 0 13px;
+  padding:9px 15px;
+  border:1px solid #3c5367;
+  border-left:3px solid #cba469;
+  border-radius:2px;
+  background:linear-gradient(100deg,rgba(34,52,68,.88),rgba(14,27,40,.92));
+}
+body.stui-next .stui-command-brief-mark {
+  color:#e1b875;
+  font-size:23px;
+  text-shadow:0 0 18px rgba(225,184,117,.3);
+}
+body.stui-next .stui-command-brief b {
+  color:#dfbd83;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.17em;
+}
+body.stui-next .stui-command-brief p {
+  margin:3px 0 0;
+  color:#a1b4c5;
+  font-size:8px;
+  line-height:1.4;
+}
+body.stui-next .stui-command-brief-tag {
+  margin-left:auto;
+  padding:6px 8px;
+  border:1px solid #3b5a6d;
+  color:#82acbb;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.15em;
+  white-space:nowrap;
+}
+body.stui-next .stui-time-control-label {
+  flex:0 0 100%;
+  margin:0 0 1px 2px;
+  color:#d6b477;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.19em;
+}
+body.stui-next .stui-sim-button {
+  border-color:#51677b;
+  background:linear-gradient(180deg,#21384c,#142638);
+  color:#d5e3ed;
+}
+body.stui-next .stui-sim-button:first-of-type {
+  border-color:#9a7c50;
+  background:linear-gradient(110deg,#76562f,#293e50);
+  color:#fff0d0;
+}
+body.stui-next .stui-workspace-index {
+  display:block;
+  margin:0 0 8px;
+  color:#7f99b0;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.2em;
+}
+body.stui-next .stui-workspace-index::before {
+  content:"";
+  display:inline-block;
+  width:18px;
+  height:1px;
+  margin:0 8px 2px 0;
+  background:#bd995f;
+}
+@media(max-width:1150px) {
+  body.stui-next .stui-game-ribbon {grid-template-columns:minmax(140px,.9fr) minmax(0,2.3fr) auto}
+  body.stui-next .stui-game-identity {padding-left:15px;padding-right:12px}
+  body.stui-next .stui-hud-stat {padding:8px 10px}
+}
+@media(max-width:850px) and (orientation:landscape) {
+  body.stui-next .stui-game-ribbon {
+    grid-template-columns:minmax(110px,.85fr) minmax(0,2.5fr) auto;
+    min-height:49px;
+  }
+  body.stui-next .stui-game-identity {padding:5px 8px}
+  body.stui-next .stui-game-overline {font-size:5px}
+  body.stui-next .stui-game-identity strong {font-size:8px}
+  body.stui-next .stui-game-identity small {font-size:6px}
+  body.stui-next .stui-hud-stat {gap:2px;padding:4px 6px}
+  body.stui-next .stui-hud-stat span {font-size:5px}
+  body.stui-next .stui-hud-stat strong {font-size:8px}
+  body.stui-next .stui-game-clock {min-width:75px;padding:4px 6px;font-size:5px}
+  body.stui-next .stui-command-brief {min-height:42px;margin-bottom:9px;padding:6px 10px}
+  body.stui-next .stui-command-brief-mark {font-size:17px}
+  body.stui-next .stui-command-brief b {font-size:6px}
+  body.stui-next .stui-command-brief p {font-size:6px}
+  body.stui-next .stui-command-brief-tag {font-size:5px;padding:4px}
+  body.stui-next .stui-time-control-label {font-size:5px}
+  body.stui-next .stui-workspace-index {margin-bottom:4px;font-size:5px}
+}
+@media(max-width:620px) {
+  body.stui-next .stui-game-ribbon {grid-template-columns:minmax(0,1fr) auto}
+  body.stui-next .stui-game-identity {grid-column:1/2}
+  body.stui-next .stui-game-resources {grid-column:1/-1;grid-row:2}
+  body.stui-next .stui-game-clock {grid-column:2;grid-row:1}
+  body.stui-next .stui-hud-stat {padding:7px 9px}
+  body.stui-next .stui-hud-stat strong {font-size:10px}
+  body.stui-next .stui-command-brief-tag {display:none}
+}
