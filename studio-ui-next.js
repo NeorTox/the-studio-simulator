@@ -609,6 +609,112 @@
     }
   }
 
+  // Productions workspace: add live slate counts and search/stage filters
+  // around the legacy project renderer. Project records and actions stay owned
+  // by the existing production engine.
+  const productionPage = $('#page-projects');
+  if (productionPage) {
+    productionPage.classList.add('stui-production-page');
+    const productionHero = $('.hero', productionPage);
+    const projectList = $('#projectlist', productionPage);
+    if (productionHero && projectList && !$('.stui-production-overview', productionPage)) {
+      const overview = document.createElement('section');
+      overview.className = 'stui-production-overview';
+      overview.setAttribute('aria-label', 'Production slate overview');
+      overview.innerHTML = `
+        <div class="stui-production-overview-head">
+          <div><span class="stui-production-kicker">DEVELOPMENT & PRODUCTION</span><h2>Production slate</h2><p>Track projects through their existing development and release stages.</p></div>
+          <span id="stui-production-count-label" class="stui-production-count-label">No campaign loaded</span>
+        </div>
+        <div class="stui-production-metrics">
+          <div><span>Projects</span><strong id="stui-production-total">—</strong></div>
+          <div><span>Concept & development</span><strong id="stui-production-development">—</strong></div>
+          <div><span>Principal photography</span><strong id="stui-production-shooting">—</strong></div>
+          <div><span>Released</span><strong id="stui-production-released">—</strong></div>
+        </div>`;
+      productionHero.insertAdjacentElement('afterend', overview);
+
+      const toolbar = document.createElement('div');
+      toolbar.className = 'stui-production-toolbar';
+      toolbar.innerHTML = `
+        <label class="stui-production-search"><span aria-hidden="true">⌕</span><input id="stui-production-search" type="search" placeholder="Search project, format or genre" aria-label="Search production slate"></label>
+        <label class="stui-production-filter"><span>STAGE</span><select id="stui-production-stage" aria-label="Filter production slate by stage">
+          <option value="">All stages</option>
+          <option value="development">Concept & development</option>
+          <option value="preproduction">Pre-production</option>
+          <option value="production">Principal photography</option>
+          <option value="postproduction">Post-production</option>
+          <option value="marketing">Marketing & distribution</option>
+          <option value="released">Released</option>
+        </select></label>
+        <span id="stui-production-result-count" class="stui-production-result-count">0 projects</span>`;
+      overview.insertAdjacentElement('afterend', toolbar);
+
+      const filterMessage = document.createElement('p');
+      filterMessage.className = 'stui-production-no-match';
+      filterMessage.textContent = 'No projects match the current search and stage filter.';
+      filterMessage.hidden = true;
+      toolbar.insertAdjacentElement('afterend', filterMessage);
+
+      const searchInput = $('#stui-production-search', toolbar);
+      const stageSelect = $('#stui-production-stage', toolbar);
+      const refreshProductionSlate = () => {
+        const entries = Array.from(projectList.children).filter(row =>
+          row instanceof Element && !!row.querySelector('.progress') &&
+          !!row.querySelector('.rowitem .tag.gold')
+        );
+        const noCampaign = projectList.textContent.includes('Create a campaign first.');
+        const groups = { development: 0, preproduction: 0, production: 0, postproduction: 0, marketing: 0, released: 0 };
+        entries.forEach(row => {
+          const stage = row.querySelector('.rowitem .tag.gold')?.textContent.trim() || '';
+          const group = ({
+            'Concept': 'development',
+            'Development': 'development',
+            'Pre-production': 'preproduction',
+            'Principal photography': 'production',
+            'Post-production': 'postproduction',
+            'Marketing & distribution': 'marketing',
+            'Released': 'released'
+          })[stage] || 'other';
+          row.classList.add('stui-production-entry');
+          row.dataset.stuiStage = group;
+          row.dataset.stuiSearch = row.textContent.toLowerCase();
+          if (Object.prototype.hasOwnProperty.call(groups, group)) groups[group]++;
+        });
+        const query = (searchInput?.value || '').trim().toLowerCase();
+        const selectedStage = stageSelect?.value || '';
+        let visible = 0;
+        entries.forEach(row => {
+          const searchMatch = !query || (row.dataset.stuiSearch || '').includes(query);
+          const stageMatch = !selectedStage || row.dataset.stuiStage === selectedStage;
+          row.hidden = !(searchMatch && stageMatch);
+          if (!row.hidden) visible++;
+        });
+        const setMetric = (id, value) => {
+          const node = $('#' + id, productionPage);
+          const next = noCampaign ? '—' : String(value);
+          if (node && node.textContent !== next) node.textContent = next;
+        };
+        setMetric('stui-production-total', entries.length);
+        setMetric('stui-production-development', groups.development);
+        setMetric('stui-production-shooting', groups.production);
+        setMetric('stui-production-released', groups.released);
+        const label = noCampaign
+          ? 'No campaign loaded'
+          : visible === entries.length ? entries.length + ' projects in slate' : visible + ' of ' + entries.length + ' projects shown';
+        const labelNode = $('#stui-production-count-label', productionPage);
+        const countNode = $('#stui-production-result-count', productionPage);
+        if (labelNode && labelNode.textContent !== label) labelNode.textContent = label;
+        if (countNode) countNode.textContent = noCampaign ? 'No campaign' : visible + ' / ' + entries.length + ' projects';
+        filterMessage.hidden = !query && !selectedStage || visible > 0 || entries.length === 0;
+      };
+      searchInput.addEventListener('input', refreshProductionSlate);
+      stageSelect.addEventListener('change', refreshProductionSlate);
+      new MutationObserver(refreshProductionSlate).observe(projectList, { childList: true, subtree: true });
+      refreshProductionSlate();
+    }
+  }
+
   const refreshPresentation = () => { if (typeof window.render === 'function') window.render(); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', refreshPresentation, { once: true });
   else refreshPresentation();
