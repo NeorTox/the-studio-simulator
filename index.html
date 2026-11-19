@@ -594,6 +594,7 @@ async function advanceInChunks(total,persistEvery=30){
  if(wasRunning){clock.running=false;clock.lastWallMs=Date.now();saveClock()}
  try{
   const testAcceleration=window.__STUDIO_TEST_ACCELERATION===true;
+  if(testAcceleration)console.info('[STUDIO_BATCH_START]',JSON.stringify({date:active.date,day:active.day,total,testAcceleration,clockRunning:!!clock?.running,clockFrozen:!!active.clockFrozen}));
   while(completed<total){
    const before=active.date,startedAt=Date.now();
    // Test-only acceleration batches 30 consecutive days through the exact same
@@ -606,7 +607,9 @@ async function advanceInChunks(total,persistEvery=30){
    let elapsed=0;
    for(let dayIndex=0;dayIndex<requested;dayIndex++){
     const dayBefore=active.date;
+    if(testAcceleration)console.info('[STUDIO_BATCH_DAY_BEGIN]',JSON.stringify({date:dayBefore,day:active.day,completed,total,dayIndex}));
     advance(1,{silent:true,quiet:true,deferPersist:true});
+    if(testAcceleration)console.info('[STUDIO_BATCH_DAY_END]',JSON.stringify({before:dayBefore,after:active.date,day:active.day,completed,total,dayIndex}));
     const dayElapsed=Math.max(0,Math.round((Date.parse(active.date+'T00:00:00Z')-Date.parse(dayBefore+'T00:00:00Z'))/86400000));
     elapsed+=dayElapsed;
     if(dayElapsed<1)break;
