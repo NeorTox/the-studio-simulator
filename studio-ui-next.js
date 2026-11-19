@@ -94,7 +94,8 @@
   newCampaign.className = 'stui-create-campaign';
   newCampaign.innerHTML = '<span aria-hidden="true">＋</span><span>New campaign</span>';
   newCampaign.addEventListener('click', () => {
-    if (typeof window.newCampaignForm === 'function') window.newCampaignForm();
+    const createAction = $('#page-campaign .hero .btn.primary');
+    if (createAction) createAction.click();
     else if (typeof window.nav === 'function') window.nav('campaign');
   });
   side.insertBefore(newCampaign, oldFoot || null);
