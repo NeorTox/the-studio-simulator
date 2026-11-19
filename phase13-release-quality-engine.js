@@ -50,15 +50,16 @@ function syncAudit(){
   add(tests,'Financial empire and portfolio integrity',!!finance&&finance.failed===0,auditDetail(finance));
   // Verify real campaign task execution; synthetic scheduler tests alone cannot prove integration.
   const autonomous=window.StudioAutonomy?.metrics?.(),autonomyState=active.autonomy||{},latestTick=autonomyState.history?.[0];
-  add(tests,'Six autonomous simulation tasks registered',!!autonomous&&autonomous.registeredTasks===6,'Expected six NPC and global-media tasks; found '+String(autonomous?.registeredTasks??'unavailable')+'.');
-  add(tests,'Autonomous scheduler completed the campaign date',!!autonomous&&autonomous.lastTickDate===active.date&&latestTick?.date===active.date&&latestTick.tasksRun===6&&latestTick.failed===0,'Campaign '+active.date+' · tick '+String(autonomous?.lastTickDate||'missing')+' · '+String(latestTick?.tasksRun??0)+' tasks run · '+String(latestTick?.failed??'unknown')+' failures.');
+  add(tests,'Seven autonomous world tasks registered',!!autonomous&&autonomous.registeredTasks===7,'Expected six NPC/media tasks plus regional environmental risk; found '+String(autonomous?.registeredTasks??'unavailable')+'.');
+  add(tests,'Autonomous scheduler completed the campaign date',!!autonomous&&autonomous.lastTickDate===active.date&&latestTick?.date===active.date&&latestTick.tasksRun===7&&latestTick.failed===0,'Campaign '+active.date+' · tick '+String(autonomous?.lastTickDate||'missing')+' · '+String(latestTick?.tasksRun??0)+' tasks run · '+String(latestTick?.failed??'unknown')+' failures.');
   const autonomousAudits=[
    ['NPC personal agency',window.StudioNPCAutonomy?.audit?.()],
    ['Universal NPC decisions and consequences',window.StudioNPCDecisionConsequences?.audit?.()],
    ['NPC social networks',window.StudioSocialNetwork?.audit?.()],
    ['NPC memory and reputation',window.StudioNPCMemory?.audit?.()],
    ['NPC digital society',window.StudioDigitalSociety?.audit?.()],
-   ['Global media and information',window.StudioMediaEcosystem?.audit?.()]
+   ['Global media and information',window.StudioMediaEcosystem?.audit?.()],
+   ['Regional environmental hazards',window.StudioWorldRisk?.audit?.()]
   ];
   autonomousAudits.forEach(([name,result])=>add(tests,name+' subsystem integrity',!!result&&result.failed===0,auditDetail(result)));
 
