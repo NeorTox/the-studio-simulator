@@ -27,15 +27,17 @@ jobs:
           python3 - <<'PY'
           import pathlib, re, subprocess
           html = pathlib.Path("index.html").read_text()
-          refs = re.findall(r'<script[^>]+src=["\'](\./[^"\']+\.js)["\']', html)
+          refs = re.findall(r'<script[^>]+src=["\\'](\\./[^"\\']+\\.js)["\\']', html)
+          styles = re.findall(r'<link[^>]+href=["\\'](\\./[^"\\']+\\.css)["\\']', html)
           if not refs:
               raise SystemExit("No local application engines were found in index.html")
-          missing = [ref for ref in refs if not pathlib.Path(ref[2:]).is_file()]
+          assets = list(dict.fromkeys(refs + styles))
+          missing = [ref for ref in assets if not pathlib.Path(ref[2:]).is_file()]
           if missing:
               raise SystemExit("Missing referenced application assets: " + ", ".join(missing))
           for ref in refs:
               subprocess.run(["node", "--check", ref[2:]], check=True)
-          print(f"Validated {len(refs)} local application engines.")
+          print(f"Validated {len(refs)} JavaScript engines and {len(styles)} stylesheets.")
           PY
           node --check phase13-release-quality-qa.js
 
@@ -47,20 +49,22 @@ jobs:
           python3 - <<'PY'
           import pathlib, re, shutil
           html = pathlib.Path("index.html").read_text()
-          refs = re.findall(r'<script[^>]+src=["\'](\./[^"\']+\.js)["\']', html)
-          for ref in refs:
+          refs = re.findall(r'<script[^>]+src=["\\'](\\./[^"\\']+\\.js)["\\']', html)
+          styles = re.findall(r'<link[^>]+href=["\\'](\\./[^"\\']+\\.css)["\\']', html)
+          assets = list(dict.fromkeys(refs + styles))
+          for ref in assets:
               source = pathlib.Path(ref[2:])
               if not source.is_file():
-                  raise SystemExit(f"Missing local engine: {source}")
+                  raise SystemExit(f"Missing local application asset: {source}")
               shutil.copy2(source, pathlib.Path("dist") / source.name)
           required = ["index.html", "manifest.webmanifest", "icon.svg", "sw.js"]
           missing = [name for name in required if not (pathlib.Path("dist") / name).is_file()]
           if missing:
               raise SystemExit("Incomplete release artifact: " + ", ".join(missing))
-          for ref in refs:
+          for ref in assets:
               if not (pathlib.Path("dist") / pathlib.Path(ref).name).is_file():
-                  raise SystemExit("Referenced engine missing from artifact: " + ref)
-          print(f"Built {len(refs)} engine assets plus the PWA shell.")
+                  raise SystemExit("Referenced application asset missing from artifact: " + ref)
+          print(f"Built {len(refs)} JavaScript engines and {len(styles)} stylesheets plus the PWA shell.")
           PY
 
       - name: Configure Pages
