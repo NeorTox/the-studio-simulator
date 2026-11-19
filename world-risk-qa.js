@@ -16,6 +16,7 @@ assert.match(js,/function forecast/);
 assert.match(js,/function mitigate/);
 assert.match(js,/function regionalImpact/);
 assert.match(js,/function applyHazardConsequences/);
+assert(!js.includes('\\\\d{4}-\\\\d{2}-\\\\d{2}'),'Recovery-date validation must use digit classes, not literal backslashes');
 assert.match(js,/applyHazardConsequences\(hazard,ctx\)/,'New hazards must publish regional impact on their creation day');
 assert.match(js,/function npcBelongsToRegion/);
 assert.match(js,/phase1\?\.regionFor/);
