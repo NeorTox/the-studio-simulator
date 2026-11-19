@@ -26,6 +26,7 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('body').evaluate(el => el.classList.contains('stui-next')), true, 'Preview flag activates the redesigned shell');
     assert.equal(await page.locator('.stui-game-mode').innerText(), 'LIVE SIMULATION');
     assert.equal(await page.locator('.stui-nav-group').count() >= 5, true, 'Primary navigation is grouped by player intent');
+    assert.equal(await page.locator('.stui-create-campaign').evaluate(el => el.nextElementSibling === document.querySelector('.stui-nav-container')), true, 'Campaign launch is positioned above navigation');
     for (const group of ['home', 'life', 'world', 'studio', 'empire', 'advanced']) {
       assert.equal(await page.locator('[data-nav-group="' + group + '"]').count(), 1, 'Navigation group exists: ' + group);
     }
