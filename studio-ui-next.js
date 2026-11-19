@@ -4,13 +4,14 @@
  */
 (() => {
   'use strict';
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('ui') !== 'next') return;
+
   const stylesheet = document.createElement('link');
   stylesheet.rel = 'stylesheet';
   stylesheet.href = './studio-ui-next.css';
   document.head.append(stylesheet);
 
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('ui') !== 'next') return;
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
