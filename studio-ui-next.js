@@ -151,8 +151,13 @@
   if (typeof originalNav === 'function') {
     window.nav = function (id) {
       const result = originalNav.apply(this, arguments);
-      if (result) {
-        updateActiveRoute(id);
+      // The legacy navigator updates the DOM but does not return a success value.
+      // Derive the selected route from the resulting active page instead of
+      // treating a falsy return as a failed navigation.
+      const activePage = $('.page.active');
+      const activeId = activePage?.id?.replace(/^page-/, '') || id;
+      if (activeId) {
+        updateActiveRoute(activeId);
         if (window.matchMedia('(max-width: 900px)').matches) {
           $('.content')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
         }
