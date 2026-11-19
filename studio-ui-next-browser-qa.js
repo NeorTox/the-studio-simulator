@@ -94,7 +94,12 @@ const assert = require('node:assert/strict');
     for (const id of routeIds) {
       await page.locator('.nav button[data-page="' + id + '"]').click();
       assert.equal(await page.locator('#page-' + id).evaluate(el => el.classList.contains('active')), true, 'Route activates: ' + id);
-      assert.equal(await page.locator('.nav button[data-page="' + id + '"]').getAttribute('aria-current'), 'page');
+      assert.equal(
+        await page.locator('.nav button[data-page="' + id + '"]').getAttribute('aria-current'),
+        'page',
+        'Active navigation accessibility state for route "' + id + '" (active page: ' +
+          await page.locator('.page.active').getAttribute('id') + ')'
+      );
     }
     assert.deepEqual(errors, [], 'No browser errors in preview: ' + errors.join('; '));
 
