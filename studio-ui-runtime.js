@@ -243,16 +243,25 @@
         productionObserver.observe(projects,{childList:true,subtree:true});
       }
     }
-        const talent = $('#page-talent');
-    if (talent) {
-      const register = talent.querySelector(':scope > .grid.cols');
-      const contracts = talent.querySelector(':scope > .card:has(#contractlist)');
-      installWorkspaceTabs('page-talent',[
-        {key:'roster',label:'Roster & auditions',nodes:[register]},
-        {key:'contracts',label:'Casting contracts',nodes:[contracts]}
+        const people = $('#page-people');
+    if (people) {
+      const roster = $('#people-roster-workspace');
+      const workforce = $('#people-workforce-workspace');
+      installWorkspaceTabs('page-people',[
+        {key:'roster',label:'Team roster',nodes:[roster]},
+        {key:'workforce',label:'Workforce insights',nodes:[workforce]}
       ],':scope > .hero');
     }
-    const company = $('#page-company');
+    const talent = $('#page-talent');
+    if (talent) {
+      const roster = $('#talent-roster-workspace');
+      const contracts = $('#talent-contract-workspace');
+      installWorkspaceTabs('page-talent',[
+        {key:'roster',label:'Roster & auditions',nodes:[roster]},
+        {key:'contracts',label:'Casting agreements',nodes:[contracts]}
+      ],':scope > .talent-metric-rail');
+    }
+        const company = $('#page-company');
     if (company) {
       const grid = company.querySelector(':scope > .grid.cols');
       const profile = grid?.querySelector(':scope > .card:has(#companydetails)');

@@ -290,12 +290,11 @@
   }
   function renderWorkforceChart() {
     const page = $('page-people');
-    if (!page) return;
-    const hero = page.querySelector(':scope > .hero');
-    if (!hero) return;
-    const card = ensureCard(page,'studio-people-workforce-chart','Workforce & payroll by department','Active employee records grouped by department. Payroll is the sum of recorded monthly salaries.','EMPLOYEE REGISTER');
+    const parent = $('people-workforce-chart-slot') || page;
+    if (!page || !parent) return;
+    const card = ensureCard(parent,'studio-people-workforce-chart','Workforce & payroll by department','Active employee records grouped by department. Payroll is the sum of recorded monthly salaries.','EMPLOYEE REGISTER');
     if (!card) return;
-    hero.insertAdjacentElement('afterend',card);
+    parent.appendChild(card);
     if (!page.classList.contains('active')) return;
     const employees = Array.isArray(active?.employees) ? active.employees.filter(e=>e.status!=='Terminated'&&(!(e.endDate||e.contractEndDate)||(e.endDate||e.contractEndDate)>=active.date)) : [];
     if (!employees.length) {
@@ -318,6 +317,33 @@
       xAxis:{type:'value',axisLabel:{color:'#a3b0ab',fontSize:9},splitLine:{lineStyle:{color:'rgba(137,157,155,.13)',type:'dashed'}}},
       yAxis:{type:'category',data:rows.map(row=>row.name),axisLabel:{color:'#c0cac4',fontSize:9,overflow:'truncate',width:100},axisLine:{show:false},axisTick:{show:false}},
       series:[{type:'bar',data:rows.map(row=>row.headcount),barMaxWidth:20,itemStyle:{color:'#8eaa9a',borderRadius:[0,4,4,0]},label:{show:true,position:'right',color:'#d7d9cf',fontSize:9}}]
+    });
+  }
+  function renderTalentRosterChart() {
+    const page = $('page-talent');
+    const parent = $('talent-roster-chart-slot');
+    if (!page || !parent) return;
+    const card = ensureCard(parent,'studio-talent-roster-chart','Performer capability profile','Acting skill and star power for performers currently available or under contract.','ACTIVE ROSTER');
+    if (!card) return;
+    parent.appendChild(card);
+    if (!page.classList.contains('active')) return;
+    const roster = Array.isArray(active?.talent) ? active.talent.filter(t=>t && (t.status==='Available'||t.status==='Contracted')) : [];
+    if (!roster.length) {
+      showEmpty('studio-talent-roster-chart','Promote audition applicants into the roster to compare acting skill and star power.');
+      return;
+    }
+    const rows = roster.slice().sort((a,b)=>number(b.starPower)-number(a.starPower)).slice(0,10);
+    mount('studio-talent-roster-chart',{
+      animationDuration:420,
+      legend:{top:0,textStyle:{color:'#a8b4b0',fontSize:9}},
+      grid:{left:112,right:24,top:34,bottom:18},
+      tooltip:{trigger:'axis',axisPointer:{type:'shadow'},backgroundColor:'#111a1f',borderColor:'#6f624e',textStyle:{color:'#eee9dc'},formatter:items=>{const row=rows[items[0].dataIndex];return row.name+'<br>Acting skill: <b>'+number(row.actingSkill)+'/100</b><br>Star power: <b>'+number(row.starPower)+'/100</b><br>Expected fee: '+number(row.expectedFee).toLocaleString();}},
+      xAxis:{type:'value',min:0,max:100,axisLabel:{color:'#a3b0ab',fontSize:9},splitLine:{lineStyle:{color:'rgba(137,157,155,.13)',type:'dashed'}}},
+      yAxis:{type:'category',data:rows.map(row=>String(row.name||'Performer')),axisLabel:{color:'#c0cac4',fontSize:9,overflow:'truncate',width:102},axisLine:{show:false},axisTick:{show:false}},
+      series:[
+        {name:'Acting skill',type:'bar',data:rows.map(row=>number(row.actingSkill)),barMaxWidth:16,itemStyle:{color:'#8eaa9a',borderRadius:[0,4,4,0]}},
+        {name:'Star power',type:'bar',data:rows.map(row=>number(row.starPower)),barMaxWidth:16,itemStyle:{color:'#b99a6d',borderRadius:[0,4,4,0]}}
+      ]
     });
   }
   function renderGenreDemandChart() {
@@ -440,6 +466,7 @@
     renderRegionalEconomyChart();
     renderPopulationChart();
     renderWorkforceChart();
+    renderTalentRosterChart();
     renderGenreDemandChart();
     renderMediaCoverageChart();
     renderDistributionChart();

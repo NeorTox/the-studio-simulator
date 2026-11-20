@@ -270,3 +270,29 @@
   .studio-workspace-hero .actions{grid-template-columns:minmax(0,1fr)}
   .finance-workspace-tag{max-width:100%}
 }
+
+
+/* People and Talent: operational workspaces for staff and casting. */
+.people-workspace,.talent-workspace{display:grid;gap:13px;min-width:0}
+.people-workspace-heading,.talent-workspace-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:6px 2px 13px;border-bottom:1px solid rgba(151,170,162,.16)}
+.people-workspace-heading .eyebrow,.talent-workspace-heading .eyebrow{color:#c1a477;font-size:8px;font-weight:900;letter-spacing:.14em}
+.people-workspace-heading h2,.talent-workspace-heading h2{margin:5px 0 4px;color:#ecebe3;font-size:clamp(17px,2vw,22px);font-weight:850;letter-spacing:-.025em}
+.people-workspace-heading p,.talent-workspace-heading p{max-width:700px;margin:0;color:#8e9d98;font-size:10px;line-height:1.6}
+.people-workspace>.card,.talent-workspace>.card,.talent-workspace .grid>.card{min-width:0;margin:0!important}
+.people-payroll-indicator{white-space:nowrap}
+.people-workforce-chart-slot,.talent-roster-chart-slot{min-width:0}
+.people-workforce-chart-slot>.studio-chart-card,.talent-roster-chart-slot>.studio-chart-card{margin:0}
+.talent-metric-rail{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}
+.talent-metric-card{min-width:0}
+.talent-metric-card .statvalue{font-size:clamp(17px,2vw,23px)}
+.talent-roster-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.talent-roster-grid>.card{min-width:0}
+@media(max-width:760px){
+  .people-workspace-heading,.talent-workspace-heading{align-items:flex-start;flex-direction:column;gap:8px}
+  .people-payroll-indicator{white-space:normal}
+  .talent-metric-rail{gap:8px}
+  .talent-roster-grid{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:390px){
+  .talent-metric-rail{grid-template-columns:minmax(0,1fr)}
+}
