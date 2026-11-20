@@ -261,6 +261,7 @@
         {key:'profile',label:'Corporate profile',nodes:[profile]},
         {key:'divisions',label:'Divisions & subsidiaries',nodes:[divisions]}
       ],':scope > .hero');
+      if (grid && !grid.children.length) grid.remove();
     }
     const personal = $('#page-personal');
     if (personal) {
@@ -271,6 +272,7 @@
         {key:'assets',label:'Assets & finances',nodes:[assets]},
         {key:'relationships',label:'Relationships & family',nodes:[relationships]}
       ],':scope > .grid.stats');
+      if (grid && !grid.children.length) grid.remove();
     }
     const distribution = $('#page-distribution');
     if (distribution) {
@@ -281,6 +283,7 @@
         {key:'rights',label:'Rights agreements',nodes:[agreements]},
         {key:'settlements',label:'Royalty settlements',nodes:[settlements]}
       ],':scope > .grid.stats');
+      if (grid && !grid.children.length) grid.remove();
     }
     const legal = $('#page-legal');
     if (legal) {
@@ -291,6 +294,7 @@
         {key:'matters',label:'Legal matters',nodes:[register]},
         {key:'insurance',label:'Insurance & risk',nodes:[insurance]}
       ],':scope > .grid.stats');
+      if (grid && !grid.children.length) grid.remove();
     }
     const awards = $('#page-awards');
     if (awards) {
@@ -301,6 +305,7 @@
         {key:'events',label:'Award events',nodes:[events]},
         {key:'submissions',label:'Submissions',nodes:[submissions]}
       ],':scope > .hero');
+      if (grid && !grid.children.length) grid.remove();
     }
     const market = $('#page-market');
     if (market) {
