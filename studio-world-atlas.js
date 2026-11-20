@@ -296,7 +296,21 @@
       const playerCity = currentCity();
       const initial = playerCity && Number.isFinite(playerCity.longitude)
         ? [playerCity.longitude,playerCity.latitude] : [12,20];
-      const style = window.STUDIO_MAP_STYLE_URL || 'https://demotiles.maplibre.org/style.json';
+      const style = window.STUDIO_MAP_STYLE_URL || {
+        version:8,
+        name:'THE STUDIO · Global Atlas',
+        glyphs:'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+        sources:{
+          studioWorld:{type:'vector',url:'https://demotiles.maplibre.org/tiles/tiles.json',attribution:'World outlines · MapLibre demo vector tiles'}
+        },
+        layers:[
+          {id:'studio-ocean',type:'background',paint:{'background-color':'#0b171e'}},
+          {id:'country-fill',type:'fill',source:'studioWorld','source-layer':'countries',paint:{'fill-color':'#17272e','fill-outline-color':'#334c55'}},
+          {id:'country-borders',type:'line',source:'studioWorld','source-layer':'countries',paint:{'line-color':'#49616a','line-width':['interpolate',['linear'],['zoom'],0,.45,4,1,6,1.4],'line-opacity':.78}},
+          {id:'studio-geolines',type:'line',source:'studioWorld','source-layer':'geolines',paint:{'line-color':'#29434d','line-width':.65,'line-opacity':.65,'line-dasharray':[2,3]}},
+          {id:'country-labels',type:'symbol',source:'studioWorld','source-layer':'centroids',layout:{'text-field':['get','NAME'],'text-font':['Open Sans Semibold'],'text-size':['interpolate',['linear'],['zoom'],1,8,3,10,5,12],'text-max-width':8,'text-transform':'uppercase'},paint:{'text-color':'#a9bcb7','text-halo-color':'#102027','text-halo-width':1.2}}
+        ]
+      };
       map = new lib.Map({
         container,
         style,
