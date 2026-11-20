@@ -126,7 +126,9 @@ function render(fundingPct=40){
 }
 function install(){
  const api=root.Phase11Technology;if(!api)return;
- if(typeof api.render==='function'&&!api.render.__researchPortfolioWrapped){const old=api.render;const wrapped=function(...args){const result=old.apply(this,args);render();return result};wrapped.__researchPortfolioWrapped=true;api.render=wrapped;}
+ if(typeof api.render==='function'&&!api.render.__researchPortfolioWrapped){const oldApiRender=api.render;const wrappedApi=function(...args){const result=oldApiRender.apply(this,args);render();return result};wrappedApi.__researchPortfolioWrapped=true;api.render=wrappedApi;}
+ if(typeof root.render==='function'&&!root.render.__researchPortfolioRenderWrapped){const oldPageRender=root.render;const wrappedPage=function(...args){const result=oldPageRender.apply(this,args);render();return result};wrappedPage.__researchPortfolioRenderWrapped=true;root.render=wrappedPage;}
+ if(typeof root.nav==='function'&&!root.nav.__researchPortfolioNavWrapped){const oldNav=root.nav;const wrappedNav=function(...args){const result=oldNav.apply(this,args);render();return result};wrappedNav.__researchPortfolioNavWrapped=true;root.nav=wrappedNav;}
  if(typeof document!=='undefined'){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render);else render();}
 }
 const api=Object.freeze({version:VERSION,analyze,savePlan,startSelected,audit,render});
