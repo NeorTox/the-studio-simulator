@@ -529,7 +529,7 @@
       if (!booking) throw new Error('The travel engine did not retain the booking.');
       const delta = round(item.fare - booking.fare);
       if (delta > 0 && window.Phase3Founder?.record) {
-        window.Phase3Founder.record('Expense',delta,'Travel','Connection and itinerary charges · ' + item.from.name + ' to ' + item.to.name,date,'global-mobility-itinerary');
+        window.Phase3Founder.record('Expense',delta,'Travel','Connection and itinerary charges · ' + item.from.name + ' to ' + item.to.name,(typeof active !== 'undefined' ? active.date : date),'global-mobility-itinerary');
       }
       booking.fare = item.fare;
       booking.distanceKm = item.distanceKm;
