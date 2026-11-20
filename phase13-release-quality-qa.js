@@ -27,7 +27,7 @@ const {chromium}=require('playwright'),assert=require('assert');
  for(const name of ['Universal decision/consequence engine integrity','Regional hazard consequence integrity','Digital-life and telecom integrity','Financial empire and portfolio integrity','Offline cache namespace is versioned'])assert(first.report.tests.some(x=>x.name===name&&x.ok),name+' must be covered by the release gate');
  assert.equal(first.integration.modules.filter(x=>x.status==='connected').length,14,JSON.stringify(first.integration.modules));
  assert.equal(first.integration.failed,0,JSON.stringify(first.integration.tests.filter(x=>!x.ok)));
- await page.getByRole('button',{name:/Release QA/}).click();
+ await page.evaluate(()=>window.nav('releasequality'));
  await page.getByRole('button',{name:/Run release audit/}).click();
  await page.waitForTimeout(150);
  const roundTrip=await page.evaluate(()=>({id:active.id,releaseVersion:active.releaseQuality?.version,stored:active.releaseQuality?.lastAudit?.failed}));
