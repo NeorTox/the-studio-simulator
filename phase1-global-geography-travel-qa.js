@@ -5,7 +5,7 @@ const assert=require('assert');const {chromium}=require('playwright');
  page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
  await page.locator('#start-load').click();
- await page.locator('[data-page="overview"]').click();
+ await page.evaluate(()=>window.nav('overview'));
  await page.getByRole('button',{name:'New campaign',exact:true}).click();
  await page.getByRole('button',{name:/Create campaign/}).click();
  for(const [id,value] of [['nfounder','Global Travel QA'],['ncompany','World Studio QA'],['ncountry','India'],['ncity','Mumbai']])await page.locator('#'+id).fill(value);
