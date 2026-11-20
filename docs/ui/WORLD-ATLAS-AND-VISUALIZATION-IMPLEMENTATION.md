@@ -187,3 +187,12 @@ Founder personal life now has a separate personal balance-sheet workspace and re
 Legal & Risk now separates the legal matter register from insurance policies while retaining the legal exposure, premium and record targets and both creation actions. Awards & Festivals separates era-eligible events from project submissions and keeps the original event, count and submission IDs plus the submission action. Facilities has a dedicated estate-register workspace around the existing facility KPIs, register and add-facility action. IP & Rights separates catalogue ownership from outbound licensing while preserving all four IP/licensing KPIs, both registers and the create/acquire/license actions.
 
 The latest full regression for commit `3ce4b71c93ce7fd2e44ad8139ed17e00d5740173` passed in workflow run 44761671890: 44 successful steps, zero failures, including native desktop/mobile browser QA, all phase browser suites, geography/travel, save/reload and the three-year cross-phase integration stress test.
+
+
+## Calendar and Sandbox workspace pass
+
+Calendar now separates upcoming events, world-clock controls and simulation history. The schedule-event action and the original `eventlist`, `advanceDays`, `historydate` and `calendarhistory` targets remain unchanged; all manual time-advance actions are retained.
+
+Sandbox keeps the cheat command console visible as the primary testing surface and separates achievements from the permanent cheat audit. The `cheatstatus`, `cheatcommand`, `cheatresult`, `achievementcount`, `achievementlist`, `auditcount` and `cheataudit` targets remain in place, as do the existing `runCheat()` and `showCheatHelp()` actions.
+
+Validation on code commit `bc25fe77b3e5230b4fccee134aca50ce49a5f6cc` passed GitHub Actions run 44762388391: 44 successful steps and zero failures. The run covered the native desktop/mobile UI suite and the expanded Calendar, Sandbox, Legal, Awards, Facilities, IP, Company, Founder, People, Talent, Market, Media, Finance and Production workspace assertions, every phase browser suite through Phase 13, the one-year save round-trip, geography/travel and the three-year cross-phase integration stress test.
