@@ -93,7 +93,7 @@
       }},
       xAxis:{type:'category',boundaryGap:false,data:rows.map(row=>row[0]),axisLine:{lineStyle:{color:'#46545a'}},axisLabel:{color:'#97a6a3',fontSize:9,hideOverlap:true},axisTick:{show:false}},
       yAxis:{type:'value',scale:true,axisLabel:{color:'#97a6a3',fontSize:9,formatter},splitLine:{lineStyle:{color:'rgba(137,157,155,.13)',type:'dashed'}}},
-      series:[{name:'Company cash',type:'line',smooth:.28,symbol:'circle',symbolSize:5,data:rows.map(row=>Number(row[1].toFixed(2))),lineStyle:{width:2.6,color:'#c8a779'},itemStyle:{color:'#e5c89d',borderColor:'#172126',borderWidth:2},areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(199,164,117,.27)'},{offset:1,color:'rgba(199,164,117,.015)'}])}}]
+      series:[{name:'Company cash',type:'line',smooth:.28,symbol:'circle',symbolSize:5,data:rows.map(row=>Number(row[1].toFixed(2))),lineStyle:{width:2.6,color:'#c8a779'},itemStyle:{color:'#e5c89d',borderColor:'#172126',borderWidth:2},areaStyle:{color:'rgba(199,164,117,.12)'}}]
     };
   }
   function renderOverviewChart() {
