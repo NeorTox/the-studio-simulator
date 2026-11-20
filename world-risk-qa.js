@@ -7,7 +7,7 @@ const html=fs.readFileSync('index.html','utf8');
 const sw=fs.readFileSync('sw.js','utf8');
 const depth=fs.readFileSync('simulation-depth-engine.js','utf8');
 assert.match(css,/grid-template-columns:252px/,'Desktop uses a dedicated game sidebar');
-assert.match(css,/max-width:820px/,'Mobile receives a dedicated responsive layout');
+assert.match(css,/max-width:900px/,'Mobile receives a dedicated responsive layout');
 assert.match(css,/\.mobile-nav/,'Mobile has a first-class bottom navigation bar');
 assert.match(css,/\.start-screen/,'A dedicated startup screen is styled');
 assert.match(js,/StudioNPCDecisionConsequences/);
