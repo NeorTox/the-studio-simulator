@@ -704,6 +704,7 @@
   window.StudioWorldAtlas = {
     version:'1.0.0',
     findItineraries,
+    routeGeometry:routeFeature,
     renderAtlas:renderAtlasPanel,
     renderTravel:renderTravelPlanner,
     getSelectedItinerary:() => selectedItinerary
