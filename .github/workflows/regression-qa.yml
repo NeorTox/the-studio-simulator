@@ -48,7 +48,7 @@ jobs:
         run: node --check phase10-autonomous-competitors-engine.js && node --check phase10-autonomous-competitors-qa.js && node --check phase10-browser-qa.js
       - name: Validate native game interface runtime and run desktop/mobile UI regression
         timeout-minutes: 8
-        run: node --check studio-ui-runtime.js && node --check studio-ui-rebuild-browser-qa.js && node studio-ui-rebuild-browser-qa.js
+        run: node --check studio-ui-runtime.js && node --check studio-world-atlas.js && node --check studio-visualization-runtime.js && node --check studio-ui-rebuild-browser-qa.js && node studio-ui-rebuild-browser-qa.js
       - name: Run player experience browser smoke test
         run: node player-experience-browser-qa.js
       - name: Verify all seven world systems execute on real simulation days
