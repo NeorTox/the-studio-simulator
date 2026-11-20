@@ -494,7 +494,7 @@
   }
   function searchFlights() {
     const destination = $('travel-destination')?.value;
-    const date = $('travel-date')?.value || window.active?.date;
+    const date = $('travel-date')?.value || (typeof active !== 'undefined' ? active.date : null);
     if (!destination) {
       const root = $('studio-flight-results');
       if (root) root.innerHTML = '<div class="flight-empty">Select a destination first.</div>';
@@ -516,7 +516,7 @@
     if (!selectedItinerary) return;
     const item = selectedItinerary;
     const destination = $('travel-destination')?.value;
-    const date = $('travel-date')?.value || window.active?.date;
+    const date = $('travel-date')?.value || (typeof active !== 'undefined' ? active.date : null);
     const nights = $('travel-nights')?.value || 2;
     const hotel = $('travel-hotel')?.value || 'standard';
     if (destination !== item.to.id) {
@@ -559,6 +559,7 @@
       window.persist?.();
       window.toast?.('Itinerary booked · ' + item.operator.name + ' · arrival ' + booking.arrivalDate);
       itineraryOptions = [];
+      selectedItinerary = null;
       window.render?.();
     } catch (error) {
       window.toast?.(error.message);
@@ -580,21 +581,22 @@
       root.insertBefore(panel,root.firstChild);
     }
     const origin = currentCity();
-    const destination = G.getCity($('travel-destination')?.value || window.__STUDIO_TRAVEL_DESTINATION);
-    $('studio-flight-origin').textContent = origin?.name || '—';
-    $('studio-flight-origin-airport').textContent = getAirportLabel(origin);
-    $('studio-flight-destination').textContent = destination?.name || 'Choose a city below';
-    $('studio-flight-destination-airport').textContent = destination ? getAirportLabel(destination) : 'Select a destination';
     if (window.__STUDIO_TRAVEL_DESTINATION && $('travel-destination')) {
       $('travel-destination').value = window.__STUDIO_TRAVEL_DESTINATION;
       window.__STUDIO_TRAVEL_DESTINATION = null;
     }
-    $('travel-destination')?.addEventListener('change',() => {
+    const destination = G.getCity($('travel-destination')?.value);
+    $('studio-flight-origin').textContent = origin?.name || '—';
+    $('studio-flight-origin-airport').textContent = getAirportLabel(origin);
+    $('studio-flight-destination').textContent = destination?.name || 'Choose a city below';
+    $('studio-flight-destination-airport').textContent = destination ? getAirportLabel(destination) : 'Select a destination';
+    const destinationSelect = $('travel-destination');
+    if (destinationSelect) destinationSelect.onchange = () => {
       selectedItinerary = null;
       itineraryOptions = [];
       renderFlightResults();
       renderTravelPlanner();
-    },{once:true});
+    };
     $('studio-search-flights')?.addEventListener('click',searchFlights);
     $('studio-open-atlas')?.addEventListener('click',() => window.nav('geography'));
     if (selectedItinerary && itineraryOptions.length) renderFlightResults();
