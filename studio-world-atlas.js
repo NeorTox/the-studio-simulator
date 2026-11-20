@@ -615,8 +615,8 @@
     const date = $('travel-date')?.value || (typeof active !== 'undefined' ? active.date : null);
     const nights = $('travel-nights')?.value || 2;
     const hotel = $('travel-hotel')?.value || 'standard';
-    if (destination !== item.to.id) {
-      window.toast?.('The destination changed. Search for flights again.');
+    if (destination !== item.to.id || item.legs[0]?.departureDate !== date) {
+      window.toast?.('The destination or departure date changed. Search for flights again.');
       return;
     }
     try {
@@ -700,12 +700,16 @@
     $('studio-flight-destination').textContent = destination?.name || 'Choose a city below';
     $('studio-flight-destination-airport').textContent = destination ? getAirportLabel(destination) : 'Select a destination';
     const destinationSelect = $('travel-destination');
-    if (destinationSelect) destinationSelect.onchange = () => {
+    const invalidateSearch = () => {
       selectedItinerary = null;
       itineraryOptions = [];
+      routeToDraw = null;
       renderFlightResults();
       renderTravelPlanner();
     };
+    if (destinationSelect) destinationSelect.onchange = invalidateSearch;
+    const departureField = $('travel-date');
+    if (departureField) departureField.onchange = invalidateSearch;
     const searchButton = $('studio-search-flights');
     if (searchButton) searchButton.onclick = searchFlights;
     const atlasButton = $('studio-open-atlas');
