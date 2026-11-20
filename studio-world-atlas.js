@@ -596,10 +596,6 @@
     const legacyTitle = legacyPlanCard?.querySelector(':scope > .cardtitle');
     if (legacyTitle) legacyTitle.hidden = true;
     const origin = currentCity();
-    if (window.__STUDIO_TRAVEL_DESTINATION && $('travel-destination')) {
-      $('travel-destination').value = window.__STUDIO_TRAVEL_DESTINATION;
-      window.__STUDIO_TRAVEL_DESTINATION = null;
-    }
     const destination = G.getCity($('travel-destination')?.value);
     $('studio-flight-origin').textContent = origin?.name || '—';
     $('studio-flight-origin-airport').textContent = getAirportLabel(origin);
@@ -612,8 +608,10 @@
       renderFlightResults();
       renderTravelPlanner();
     };
-    $('studio-search-flights')?.addEventListener('click',searchFlights);
-    $('studio-open-atlas')?.addEventListener('click',() => window.nav('geography'));
+    const searchButton = $('studio-search-flights');
+    if (searchButton) searchButton.onclick = searchFlights;
+    const atlasButton = $('studio-open-atlas');
+    if (atlasButton) atlasButton.onclick = () => window.nav('geography');
     if (itineraryOptions.length) renderFlightResults();
   }
 
