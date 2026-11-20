@@ -261,7 +261,22 @@
         {key:'contracts',label:'Casting agreements',nodes:[contracts]}
       ],':scope > .talent-metric-rail');
     }
-        const company = $('#page-company');
+        const calendar = $('#page-calendar');
+    if (calendar) {
+      installWorkspaceTabs('page-calendar',[
+        {key:'events',label:'Upcoming events',nodes:[$('#calendar-events-workspace')]},
+        {key:'clock',label:'World clock',nodes:[$('#calendar-clock-workspace')]},
+        {key:'history',label:'Simulation history',nodes:[$('#calendar-history-workspace')]}
+      ],':scope > .hero');
+    }
+    const admin = $('#page-admin');
+    if (admin) {
+      installWorkspaceTabs('page-admin',[
+        {key:'achievements',label:'Achievements',nodes:[$('#sandbox-achievements-workspace')]},
+        {key:'audit',label:'Cheat audit',nodes:[$('#sandbox-audit-workspace')]}
+      ],':scope > .sandbox-console');
+    }
+    const company = $('#page-company');
     if (company) {
       installWorkspaceTabs('page-company',[
         {key:'profile',label:'Corporate profile',nodes:[$('#company-profile-workspace')]},

@@ -344,3 +344,18 @@
 @media(max-width:760px){
  .risk-workspace-heading,.awards-workspace-heading,.facilities-workspace-heading,.ip-workspace-heading{align-items:flex-start;flex-direction:column;gap:8px}
 }
+
+
+/* Calendar and sandbox management workspaces. */
+.calendar-workspace,.sandbox-workspace{display:grid;gap:13px;min-width:0}
+.calendar-workspace-heading,.sandbox-workspace-heading,.sandbox-console-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:6px 2px 13px;border-bottom:1px solid rgba(151,170,162,.16)}
+.calendar-workspace-heading .eyebrow,.sandbox-workspace-heading .eyebrow,.sandbox-console-heading .eyebrow{color:#c1a477;font-size:8px;font-weight:900;letter-spacing:.14em}
+.calendar-workspace-heading h2,.sandbox-workspace-heading h2,.sandbox-console-heading h2{margin:5px 0 4px;color:#ecebe3;font-size:clamp(17px,2vw,22px);font-weight:850;letter-spacing:-.025em}
+.calendar-workspace-heading p,.sandbox-workspace-heading p,.sandbox-console-heading p{max-width:700px;margin:0;color:#8e9d98;font-size:10px;line-height:1.6}
+.calendar-workspace>.card,.sandbox-workspace>.card,.sandbox-console>.card{min-width:0;margin:0!important}
+.sandbox-console{display:grid;gap:13px;min-width:0}
+.sandbox-console>.worldbox{margin:0}
+.sandbox-console .field input{max-width:100%}
+@media(max-width:760px){
+ .calendar-workspace-heading,.sandbox-workspace-heading,.sandbox-console-heading{align-items:flex-start;flex-direction:column;gap:8px}
+}
