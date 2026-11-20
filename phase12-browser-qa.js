@@ -4,7 +4,7 @@ const {chromium}=require('playwright'),assert=require('assert');
  const page=await browser.newPage({viewport:{width:1440,height:900}});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
  await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
- await page.getByRole('button',{name:/New campaign/}).click();
+ await page.getByRole('button',{name:'New campaign',exact:true}).click();
  await page.getByRole('button',{name:/Create campaign/}).click();
  for(const [id,value] of [['nfounder','Generation QA Founder'],['ncompany','Legacy Motion Studios'],['ncountry','India'],['ncity','Mumbai']])await page.locator('#'+id).fill(value);
  await page.getByRole('button',{name:/Create and save campaign/}).click();
