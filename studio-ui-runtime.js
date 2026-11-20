@@ -252,6 +252,56 @@
         {key:'contracts',label:'Casting contracts',nodes:[contracts]}
       ],':scope > .hero');
     }
+    const company = $('#page-company');
+    if (company) {
+      const grid = company.querySelector(':scope > .grid.cols');
+      const profile = grid?.querySelector(':scope > .card:has(#companydetails)');
+      const divisions = grid?.querySelector(':scope > .card:has(#divisions)');
+      installWorkspaceTabs('page-company',[
+        {key:'profile',label:'Corporate profile',nodes:[profile]},
+        {key:'divisions',label:'Divisions & subsidiaries',nodes:[divisions]}
+      ],':scope > .hero');
+    }
+    const personal = $('#page-personal');
+    if (personal) {
+      const grid = personal.querySelector(':scope > .grid.cols');
+      const assets = grid?.querySelector(':scope > .card:has(#personalassets)');
+      const relationships = grid?.querySelector(':scope > .card:has(#relationships)');
+      installWorkspaceTabs('page-personal',[
+        {key:'assets',label:'Assets & finances',nodes:[assets]},
+        {key:'relationships',label:'Relationships & family',nodes:[relationships]}
+      ],':scope > .grid.stats');
+    }
+    const distribution = $('#page-distribution');
+    if (distribution) {
+      const grid = distribution.querySelector(':scope > .grid.cols');
+      const agreements = grid?.querySelector(':scope > .card:has(#distributionlist)');
+      const settlements = grid?.querySelector(':scope > .card:has(#settlementlist)');
+      installWorkspaceTabs('page-distribution',[
+        {key:'rights',label:'Rights agreements',nodes:[agreements]},
+        {key:'settlements',label:'Royalty settlements',nodes:[settlements]}
+      ],':scope > .grid.stats');
+    }
+    const legal = $('#page-legal');
+    if (legal) {
+      const grid = legal.querySelector(':scope > .grid.cols');
+      const register = grid?.querySelector(':scope > .card:has(#legalregister)');
+      const insurance = grid?.querySelector(':scope > .card:has(#insuranceregister)');
+      installWorkspaceTabs('page-legal',[
+        {key:'matters',label:'Legal matters',nodes:[register]},
+        {key:'insurance',label:'Insurance & risk',nodes:[insurance]}
+      ],':scope > .grid.stats');
+    }
+    const awards = $('#page-awards');
+    if (awards) {
+      const grid = awards.querySelector(':scope > .grid.cols');
+      const events = grid?.querySelector(':scope > .card:has(#awardcatalog)');
+      const submissions = grid?.querySelector(':scope > .card:has(#awardsubmissions)');
+      installWorkspaceTabs('page-awards',[
+        {key:'events',label:'Award events',nodes:[events]},
+        {key:'submissions',label:'Submissions',nodes:[submissions]}
+      ],':scope > .hero');
+    }
     const market = $('#page-market');
     if (market) {
       const stats = market.querySelector(':scope > .grid.stats');
