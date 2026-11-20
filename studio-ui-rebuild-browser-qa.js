@@ -37,20 +37,25 @@ const assert = require('node:assert/strict');
     assert.equal(atlas.version,'1.0.0','World atlas runtime is connected');
     assert(atlas.gateways>=90,'World atlas exposes mapped airport gateways: '+atlas.gateways);
     await page.locator('.nav button[data-page="overview"]').click();
+    assert.equal(await page.locator('#studio-overview-cash-chart').count(),1,'Command centre exposes a ledger-backed cash chart');
     await page.locator('.nav button[data-page="finance"]').click();
     assert.equal(await page.locator('#page-finance .workspace-tab').count(),6,'Finance is separated into six operational workspaces');
+    assert.equal(await page.locator('#studio-finance-category-chart').count(),1,'Finance exposes a real expense-category chart');
+    assert.equal(await page.locator('#studio-finance-portfolio-chart').count(),1,'Finance exposes a real treasury and investment allocation chart');
     for (const tab of ['accounting','operations','capital','investments','audit','overview']) {
       await page.locator('#page-finance [data-workspace-tab="'+tab+'"]').click();
       assert.equal(await page.locator('#page-finance [data-workspace-tab="'+tab+'"]').getAttribute('aria-selected'),'true');
     }
     await page.locator('.nav button[data-page="projects"]').click();
     assert.equal(await page.locator('#page-projects .workspace-tab').count(),2,'Production slate and contracts are separate workspaces');
+    assert.equal(await page.locator('#studio-production-readiness-chart').count(),1,'Production exposes a project-readiness chart');
     await page.locator('#page-projects [data-workspace-tab="contracts"]').click();
     assert.equal(await page.locator('#productioncontracts').isVisible(),true);
     await page.locator('.nav button[data-page="talent"]').click();
     assert.equal(await page.locator('#page-talent .workspace-tab').count(),2,'Talent roster and casting contracts are separated');
     await page.locator('.nav button[data-page="market"]').click();
     assert.equal(await page.locator('#page-market .workspace-tab').count(),4,'Market intelligence is grouped by player task');
+    assert.equal(await page.locator('#studio-market-regional-economy-chart').count(),1,'Market exposes a regional economy comparison chart');
     await page.locator('.nav button[data-page="media"]').click();
     assert.equal(await page.locator('#page-media .workspace-tab').count(),2,'Newsroom and publicity are separate workspaces');
     await page.locator('.nav button[data-page="overview"]').click();
