@@ -138,7 +138,7 @@
     bar.setAttribute('aria-label',page.querySelector('.h1')?.textContent.trim() + ' sections');
     const panels = document.createElement('div');
     panels.className = 'workspace-panels';
-    const available = groups.map(group => ({...group,nodes:group.nodes.filter(Boolean)})).filter(group => group.nodes.length);
+    const available = groups.map(group => ({...group,nodes:group.nodes.filter(Boolean)})).filter(group => group.nodes.length || group.keepEmpty);
     if (available.length < 2) return;
     function activateTab(key) {
       available.forEach(group => {
@@ -202,9 +202,19 @@
         {key:'accounting',label:'Accounting',nodes:[byTitle('General ledger'),byTitle('Double-entry accounting'),byTitle('Journal register')]},
         {key:'operations',label:'Operations',nodes:[byTitle('Receivables & payables'),byTitle('Fixed asset register')]},
         {key:'capital',label:'Debt & Treasury',nodes:[byTitle('Debt facilities'),byTitle('Corporate tax estimation'),byTitle('Foreign exchange & treasury wallets')]},
-        {key:'investments',label:'Investments',nodes:[investments]},
+        {key:'investments',label:'Investments',nodes:[investments],keepEmpty:true},
         {key:'audit',label:'Audit',nodes:[byTitle('Financial integrity')]}
       ],':scope > .grid.stats');
+      const investmentPanel = $('#page-finance-panel-investments');
+      const moveInvestmentWorkspace = () => {
+        const investmentCard = $('#phase8-empire')?.closest('.card');
+        if (investmentCard && investmentPanel && investmentCard.parentElement !== investmentPanel) investmentPanel.append(investmentCard);
+      };
+      moveInvestmentWorkspace();
+      if (investmentPanel) {
+        const investmentObserver = new MutationObserver(moveInvestmentWorkspace);
+        investmentObserver.observe(finance,{childList:true,subtree:true});
+      }
     }
     const projects = $('#page-projects');
     if (projects) {
