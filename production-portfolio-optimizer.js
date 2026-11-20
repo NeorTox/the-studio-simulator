@@ -98,7 +98,7 @@ function savePlan(fundingPct=65){
   version:VERSION,algorithmVersion:report.algorithmVersion,created:active.date,status:'Advisory only',
   fundingPct:report.fundingPct,companyCashAtSave:report.companyCash,fundingEnvelope:report.fundingEnvelope,
   currency:report.currency,selectedProjectIds:ids,
-  selectedProjects:report.selected.map(p=>({id:p.id,title:p.title,budget:p.budget,riskAdjustedProfit:p.riskAdjustedProfit,roiPct:p.roiPct,confidence:p.confidence})),
+  selectedProjects:report.selected.map(p=>({id:p.id,title:p.title,budget:p.budget,riskAdjustedProfit:p.riskAdjustedProfit,roiPct:p.roiPct,confidence:p.confidence,greenlitAtSave:!!active.projects.find(x=>x.id===p.id)?.greenlit})),
   optimization:report.optimization,assumptions:report.assumptions
  };
  if(typeof persist==='function')persist();
@@ -110,13 +110,13 @@ function audit(){
  add('Optimizer uses the current algorithm API',!!root.StudioAlgorithms&&root.StudioAlgorithms.version=== '1.0.0');
  add('Portfolio advisory record is structurally valid',!p||(p.status==='Advisory only'&&Array.isArray(p.selectedProjectIds)&&Array.isArray(p.selectedProjects)));
  add('Saved portfolio references existing projects',!p||p.selectedProjectIds.every(id=>a.projects.some(x=>x.id===id)));
- add('Saved portfolio does not greenlight projects automatically',!p||p.selectedProjectIds.every(id=>!a.projects.find(x=>x.id===id)?.greenlit||true));
+ add('Saved portfolio does not greenlight projects automatically',!p||p.selectedProjects.every(x=>x.greenlitAtSave===false));
  add('Saved portfolio envelope is within saved company cash',!p||p.fundingEnvelope<=p.companyCashAtSave);
  return{passed:tests.filter(x=>x.ok).length,failed:tests.filter(x=>!x.ok).length,tests};
 }
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function fmt(n,currency){return new Intl.NumberFormat(undefined,{maximumFractionDigits:0}).format(num(n))+' '+currency}
-function render(){
+function render(fundingPct=65){
  if(typeof document==='undefined')return;
  const page=document.getElementById('page-projects');if(!page)return;
  let host=document.getElementById('production-portfolio-optimizer');
@@ -124,13 +124,13 @@ function render(){
  if(typeof active==='undefined'||!active){host.innerHTML='<div class="empty">Create a campaign to optimize its production slate.</div>';return}
  const cash=money(active.company?.cash),currency=esc(active.company?.currency||'USD'),plan=active.productionPortfolio;
  let report=null,error='';
- try{report=analyze(65)}catch(e){error=e.message}
+ try{report=analyze(fundingPct)}catch(e){error=e.message}
  const ranked=report?.ranked||[],selected=report?.selected||[];
  const rankingHtml=ranked.length?ranked.slice(0,5).map(r=>'<div class="rowitem" style="gap:12px"><span style="min-width:0"><b>'+esc(r.title)+'</b><div class="tiny">'+esc(r.format)+' · '+esc(r.genre)+' · '+esc(r.stageName)+' · Rank #'+r.rank+'</div><div class="tiny">Risk-adjusted scenario '+fmt(r.riskAdjustedProfit,currency)+' · ROI '+r.roiPct.toFixed(1)+'% · Confidence '+Math.round(r.confidence*100)+'%</div></span><span class="tag">'+r.score.toFixed(3)+'</span></div>').join(''):'<div class="empty">No eligible projects awaiting greenlight. Create a project or move an existing project into Development.</div>';
  const slateHtml=selected.length?selected.map(p=>'<div class="rowitem"><span><b>'+esc(p.title)+'</b><div class="tiny">'+fmt(p.budget,currency)+' · '+p.roiPct.toFixed(1)+'% scenario ROI</div></span><span class="tag green">Selected</span></div>').join(''):'<div class="empty">No positive-value project combination fits the current funding envelope.</div>';
  host.innerHTML='<div class="cardhead"><b class="cardtitle">Production portfolio optimizer</b><span class="tag gold">ADVISORY</span></div>'+
  '<p class="hint">Ranks ungreenlit Concept and Development projects, then selects the strongest risk-adjusted slate that fits the funding envelope. It never approves a project or spends cash.</p>'+
- '<div class="formgrid"><div class="field"><label>Company cash</label><b>'+fmt(cash,currency)+'</b></div><div class="field"><label>Funding envelope</label><b>'+fmt(report?.fundingEnvelope||0,currency)+'</b></div><div class="field"><label>Allocation of cash</label><div class="rowitem"><input id="pp-funding" type="range" min="10" max="90" step="5" value="65" style="flex:1"><b id="pp-funding-label">65%</b></div></div></div>'+
+ '<div class="formgrid"><div class="field"><label>Company cash</label><b>'+fmt(cash,currency)+'</b></div><div class="field"><label>Funding envelope</label><b>'+fmt(report?.fundingEnvelope||0,currency)+'</b></div><div class="field"><label>Allocation of cash</label><div class="rowitem"><input id="pp-funding" type="range" min="10" max="90" step="5" value="'+fundingPct+'" style="flex:1"><b id="pp-funding-label">'+fundingPct+'%</b></div></div></div>'+
  (error?'<div class="empty">'+esc(error)+'</div>':'')+
  '<h4 style="margin:14px 0 6px">Project ranking</h4>'+rankingHtml+
  '<h4 style="margin:14px 0 6px">Optimized slate</h4>'+slateHtml+
@@ -138,17 +138,8 @@ function render(){
  (plan?'<div class="tiny" style="margin-top:8px">Last saved: '+esc(plan.created)+' · '+plan.selectedProjectIds.length+' projects · '+esc(plan.status)+'</div>':'')+
  '<details style="margin-top:10px"><summary class="tiny">Model assumptions and limitations</summary><p class="tiny">Historical comparables use realized studio receipts and profit. Projects without comparable releases use format baselines. Risk-adjusted values are scenario estimates, not guaranteed forecasts. Currency costs are rounded up for budget selection.</p></details>';
  const slider=host.querySelector('#pp-funding'),label=host.querySelector('#pp-funding-label');
- if(slider&&label){slider.oninput=()=>{label.textContent=slider.value+'%';const next=analyze(Number(slider.value));host.querySelector('.field:nth-child(2) b').textContent=fmt(next.fundingEnvelope,currency);host.querySelector('h4:nth-of-type(2)')?.remove();renderWithReport(host,next,Number(slider.value));};}
- const save=host.querySelector('#pp-save');if(save)save.onclick=()=>{try{const pct=Number(host.querySelector('#pp-funding')?.value||65),saved=savePlan(pct);render();if(typeof toast==='function')toast('Advisory slate saved. No projects were funded or greenlit.');}catch(e){if(typeof toast==='function')toast(e.message);}};
-}
-function renderWithReport(host,report,pct){
- const ranked=report.ranked||[],selected=report.selected||[],currency=esc(report.currency);
- const rankingHtml=ranked.length?ranked.slice(0,5).map(r=>'<div class="rowitem" style="gap:12px"><span style="min-width:0"><b>'+esc(r.title)+'</b><div class="tiny">'+esc(r.format)+' · '+esc(r.genre)+' · '+esc(r.stageName)+' · Rank #'+r.rank+'</div><div class="tiny">Risk-adjusted scenario '+fmt(r.riskAdjustedProfit,currency)+' · ROI '+r.roiPct.toFixed(1)+'% · Confidence '+Math.round(r.confidence*100)+'%</div></span><span class="tag">'+r.score.toFixed(3)+'</span></div>').join(''):'<div class="empty">No eligible projects awaiting greenlight.</div>';
- const slateHtml=selected.length?selected.map(p=>'<div class="rowitem"><span><b>'+esc(p.title)+'</b><div class="tiny">'+fmt(p.budget,currency)+' · '+p.roiPct.toFixed(1)+'% scenario ROI</div></span><span class="tag green">Selected</span></div>').join(''):'<div class="empty">No positive-value project combination fits the current funding envelope.</div>';
- const hs=host.querySelectorAll('h4');if(hs[0])hs[0].insertAdjacentHTML('afterend',rankingHtml);if(hs[1])hs[1].insertAdjacentHTML('afterend',slateHtml);
- const cashLabel=host.querySelector('.field:nth-child(2) b');if(cashLabel)cashLabel.textContent=fmt(report.fundingEnvelope,currency);
- const total=host.querySelector('.rowitem[style*="margin-top:10px"] .tiny');if(total)total.textContent='Selected budget '+fmt(report.optimization.spent*report.unit,currency)+' of '+fmt(report.fundingEnvelope,currency);
- const save=host.querySelector('#pp-save');if(save){save.disabled=!selected.length;save.onclick=()=>{try{savePlan(pct);render();if(typeof toast==='function')toast('Advisory slate saved. No projects were funded or greenlit.')}catch(e){if(typeof toast==='function')toast(e.message)}}}
+ if(slider&&label){slider.oninput=()=>render(Number(slider.value));}
+ const save=host.querySelector('#pp-save');if(save)save.onclick=()=>{try{const pct=Number(host.querySelector('#pp-funding')?.value||fundingPct),saved=savePlan(pct);render(pct);if(typeof toast==='function')toast('Advisory slate saved. No projects were funded or greenlit.');}catch(e){if(typeof toast==='function')toast(e.message);}};
 }
 function install(){
  if(typeof document==='undefined')return;
