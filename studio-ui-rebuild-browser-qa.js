@@ -31,8 +31,8 @@ const assert = require('node:assert/strict');
     }
     await page.locator('.nav button[data-page="overview"]').click();
     await page.locator('.nav button[data-page="finance"]').click();
-    assert.equal(await page.locator('#page-finance .workspace-tab').count(),5,'Finance is separated into five operational workspaces');
-    for (const tab of ['accounting','operations','capital','audit','overview']) {
+    assert.equal(await page.locator('#page-finance .workspace-tab').count(),6,'Finance is separated into six operational workspaces');
+    for (const tab of ['accounting','operations','capital','investments','audit','overview']) {
       await page.locator('#page-finance [data-workspace-tab="'+tab+'"]').click();
       assert.equal(await page.locator('#page-finance [data-workspace-tab="'+tab+'"]').getAttribute('aria-selected'),'true');
     }
