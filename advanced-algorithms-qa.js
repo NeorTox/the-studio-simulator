@@ -32,7 +32,7 @@ const graph=[
  {id:'D',edges:[]},
  {id:'Z',edges:[]}
 ];
-assert.deepEqual(A.shortestPath(graph,'A','D'),{version:'1.0.0',method:'dijkstra',found:true,path:['A','C','B','D'],cost:4});
+assert.deepEqual(A.shortestPath(graph,'A','D'),{version:'1.0.0',method:'dijkstra',found:true,path:['A','B','D'],cost:4});
 assert.equal(A.shortestPath(graph,'A','Z').found,false);
 assert.throws(()=>A.shortestPath([{id:'a',edges:[{to:'b',cost:-1}]},{id:'b',edges:[]}],'a','b'),/non-negative/);
 assert.throws(()=>A.rankAlternatives([{id:'x',values:{v:1}}],[{id:'v',weight:-1}]),/negative/);
