@@ -29,6 +29,13 @@ const assert = require('node:assert/strict');
       await page.locator('.nav button[data-page="'+route+'"]').click();
       assert.equal(await page.locator('#page-'+route).evaluate(e=>e.classList.contains('active')),true,'Route renders: '+route);
     }
+    await page.locator('.nav button[data-page="geography"]').click();
+    await page.locator('#studio-world-atlas').waitFor({state:'attached'});
+    assert.equal(await page.locator('#studio-atlas-search').count(),1,'World atlas provides city search');
+    assert.equal(await page.locator('#studio-world-map').count(),1,'World atlas provides an interactive map mount');
+    const atlas = await page.evaluate(()=>({version:window.StudioWorldAtlas?.version,gateways:window.StudioGeography?.cities?.filter(c=>c.airport&&Number.isFinite(c.latitude)).length||0}));
+    assert.equal(atlas.version,'1.0.0','World atlas runtime is connected');
+    assert(atlas.gateways>=90,'World atlas exposes mapped airport gateways: '+atlas.gateways);
     await page.locator('.nav button[data-page="overview"]').click();
     await page.locator('.nav button[data-page="finance"]').click();
     assert.equal(await page.locator('#page-finance .workspace-tab').count(),6,'Finance is separated into six operational workspaces');
