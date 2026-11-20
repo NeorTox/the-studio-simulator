@@ -6,6 +6,8 @@ const assert=require('node:assert/strict');
  const page=await browser.newPage({viewport:{width:1365,height:850}});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
  await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});await page.evaluate(()=>window.StudioTutorial?.close?.());
+ await page.locator('#start-load').click();
+ await page.locator('[data-page="overview"]').click();
  await page.locator('#page-overview .hero .actions button').first().click();
  await page.getByRole('button',{name:/Create campaign/}).click();
  for(const [id,value] of [['nfounder','Daily Systems QA'],['ncompany','Daily Systems QA Studios'],['ncountry','India'],['ncity','Mumbai']])await page.locator('#'+id).fill(value);
