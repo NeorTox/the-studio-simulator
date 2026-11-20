@@ -313,3 +313,22 @@
   .market-workspace-heading,.media-workspace-heading{align-items:flex-start;flex-direction:column;gap:8px}
   .market-insight-chart-grid{grid-template-columns:minmax(0,1fr)}
 }
+
+
+/* Company governance and founder-private workspaces. */
+.company-workspace,.founder-workspace{display:grid;gap:13px;min-width:0}
+.company-workspace-heading,.founder-workspace-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:6px 2px 13px;border-bottom:1px solid rgba(151,170,162,.16)}
+.company-workspace-heading .eyebrow,.founder-workspace-heading .eyebrow{color:#c1a477;font-size:8px;font-weight:900;letter-spacing:.14em}
+.company-workspace-heading h2,.founder-workspace-heading h2{margin:5px 0 4px;color:#ecebe3;font-size:clamp(17px,2vw,22px);font-weight:850;letter-spacing:-.025em}
+.company-workspace-heading p,.founder-workspace-heading p{max-width:700px;margin:0;color:#8e9d98;font-size:10px;line-height:1.6}
+.company-workspace>.card,.founder-workspace>.card{min-width:0;margin:0!important}
+.company-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:7px;max-width:520px}
+.company-actions .btn{min-height:38px}
+.personal-assets-chart-slot{min-width:0}
+.personal-assets-chart-slot>.studio-chart-card{margin:0}
+@media(max-width:760px){
+  .company-workspace-heading,.founder-workspace-heading{align-items:flex-start;flex-direction:column;gap:8px}
+  .company-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-width:none}
+  .company-actions .btn{width:100%;justify-content:center}
+}
+@media(max-width:390px){.company-actions{grid-template-columns:minmax(0,1fr)}}

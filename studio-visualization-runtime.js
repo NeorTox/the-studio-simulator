@@ -432,12 +432,11 @@
   }
   function renderFounderAssetsChart() {
     const page = $('page-personal');
-    if (!page) return;
-    const tabs = page.querySelector('.workspace-tabs') || page.querySelector(':scope > .hero');
-    if (!tabs) return;
-    const card = ensureCard(page,'studio-personal-assets-chart','Founder assets & liabilities','Personal cash, asset values and debt are shown separately from company accounts.','FOUNDER FINANCES');
+    const parent = $('personal-assets-chart-slot');
+    if (!page || !parent) return;
+    const card = ensureCard(parent,'studio-personal-assets-chart','Founder assets & liabilities','Personal cash, asset values and debt are shown separately from company accounts.','FOUNDER FINANCES');
     if (!card) return;
-    tabs.insertAdjacentElement('afterend',card);
+    parent.appendChild(card);
     if (!page.classList.contains('active')) return;
     const founder=active?.founder;
     if (!founder) {showEmpty('studio-personal-assets-chart','Founder financial data will appear after a campaign is created.');return;}

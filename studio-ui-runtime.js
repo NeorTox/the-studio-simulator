@@ -263,25 +263,17 @@
     }
         const company = $('#page-company');
     if (company) {
-      const grid = company.querySelector(':scope > .grid.cols');
-      const profile = grid?.querySelector(':scope > .card:has(#companydetails)');
-      const divisions = grid?.querySelector(':scope > .card:has(#divisions)');
       installWorkspaceTabs('page-company',[
-        {key:'profile',label:'Corporate profile',nodes:[profile]},
-        {key:'divisions',label:'Divisions & subsidiaries',nodes:[divisions]}
+        {key:'profile',label:'Corporate profile',nodes:[$('#company-profile-workspace')]},
+        {key:'divisions',label:'Divisions & subsidiaries',nodes:[$('#company-structure-workspace')]}
       ],':scope > .hero');
-      if (grid && !grid.children.length) grid.remove();
     }
     const personal = $('#page-personal');
     if (personal) {
-      const grid = personal.querySelector(':scope > .grid.cols');
-      const assets = grid?.querySelector(':scope > .card:has(#personalassets)');
-      const relationships = grid?.querySelector(':scope > .card:has(#relationships)');
       installWorkspaceTabs('page-personal',[
-        {key:'assets',label:'Assets & finances',nodes:[assets]},
-        {key:'relationships',label:'Relationships & family',nodes:[relationships]}
+        {key:'assets',label:'Assets & finances',nodes:[$('#personal-assets-workspace')]},
+        {key:'relationships',label:'Relationships & family',nodes:[$('#personal-relationships-workspace')]}
       ],':scope > .grid.stats');
-      if (grid && !grid.children.length) grid.remove();
     }
     const distribution = $('#page-distribution');
     if (distribution) {
