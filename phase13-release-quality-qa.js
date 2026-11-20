@@ -16,7 +16,7 @@ const {chromium}=require('playwright'),assert=require('assert');
  assert(assets.sw.includes('phase12-generations-engine.js'));
  assert(assets.sw.includes('phase13-release-quality-engine.js'));
  assert(assets.apis.phase12&&assets.apis.phase13&&assets.apis.integration,JSON.stringify(assets.apis));
- await page.getByRole('button',{name:/New campaign/}).click();
+ await page.getByRole('button',{name:'New campaign',exact:true}).click();
  await page.getByRole('button',{name:/Create campaign/}).click();
  for(const [id,value] of [['nfounder','Release QA Founder'],['ncompany','Release QA Studios'],['ncountry','India'],['ncity','Kochi']])await page.locator('#'+id).fill(value);
  await page.getByRole('button',{name:/Create and save campaign/}).click();
