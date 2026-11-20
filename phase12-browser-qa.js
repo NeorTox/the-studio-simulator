@@ -16,7 +16,7 @@ const {chromium}=require('playwright'),assert=require('assert');
   if(!p.npcs.some(n=>n.id===id))p.npcs.push({id,name:'Morgan Successor',age:32,birthDate:'1994-01-01',alive:true,status:'Independent',city:'Mumbai',occupation:'Producer',family:{familyId:null,parentIds:[],childIds:[],partnerId:null},skills:{leadership:88,communication:82,technical:76,creative:72,commercial:65},career:{level:5,experience:400,tenureDays:1000,performance:86,satisfaction:85,careerChanges:0},finances:{cash:100000,debt:0,monthlyIncome:5000,monthlyExpenses:2500,creditScore:740},needs:{health:90,energy:80,social:75,security:85,purpose:90},socialLinks:[],reputation:{personal:80,professional:85,public:70},educationProfile:{level:'Graduate'},residenceHistory:[],lifeStage:'Adult'});
   window.StudioPopulationEngine.ensure();
  });
- await page.getByRole('button',{name:/Generations/}).click();
+ await page.evaluate(()=>window.nav('generations'));
  await page.locator('#gen-role').fill('Chief Operating Officer');
  await page.locator('#gen-candidate').selectOption('PHASE12-EXEC-CANDIDATE');
  await page.locator('#gen-succession-form button[type=submit]').click();
