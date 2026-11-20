@@ -174,7 +174,7 @@
     if (!page) return;
     const tabs = page.querySelector('.workspace-tabs') || page.querySelector('.workspace-panels') || page.querySelector(':scope > .hero');
     if (!tabs) return;
-    const parent = $('#finance-overview-charts') || tabs.parentElement;
+    const parent = $('finance-overview-charts') || tabs.parentElement;
     const card = ensureCard(parent,'studio-finance-portfolio-chart','Treasury & investment allocation','Actual company cash and marked value of active financial-empire holdings.','CURRENT PORTFOLIO');
     if (!card) return;
     const expense = $('studio-finance-category-chart');
