@@ -4,8 +4,7 @@ const {chromium}=require('playwright'),assert=require('assert');
  const page=await browser.newPage({viewport:{width:1440,height:900}});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
  await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});await page.evaluate(()=>window.StudioTutorial?.close?.());
- await page.locator('#start-load').click();
- await page.evaluate(()=>window.nav('overview'));
+ await page.locator('#start-new').click();
  const assets=await page.evaluate(async()=>{
   const refs=[...document.scripts].map(s=>s.getAttribute('src')).filter(x=>x&&x.startsWith('./')&&x.endsWith('.js'));
   const results=await Promise.all(refs.map(async src=>({src,ok:(await fetch(src,{cache:'no-store'})).ok})));
@@ -18,7 +17,6 @@ const {chromium}=require('playwright'),assert=require('assert');
  assert(assets.sw.includes('phase12-generations-engine.js'));
  assert(assets.sw.includes('phase13-release-quality-engine.js'));
  assert(assets.apis.phase12&&assets.apis.phase13&&assets.apis.integration,JSON.stringify(assets.apis));
- await page.getByRole('button',{name:'New campaign',exact:true}).click();
  await page.getByRole('button',{name:/Create campaign/}).click();
  for(const [id,value] of [['nfounder','Release QA Founder'],['ncompany','Release QA Studios'],['ncountry','India'],['ncity','Kochi']])await page.locator('#'+id).fill(value);
  await page.getByRole('button',{name:/Create and save campaign/}).click();
