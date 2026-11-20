@@ -288,6 +288,148 @@
       series:[{type:'bar',data:rows.map(row=>row[1]),barMaxWidth:38,itemStyle:{color:'#b99a6d',borderRadius:[4,4,0,0]},label:{show:true,position:'top',color:'#d7d9cf',fontSize:9}}]
     });
   }
+  function renderWorkforceChart() {
+    const page = $('page-people');
+    if (!page) return;
+    const hero = page.querySelector(':scope > .hero');
+    if (!hero) return;
+    const card = ensureCard(page,'studio-people-workforce-chart','Workforce & payroll by department','Active employee records grouped by department. Payroll is the sum of recorded monthly salaries.','EMPLOYEE REGISTER');
+    if (!card) return;
+    hero.insertAdjacentElement('afterend',card);
+    if (!page.classList.contains('active')) return;
+    const employees = Array.isArray(active?.employees) ? active.employees.filter(e=>e.status!=='Terminated'&&(!(e.endDate||e.contractEndDate)||(e.endDate||e.contractEndDate)>=active.date)) : [];
+    if (!employees.length) {
+      showEmpty('studio-people-workforce-chart','Department headcount and payroll will appear after the first employee is hired.');
+      return;
+    }
+    const groups = new Map();
+    employees.forEach(employee=>{
+      const department=String(employee.department||'Unassigned');
+      const row=groups.get(department)||{name:department,headcount:0,payroll:0};
+      row.headcount++;
+      row.payroll+=number(employee.salary);
+      groups.set(department,row);
+    });
+    const rows=Array.from(groups.values()).sort((a,b)=>b.payroll-a.payroll).slice(0,12);
+    mount('studio-people-workforce-chart',{
+      animationDuration:420,
+      grid:{left:110,right:55,top:16,bottom:18},
+      tooltip:{trigger:'axis',axisPointer:{type:'shadow'},backgroundColor:'#111a1f',borderColor:'#6f624e',textStyle:{color:'#eee9dc'},formatter:items=>{const row=rows[items[0].dataIndex];return row.name+'<br>Headcount: <b>'+row.headcount+'</b><br>Monthly payroll: '+row.payroll.toLocaleString();}},
+      xAxis:{type:'value',axisLabel:{color:'#a3b0ab',fontSize:9},splitLine:{lineStyle:{color:'rgba(137,157,155,.13)',type:'dashed'}}},
+      yAxis:{type:'category',data:rows.map(row=>row.name),axisLabel:{color:'#c0cac4',fontSize:9,overflow:'truncate',width:100},axisLine:{show:false},axisTick:{show:false}},
+      series:[{type:'bar',data:rows.map(row=>row.headcount),barMaxWidth:20,itemStyle:{color:'#8eaa9a',borderRadius:[0,4,4,0]},label:{show:true,position:'right',color:'#d7d9cf',fontSize:9}}]
+    });
+  }
+  function renderGenreDemandChart() {
+    const page = $('page-market');
+    if (!page) return;
+    const tabs = page.querySelector('.workspace-tabs') || page.querySelector(':scope > .hero');
+    if (!tabs) return;
+    const card = ensureCard(page,'studio-market-genre-chart','Audience demand by genre','Current campaign demand index, using the market engine’s live genre values.','DEMAND INDEX');
+    if (!card) return;
+    tabs.insertAdjacentElement('afterend',card);
+    if (!page.classList.contains('active')) return;
+    const genres=active?.market?.genres;
+    if (!genres || typeof genres!=='object' || !Object.keys(genres).length) {
+      showEmpty('studio-market-genre-chart','Genre demand will appear when the market simulation initializes.');
+      return;
+    }
+    const rows=Object.entries(genres).map(([name,value])=>({name,value:number(value)})).sort((a,b)=>b.value-a.value).slice(0,12);
+    mount('studio-market-genre-chart',{
+      animationDuration:420,
+      grid:{left:112,right:34,top:14,bottom:18},
+      tooltip:{trigger:'axis',axisPointer:{type:'shadow'},backgroundColor:'#111a1f',borderColor:'#6f624e',textStyle:{color:'#eee9dc'}},
+      xAxis:{type:'value',min:0,max:100,axisLabel:{color:'#a3b0ab',fontSize:9},splitLine:{lineStyle:{color:'rgba(137,157,155,.13)',type:'dashed'}}},
+      yAxis:{type:'category',data:rows.map(row=>row.name),axisLabel:{color:'#c0cac4',fontSize:9,overflow:'truncate',width:104},axisLine:{show:false},axisTick:{show:false}},
+      series:[{type:'bar',data:rows.map(row=>row.value),barMaxWidth:18,itemStyle:{color:'#b99a6d',borderRadius:[0,4,4,0]},label:{show:true,position:'right',color:'#d7d9cf',fontSize:9}}]
+    });
+  }
+  function renderMediaCoverageChart() {
+    const page = $('page-media');
+    if (!page) return;
+    const tabs = page.querySelector('.workspace-tabs') || page.querySelector(':scope > .hero');
+    if (!tabs) return;
+    const card = ensureCard(page,'studio-media-coverage-chart','Press cycle & coverage reach','Recorded coverage items grouped by campaign date. Reach is the media engine’s index, not a verified audience count.','RECORDED COVERAGE');
+    if (!card) return;
+    tabs.insertAdjacentElement('afterend',card);
+    if (!page.classList.contains('active')) return;
+    const coverage=Array.isArray(active?.market?.media?.coverage)?active.market.media.coverage:[];
+    if (!coverage.length) {
+      showEmpty('studio-media-coverage-chart','Coverage activity will appear as the simulated press cycle records stories.');
+      return;
+    }
+    const grouped=new Map();
+    coverage.forEach(item=>{
+      if(!validDate(item.date))return;
+      const row=grouped.get(item.date)||{date:item.date,stories:0,reach:0};
+      row.stories++;
+      row.reach+=number(item.reachIndex);
+      grouped.set(item.date,row);
+    });
+    const rows=Array.from(grouped.values()).sort((a,b)=>a.date.localeCompare(b.date)).slice(-45);
+    if(!rows.length){showEmpty('studio-media-coverage-chart','No dated coverage records are available yet.');return;}
+    mount('studio-media-coverage-chart',{
+      animationDuration:420,
+      grid:{left:48,right:18,top:18,bottom:38},
+      tooltip:{trigger:'axis',backgroundColor:'#111a1f',borderColor:'#6f624e',textStyle:{color:'#eee9dc'},formatter:items=>{const row=rows[items[0].dataIndex];return row.date+'<br>Stories: <b>'+row.stories+'</b><br>Combined reach index: '+row.reach.toFixed(2);}},
+      xAxis:{type:'category',data:rows.map(row=>row.date),axisLabel:{color:'#a3b0ab',fontSize:8,hideOverlap:true},axisLine:{lineStyle:{color:'#46545a'}},axisTick:{show:false}},
+      yAxis:{type:'value',minInterval:1,axisLabel:{color:'#a3b0ab',fontSize:9},splitLine:{lineStyle:{color:'rgba(137,157,155,.13)',type:'dashed'}}},
+      series:[{type:'bar',data:rows.map(row=>row.stories),barMaxWidth:24,itemStyle:{color:'#8eaa9a',borderRadius:[3,3,0,0]}}]
+    });
+  }
+  function renderDistributionChart() {
+    const page = $('page-distribution');
+    if (!page) return;
+    const tabs = page.querySelector('.workspace-tabs') || page.querySelector(':scope > .hero');
+    if (!tabs) return;
+    const card = ensureCard(page,'studio-distribution-settlement-chart','Royalty settlements over time','Cash receipts recorded by the distribution settlement engine, grouped by settlement month.','SETTLEMENT HISTORY');
+    if (!card) return;
+    tabs.insertAdjacentElement('afterend',card);
+    if (!page.classList.contains('active')) return;
+    const settlements=Array.isArray(active?.distribution?.settlements)?active.distribution.settlements:[];
+    if (!settlements.length) {
+      showEmpty('studio-distribution-settlement-chart','Royalty settlement history will appear after a distribution partner pays the first statement.');
+      return;
+    }
+    const grouped=new Map();
+    settlements.forEach(item=>{
+      if(!validDate(item.date))return;
+      const month=item.date.slice(0,7);
+      grouped.set(month,(grouped.get(month)||0)+number(item.amount));
+    });
+    const rows=Array.from(grouped.entries()).sort((a,b)=>a[0].localeCompare(b[0])).slice(-36);
+    mount('studio-distribution-settlement-chart',{
+      animationDuration:420,
+      grid:{left:58,right:18,top:18,bottom:38},
+      tooltip:{trigger:'axis',backgroundColor:'#111a1f',borderColor:'#6f624e',textStyle:{color:'#eee9dc'},formatter:items=>items[0].axisValue+'<br><b>'+number(items[0].data).toLocaleString()+'</b>'},
+      xAxis:{type:'category',data:rows.map(row=>row[0]),axisLabel:{color:'#a3b0ab',fontSize:8,hideOverlap:true},axisLine:{lineStyle:{color:'#46545a'}},axisTick:{show:false}},
+      yAxis:{type:'value',axisLabel:{color:'#a3b0ab',fontSize:9},splitLine:{lineStyle:{color:'rgba(137,157,155,.13)',type:'dashed'}}},
+      series:[{type:'line',smooth:.25,symbol:'circle',symbolSize:5,data:rows.map(row=>round2(row[1])),lineStyle:{width:2.5,color:'#c2a477'},itemStyle:{color:'#e5c89d'},areaStyle:{color:'rgba(199,164,117,.12)'}}]
+    });
+  }
+  function renderFounderAssetsChart() {
+    const page = $('page-personal');
+    if (!page) return;
+    const tabs = page.querySelector('.workspace-tabs') || page.querySelector(':scope > .hero');
+    if (!tabs) return;
+    const card = ensureCard(page,'studio-personal-assets-chart','Founder personal balance','Personal cash, asset values and personal debt are kept separate from company accounts.','FOUNDER FINANCES');
+    if (!card) return;
+    tabs.insertAdjacentElement('afterend',card);
+    if (!page.classList.contains('active')) return;
+    const founder=active?.founder;
+    if (!founder) {showEmpty('studio-personal-assets-chart','Founder financial data will appear after a campaign is created.');return;}
+    const rows=[];
+    if(number(founder.personalCash)>0)rows.push({name:'Cash',value:number(founder.personalCash)});
+    (Array.isArray(founder.personalAssets)?founder.personalAssets:[]).forEach(asset=>{if(number(asset.currentValue)>0)rows.push({name:String(asset.name||asset.type||'Personal asset'),value:number(asset.currentValue)});});
+    if(number(founder.personalDebt)>0)rows.push({name:'Debt',value:number(founder.personalDebt)});
+    if(!rows.length){showEmpty('studio-personal-assets-chart','No personal assets or cash balances have been recorded.');return;}
+    mount('studio-personal-assets-chart',{
+      animationDuration:420,
+      tooltip:{trigger:'item',backgroundColor:'#111a1f',borderColor:'#6f624e',textStyle:{color:'#eee9dc'},formatter:item=>item.name+'<br><b>'+item.value.toLocaleString()+'</b> ('+item.percent+'%)'},
+      legend:{type:'scroll',bottom:0,textStyle:{color:'#a8b4b0',fontSize:9}},
+      series:[{type:'pie',radius:['38%','70%'],center:['50%','44%'],itemStyle:{borderColor:'#152025',borderWidth:3},label:{color:'#dfe3da',fontSize:9,formatter:'{b}'},data:rows}]
+    });
+  }
   function refresh() {
     renderOverviewChart();
     renderFinanceChart();
@@ -295,6 +437,11 @@
     renderProductionChart();
     renderRegionalEconomyChart();
     renderPopulationChart();
+    renderWorkforceChart();
+    renderGenreDemandChart();
+    renderMediaCoverageChart();
+    renderDistributionChart();
+    renderFounderAssetsChart();
     for (const [id,chart] of charts) if (!$(id+'-plot')?.isConnected) {
       chart.dispose();
       charts.delete(id);
