@@ -56,7 +56,13 @@
         instance = echarts.init(plot,null,{renderer:'canvas',useDirtyRect:true});
         charts.set(id,instance);
       }
-      instance.setOption(option,{notMerge:true,lazyUpdate:true});
+      instance.setOption({
+        backgroundColor:'transparent',
+        color:['#c2a477','#7e9f93','#718ba7','#b87965','#8e83a6','#a4a77a','#5f9ca0','#c1a0ac'],
+        textStyle:{fontFamily:'Inter, system-ui, sans-serif',color:'#b6c1bc'},
+        aria:{enabled:true},
+        ...option
+      },{notMerge:true,lazyUpdate:true});
       instance.resize();
     }).catch(error => {
       plot.classList.add('studio-chart-empty');
@@ -176,7 +182,7 @@
       animationDuration:420,
       tooltip:{trigger:'item',backgroundColor:'#111a1f',borderColor:'#6f624e',textStyle:{color:'#eee9dc'},formatter:item=>item.name+'<br><b>'+item.value.toLocaleString()+'</b> ('+item.percent+'%)'},
       legend:{type:'scroll',bottom:0,textStyle:{color:'#a8b4b0',fontSize:9},pageTextStyle:{color:'#a8b4b0'}},
-      series:[{type:'pie',radius:['38%','70%'],center:['50%','44%'],roseType:false,itemStyle:{borderColor:'#152025',borderWidth:3},label:{color:'#dfe3da',fontSize:9,formatter:'{b}'},labelLine:{lineStyle:{color:'#667671'}},data:rows}]
+      series:[{type:'pie',radius:['38%','70%'],center:['50%','44%'],itemStyle:{borderColor:'#152025',borderWidth:3},label:{color:'#dfe3da',fontSize:9,formatter:'{b}'},labelLine:{lineStyle:{color:'#667671'}},data:rows}]
     });
   }
   function renderProductionChart() {
