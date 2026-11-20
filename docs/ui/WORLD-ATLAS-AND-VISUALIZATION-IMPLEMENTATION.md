@@ -196,3 +196,12 @@ Calendar now separates upcoming events, world-clock controls and simulation hist
 Sandbox keeps the cheat command console visible as the primary testing surface and separates achievements from the permanent cheat audit. The `cheatstatus`, `cheatcommand`, `cheatresult`, `achievementcount`, `achievementlist`, `auditcount` and `cheataudit` targets remain in place, as do the existing `runCheat()` and `showCheatHelp()` actions.
 
 Validation on code commit `bc25fe77b3e5230b4fccee134aca50ce49a5f6cc` passed GitHub Actions run 44762388391: 44 successful steps and zero failures. The run covered the native desktop/mobile UI suite and the expanded Calendar, Sandbox, Legal, Awards, Facilities, IP, Company, Founder, People, Talent, Market, Media, Finance and Production workspace assertions, every phase browser suite through Phase 13, the one-year save round-trip, geography/travel and the three-year cross-phase integration stress test.
+
+
+## Campaign Library and save portability pass
+
+The Campaigns page now separates the local save library from the backup/restore workflow. The create-campaign action remains in the page hero; `savecount` and `savelist` remain in the Save Library workspace; the active-save export action and `importfile` input remain in Backup & Restore. The input stays visually hidden behind its visible file-picker label, as before. The local save engine and JSON format were not changed.
+
+The one-year save regression now opens the Backup & Restore workspace before invoking Export active save. This updates the browser test to follow the actual two-tab player workflow rather than clicking an action in a hidden workspace.
+
+Validation on code commit `e2d9d68ddcb8fa8af77ac026437849f34d73df5c` passed in GitHub Actions run 44763999300: 44 successful steps, zero failures. The save round-trip included 365/365 daily simulation steps, export, re-import and restored campaign assertions; the three-year cross-phase integration stress test also passed.
