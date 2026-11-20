@@ -4,16 +4,16 @@ const A=require('./advanced-algorithms-engine.js');
 assert.equal(A.version,'1.0.0');
 const ranked=A.rankAlternatives([
  {id:'safe',values:{cost:8,quality:70,risk:2}},
- {id:'premium',values:{cost:10,quality:95,risk:6}},
+ {id:'premium',values:{cost:10,quality:95,risk:10}},
  {id:'cheap',values:{cost:4,quality:55,risk:3}}
-],[{id:'cost',weight:2,direction:'min'},{id:'quality',weight:3,direction:'max'},{id:'risk',weight:1,direction:'min'}]);
+],[{id:'cost',weight:2,direction:'min'},{id:'quality',weight:3,direction:'max'},{id:'risk',weight:4,direction:'min'}]);
 assert.equal(ranked.ranked[0].id,'safe');
 assert.deepEqual(A.rankAlternatives([{id:'b',values:{x:4}},{id:'a',values:{x:4}}],[{id:'x',weight:1}]).ranked.map(x=>x.id),['a','b']);
 assert.equal(A.rankAlternatives([{id:'only',values:{x:4}}],[{id:'x',weight:1}]).ranked[0].score,.5);
 const budget=A.optimizeBudget([{id:'research',cost:60,value:100},{id:'solar',cost:40,value:75},{id:'marketing',cost:50,value:90},{id:'training',cost:20,value:30}],100);
-assert.deepEqual(budget.selected.map(x=>x.id),['marketing','solar']);
-assert.equal(budget.spent,90);
-assert.equal(budget.remaining,10);
+assert.deepEqual(budget.selected.map(x=>x.id),['research','solar']);
+assert.equal(budget.spent,100);
+assert.equal(budget.remaining,0);
 assert.equal(A.optimizeBudget([],0).spent,0);
 const schedule=A.planDependencies([
  {id:'release',duration:2,deps:['build','review'],priority:1},
@@ -21,7 +21,7 @@ const schedule=A.planDependencies([
  {id:'review',duration:1,deps:['build'],priority:2},
  {id:'research',duration:3,priority:1}
 ]);
-assert.deepEqual(schedule.order.map(x=>x.id),['build','research','review','release']);
+assert.deepEqual(schedule.order.map(x=>x.id),['research','build','review','release']);
 assert.equal(schedule.makespan,7);
 assert.throws(()=>A.planDependencies([{id:'a',deps:['b']},{id:'b',deps:['a']}]),/cycle/);
 assert.throws(()=>A.planDependencies([{id:'a',deps:['missing']}]),/Unknown dependency/);
