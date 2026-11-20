@@ -59,6 +59,7 @@
   let selectedItinerary = null;
   let itineraryOptions = [];
   let routeToDraw = null;
+  let globeMode = false;
   let geographyObserver = null;
   let travelObserver = null;
   let lastTravelRoot = null;
@@ -153,18 +154,33 @@
       }, 80);
     });
   }
-  function routeFeature(itinerary) {
-    const cities = itinerary?.legs?.map(leg => G.getCity(leg.fromCityId)).filter(Boolean) || [];
-    if (itinerary?.legs?.length) {
-      const finalCity = G.getCity(itinerary.legs[itinerary.legs.length - 1].toCityId);
-      if (finalCity) cities.push(finalCity);
+  function greatCircleSegment(from,to,steps=48) {
+    const rad=Math.PI/180,deg=180/Math.PI;
+    const lat1=from.latitude*rad,lon1=from.longitude*rad,lat2=to.latitude*rad,lon2=to.longitude*rad;
+    const a=[Math.cos(lat1)*Math.cos(lon1),Math.cos(lat1)*Math.sin(lon1),Math.sin(lat1)];
+    const b=[Math.cos(lat2)*Math.cos(lon2),Math.cos(lat2)*Math.sin(lon2),Math.sin(lat2)];
+    const dot=Math.max(-1,Math.min(1,a[0]*b[0]+a[1]*b[1]+a[2]*b[2]));
+    const omega=Math.acos(dot),sinOmega=Math.sin(omega),coords=[];
+    for(let i=0;i<=steps;i++){
+      const t=i/steps;
+      const wa=Math.abs(sinOmega)<1e-8?1-t:Math.sin((1-t)*omega)/sinOmega;
+      const wb=Math.abs(sinOmega)<1e-8?t:Math.sin(t*omega)/sinOmega;
+      const x=wa*a[0]+wb*b[0],y=wa*a[1]+wb*b[1],z=wa*a[2]+wb*b[2];
+      coords.push([Math.atan2(y,x)*deg,Math.atan2(z,Math.sqrt(x*x+y*y))*deg]);
     }
-    if (cities.length < 2) return null;
-    return {
-      type:'Feature',
-      geometry:{type:'LineString',coordinates:cities.map(city => [city.longitude,city.latitude])},
-      properties:{kind:'selected-itinerary'}
-    };
+    return coords;
+  }
+  function routeFeature(itinerary) {
+    if (!itinerary?.legs?.length) return null;
+    const coordinates=[];
+    itinerary.legs.forEach(leg=>{
+      const from=G.getCity(leg.fromCityId),to=G.getCity(leg.toCityId);
+      if(!from||!to)return;
+      const segment=greatCircleSegment(from,to);
+      coordinates.push(...(coordinates.length?segment.slice(1):segment));
+    });
+    if(coordinates.length<2)return null;
+    return {type:'Feature',geometry:{type:'LineString',coordinates},properties:{kind:'selected-itinerary'}};
   }
   function refreshRouteLayer() {
     if (!mapReady || !map) return;
@@ -213,6 +229,11 @@
         'circle-stroke-color':'#10171b',
         'circle-stroke-width':1.5
       }
+    });
+    map.addLayer({
+      id:'studio-city-labels',type:'symbol',source:'studio-cities',filter:['!', ['has','point_count']],minzoom:3.5,
+      layout:{'text-field':['get','name'],'text-size':['interpolate',['linear'],['zoom'],3.5,9,8,12],'text-offset':[0,1.15],'text-anchor':'top','text-optional':true},
+      paint:{'text-color':'#f0e7d4','text-halo-color':'#13212a','text-halo-width':1.5}
     });
     map.addSource('studio-flight-route',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
     map.addLayer({
@@ -287,6 +308,9 @@
         cooperativeGestures:true
       });
       map.addControl(new lib.NavigationControl({showCompass:true,showZoom:true}), 'top-right');
+      map.on('style.load',() => {
+        if(globeMode) map.setProjection({type:'globe'});
+      });
       map.on('load',() => {
         ensureMapLayers();
         setMapStatus('GLOBAL ATLAS ONLINE · ' + G.cities.filter(c => c.airport && Number.isFinite(c.latitude)).length + ' MAPPED CITY GATEWAYS','ready');
@@ -312,13 +336,19 @@
     return '<section class="studio-atlas" id="studio-world-atlas">' +
       '<div class="atlas-heading"><div><div class="atlas-kicker">WORLD INFRASTRUCTURE / LIVE REGISTRY</div><h2>Global atlas</h2><p>Explore mapped cities and airport gateways. Select a location to inspect it or use it as your next destination.</p></div>' +
       '<div class="atlas-heading-actions"><button class="atlas-secondary-action" id="atlas-current-location">◎ CENTRE ON ME</button><button class="atlas-secondary-action" id="atlas-clear-route">CLEAR ROUTE</button></div></div>' +
-      '<div class="atlas-grid"><div class="atlas-map-frame"><div class="atlas-map-toolbar"><label><span>FIND A CITY</span><input id="studio-atlas-search" list="studio-atlas-city-list" placeholder="Search city or country" autocomplete="off"><datalist id="studio-atlas-city-list">' + searchOptions + '</datalist></label><span class="atlas-map-legend"><i></i> AIRPORT / CITY GATEWAY <b></b> CLUSTER</span></div>' +
+      '<div class="atlas-grid"><div class="atlas-map-frame"><div class="atlas-map-toolbar"><label><span>FIND A CITY</span><input id="studio-atlas-search" list="studio-atlas-city-list" placeholder="Search city or country" autocomplete="off"><datalist id="studio-atlas-city-list">' + searchOptions + '</datalist></label><div class="atlas-map-tools"><button type="button" id="atlas-toggle-globe">VIEW 3D GLOBE</button><span class="atlas-map-legend"><i></i> AIRPORT / CITY GATEWAY <b></b> CLUSTER</span></div></div>' +
       '<div class="atlas-map-wrap"><div id="studio-world-map" aria-label="Interactive world map"></div><div class="atlas-map-status" id="studio-map-status" data-kind="loading">CONNECTING TO THE WORLD MAP</div><div class="atlas-fallback" id="studio-atlas-fallback" hidden>Map tiles could not be reached. Location search and travel data remain available; reconnect to load the basemap.</div></div>' +
       '<div class="atlas-map-footer"><span>GEOGRAPHIC REGISTRY · ' + G.countries.length + ' COUNTRIES / TERRITORIES</span><span>MAP STYLE CONFIGURABLE · CITY DATA FROM THE GAME ENGINE</span></div></div>' +
       '<aside class="atlas-detail-panel"><div class="atlas-detail-top"><span>LOCATION DOSSIER</span><span class="atlas-live-dot">WORLD DATA</span></div><div id="studio-atlas-detail">' + cityDetailMarkup(currentCity()) + '</div><div class="atlas-detail-note">Airport codes prefixed with SIM- represent generated regional gateways, not verified commercial airport identifiers.</div></aside></div>' +
       '</section>';
   }
   function bindAtlasControls() {
+    $('atlas-toggle-globe')?.addEventListener('click',() => {
+      globeMode=!globeMode;
+      if(map) map.setProjection({type:globeMode?'globe':'mercator'});
+      const button=$('atlas-toggle-globe');
+      if(button) button.textContent=globeMode?'VIEW FLAT MAP':'VIEW 3D GLOBE';
+    });
     $('atlas-current-location')?.addEventListener('click',() => {
       const city = currentCity();
       if (!city) return;
