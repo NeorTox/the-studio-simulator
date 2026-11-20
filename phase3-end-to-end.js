@@ -70,6 +70,8 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
  console.log('ASSET / INVESTMENT DRIFT',JSON.stringify(assetDrift));
  assert(assetDrift.property>12000);assert(assetDrift.vehicle<5000);assert(assetDrift.investment>1000);assert.equal(assetDrift.maintenance,24);
  await p.getByRole('button',{name:/Campaigns/}).click();
+ await p.locator('#page-campaign [data-workspace-tab="backup"]').click();
+ assert.equal(await p.locator('#page-campaign button[onclick*="exportSave"]').isVisible(),true,'Export action must be visible in Backup & Restore');
  const dlPromise=p.waitForEvent('download');
  await p.getByRole('button',{name:/Export active save/}).click();
  const dl=await dlPromise;

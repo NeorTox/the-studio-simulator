@@ -125,6 +125,8 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('#page-campaign button[onclick*="newCampaignForm"]').count(),1,'Create-campaign action remains mounted');
     assert.equal(await page.locator('#page-campaign button[onclick*="exportSave"]').count(),1,'Export-save action remains mounted');
     await page.locator('#page-campaign [data-workspace-tab="backup"]').click();
+    assert.equal(await page.locator('#page-campaign button[onclick*="exportSave"]').isVisible(),true,'Export-save action is visible in Backup & Restore');
+    assert.equal(await page.locator('#page-campaign label[for="importfile"]').isVisible(),true,'Import-save label remains visible');
     assert.equal(await page.locator('#importfile').isVisible(),false,'Import file input remains present but visually hidden behind its label');
     await page.locator('.nav button[data-page="calendar"]').click();
     assert.equal(await page.locator('#page-calendar .workspace-tab').count(),3,'Calendar has separate events, clock and history workspaces');
