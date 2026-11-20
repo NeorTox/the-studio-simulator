@@ -30,6 +30,23 @@ const assert = require('node:assert/strict');
       assert.equal(await page.locator('#page-'+route).evaluate(e=>e.classList.contains('active')),true,'Route renders: '+route);
     }
     await page.locator('.nav button[data-page="overview"]').click();
+    await page.locator('.nav button[data-page="finance"]').click();
+    assert.equal(await page.locator('#page-finance .workspace-tab').count(),5,'Finance is separated into five operational workspaces');
+    for (const tab of ['accounting','operations','capital','audit','overview']) {
+      await page.locator('#page-finance [data-workspace-tab="'+tab+'"]').click();
+      assert.equal(await page.locator('#page-finance [data-workspace-tab="'+tab+'"]').getAttribute('aria-selected'),'true');
+    }
+    await page.locator('.nav button[data-page="projects"]').click();
+    assert.equal(await page.locator('#page-projects .workspace-tab').count(),2,'Production slate and contracts are separate workspaces');
+    await page.locator('#page-projects [data-workspace-tab="contracts"]').click();
+    assert.equal(await page.locator('#productioncontracts').isVisible(),true);
+    await page.locator('.nav button[data-page="talent"]').click();
+    assert.equal(await page.locator('#page-talent .workspace-tab').count(),2,'Talent roster and casting contracts are separated');
+    await page.locator('.nav button[data-page="market"]').click();
+    assert.equal(await page.locator('#page-market .workspace-tab').count(),4,'Market intelligence is grouped by player task');
+    await page.locator('.nav button[data-page="media"]').click();
+    assert.equal(await page.locator('#page-media .workspace-tab').count(),2,'Newsroom and publicity are separate workspaces');
+    await page.locator('.nav button[data-page="overview"]').click();
     await page.setViewportSize({width:390,height:844});
     await page.waitForTimeout(100);
     assert.equal(await page.locator('#mobile-nav').isVisible(),true,'Mobile has a dedicated bottom navigation bar');
