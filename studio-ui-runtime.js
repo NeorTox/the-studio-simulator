@@ -230,6 +230,18 @@
         {key:'slate',label:'Production slate',nodes:[slate]},
         {key:'contracts',label:'Contracts & payments',nodes:[contracts]}
       ],':scope > .hero');
+      const slatePanel = $('#page-projects-panel-slate');
+      const moveProductionTools = () => {
+        const developmentRoom = $('#phase5-development');
+        const productionOptimizer = $('#production-portfolio-optimizer');
+        if (developmentRoom && slatePanel && !slatePanel.contains(developmentRoom)) slatePanel.append(developmentRoom);
+        if (productionOptimizer && slatePanel && !slatePanel.contains(productionOptimizer)) slatePanel.append(productionOptimizer);
+      };
+      moveProductionTools();
+      if (slatePanel) {
+        const productionObserver = new MutationObserver(moveProductionTools);
+        productionObserver.observe(projects,{childList:true,subtree:true});
+      }
     }
     const talent = $('#page-talent');
     if (talent) {
