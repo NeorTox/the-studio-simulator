@@ -261,7 +261,14 @@
         {key:'contracts',label:'Casting agreements',nodes:[contracts]}
       ],':scope > .talent-metric-rail');
     }
-        const calendar = $('#page-calendar');
+        const campaigns = $('#page-campaign');
+    if (campaigns) {
+      installWorkspaceTabs('page-campaign',[
+        {key:'library',label:'Save library',nodes:[$('#campaign-library-workspace')]},
+        {key:'backup',label:'Backup & restore',nodes:[$('#campaign-backup-workspace')]}
+      ],':scope > .hero');
+    }
+    const calendar = $('#page-calendar');
     if (calendar) {
       installWorkspaceTabs('page-calendar',[
         {key:'events',label:'Upcoming events',nodes:[$('#calendar-events-workspace')]},
