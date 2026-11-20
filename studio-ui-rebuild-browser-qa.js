@@ -67,6 +67,7 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('#studio-finance-category-chart').count(),1,'Finance exposes a real expense-category chart');
     assert.equal(await page.locator('#studio-finance-category-chart').evaluate(e=>e.parentElement.id),'finance-overview-charts','Expense chart is mounted in the Finance overview workspace');
     assert.equal(await page.locator('#studio-finance-portfolio-chart').count(),1,'Finance exposes a real treasury and investment allocation chart');
+    assert.equal(await page.locator('#studio-finance-portfolio-chart').evaluate(e=>e.parentElement.id),'finance-overview-charts','Treasury chart is mounted in the Finance overview workspace');
     for (const tab of ['accounting','operations','capital','investments','audit','overview']) {
       await page.locator('#page-finance [data-workspace-tab="'+tab+'"]').click();
       assert.equal(await page.locator('#page-finance [data-workspace-tab="'+tab+'"]').getAttribute('aria-selected'),'true');
