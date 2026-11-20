@@ -376,3 +376,19 @@
  .campaign-backup-actions .btn{width:100%;justify-content:center}
 }
 @media(max-width:390px){.campaign-backup-actions{grid-template-columns:minmax(0,1fr)}}
+
+
+/* Dynamic World expansion pages: keep the engine's live regions inside task-oriented panels. */
+.studio-operational-workspace{display:grid;gap:13px;min-width:0}
+.studio-operational-workspace-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:6px 2px 13px;border-bottom:1px solid rgba(151,170,162,.16)}
+.studio-operational-workspace-heading .eyebrow{color:#c1a477;font-size:8px;font-weight:900;letter-spacing:.14em}
+.studio-operational-workspace-heading h2{margin:5px 0 4px;color:#ecebe3;font-size:clamp(17px,2vw,22px);font-weight:850;letter-spacing:-.025em}
+.studio-operational-workspace-heading p{max-width:720px;margin:0;color:#8e9d98;font-size:10px;line-height:1.6}
+.studio-operational-workspace-body{display:grid;gap:12px;min-width:0}
+.studio-operational-workspace-body>.card{min-width:0;margin:0!important}
+.distribution-settlement-chart-slot,.population-age-chart-slot{min-width:0}
+.distribution-settlement-chart-slot>.studio-chart-card,.population-age-chart-slot>.studio-chart-card{margin:0}
+@media(max-width:760px){
+ .studio-operational-workspace-heading{align-items:flex-start;flex-direction:column;gap:8px}
+ .studio-operational-workspace-body{gap:10px}
+}

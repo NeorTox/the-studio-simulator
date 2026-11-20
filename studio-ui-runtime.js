@@ -191,6 +191,49 @@
     try { preferred = sessionStorage.getItem('studio-ui-tab-'+pageId) || preferred; } catch (_) {}
     activateTab(available.some(group => group.key === preferred) ? preferred : available[0].key);
   }
+  function makeOperationalWorkspace(config) {
+    const section = document.createElement('section');
+    section.className = 'studio-operational-workspace';
+    section.id = config.id;
+    const heading = document.createElement('div');
+    heading.className = 'studio-operational-workspace-heading';
+    const copy = document.createElement('div');
+    const kicker = document.createElement('div');
+    kicker.className = 'eyebrow';
+    kicker.textContent = config.kicker;
+    const title = document.createElement('h2');
+    title.textContent = config.title;
+    const description = document.createElement('p');
+    description.textContent = config.description;
+    copy.append(kicker,title,description);
+    const tag = document.createElement('span');
+    tag.className = 'finance-workspace-tag';
+    tag.textContent = config.tag;
+    heading.append(copy,tag);
+    const body = document.createElement('div');
+    body.className = 'studio-operational-workspace-body';
+    (config.nodes || []).filter(Boolean).forEach(node => body.append(node));
+    section.append(heading,body);
+    return section;
+  }
+  function installOperationalWorkspaces(pageId, configs, anchorSelector) {
+    const page = $('#'+pageId);
+    if (!page || page.dataset.operationalWorkspaces === 'true') return;
+    const groups = configs.map(config => ({...config,node:makeOperationalWorkspace(config)}));
+    const anchor = anchorSelector ? page.querySelector(anchorSelector) : page.querySelector(':scope > .hero');
+    let previous = anchor;
+    groups.forEach(group => {
+      if (previous) previous.after(group.node);
+      else page.append(group.node);
+      previous = group.node;
+    });
+    installWorkspaceTabs(pageId,groups.map(group => ({
+      key:group.key,
+      label:group.label,
+      nodes:[group.node]
+    })),anchorSelector);
+    page.dataset.operationalWorkspaces = 'true';
+  }
   function installScreenSections() {
     const finance = $('#page-finance');
     if (finance) {
@@ -299,13 +342,99 @@
     }
     const distribution = $('#page-distribution');
     if (distribution) {
+      const stats = distribution.querySelector(':scope > .grid.stats');
       const grid = distribution.querySelector(':scope > .grid.cols');
       const agreements = grid?.querySelector(':scope > .card:has(#distributionlist)');
       const settlements = grid?.querySelector(':scope > .card:has(#settlementlist)');
-      installWorkspaceTabs('page-distribution',[
-        {key:'rights',label:'Rights agreements',nodes:[agreements]},
-        {key:'settlements',label:'Royalty settlements',nodes:[settlements]}
-      ],':scope > .grid.stats');
+      const chartSlot = document.createElement('div');
+      chartSlot.id = 'distribution-settlement-chart-slot';
+      chartSlot.className = 'distribution-settlement-chart-slot';
+      chartSlot.setAttribute('aria-label','Royalty settlement history');
+      installOperationalWorkspaces('page-distribution',[
+        {key:'rights',label:'Rights agreements',id:'distribution-rights-workspace',kicker:'01 / RIGHTS PORTFOLIO',title:'Rights agreements',description:'Manage territory-level agreements, partners and the rights currently active across the studio catalogue.',tag:'DISTRIBUTION',nodes:[stats,agreements]},
+        {key:'settlements',label:'Royalty settlements',id:'distribution-settlements-workspace',kicker:'02 / CASH RECEIPTS',title:'Royalty settlements',description:'Review partner statements and cash settlements received against active distribution agreements.',tag:'SETTLEMENT HISTORY',nodes:[settlements,chartSlot]}
+      ],':scope > .hero');
+      if (grid && !grid.children.length) grid.remove();
+    }
+    const digital = $('#page-digital');
+    if (digital) {
+      const stats = digital.querySelector(':scope > .grid.stats');
+      const portfolio = digital.querySelector(':scope > .card:has(#digitallist)');
+      installOperationalWorkspaces('page-digital',[
+        {key:'performance',label:'Platform performance',id:'digital-performance-workspace',kicker:'01 / BUSINESS PERFORMANCE',title:'Digital platform performance',description:'Track active services, subscriber scale, recurring revenue and modeled installs.',tag:'LIVE CAMPAIGN DATA',nodes:[stats]},
+        {key:'portfolio',label:'Platform portfolio',id:'digital-portfolio-workspace',kicker:'02 / SERVICE PORTFOLIO',title:'Platform portfolio',description:'Review each streaming, mobile and direct-to-consumer service in the studio group.',tag:'PLATFORM REGISTER',nodes:[portfolio]}
+      ],':scope > .hero');
+    }
+    const sustainability = $('#page-sustainability');
+    if (sustainability) {
+      const stats = sustainability.querySelector(':scope > .grid.stats');
+      const grid = sustainability.querySelector(':scope > .grid.cols');
+      const operating = grid?.querySelector(':scope > .card:has(#sustaincontrols)');
+      const investments = grid?.querySelector(':scope > .card:has(#greeninvestments)');
+      const history = sustainability.querySelector(':scope > .card:has(#carbonhistory)');
+      installOperationalWorkspaces('page-sustainability',[
+        {key:'operations',label:'Environmental profile',id:'sustainability-operations-workspace',kicker:'01 / OPERATING FOOTPRINT',title:'Environmental operating profile',description:'Review energy, emissions, renewable share, water, waste and current environmental obligations.',tag:'MONTHLY MODEL',nodes:[stats,operating]},
+        {key:'investments',label:'Green investments',id:'sustainability-investments-workspace',kicker:'02 / CAPITAL ALLOCATION',title:'Green investment portfolio',description:'Inspect approved and completed investments that improve the studio environmental profile.',tag:'INVESTMENT REGISTER',nodes:[investments]},
+        {key:'history',label:'Performance history',id:'sustainability-history-workspace',kicker:'03 / LONGITUDINAL RECORD',title:'Environmental performance history',description:'Review the recorded history of emissions, energy and environmental progress.',tag:'HISTORY',nodes:[history]}
+      ],':scope > .hero');
+      if (grid && !grid.children.length) grid.remove();
+    }
+    const governance = $('#page-governance');
+    if (governance) {
+      const stats = governance.querySelector(':scope > .grid.stats');
+      const grid = governance.querySelector(':scope > .grid.cols');
+      const board = grid;
+      const resolutions = governance.querySelector(':scope > .card:has(#resolutionlist)');
+      installOperationalWorkspaces('page-governance',[
+        {key:'board',label:'Board & ownership',id:'governance-board-workspace',kicker:'01 / OVERSIGHT',title:'Board & ownership',description:'Review the directors, shareholder register and governance indicators shaping corporate oversight.',tag:'CORPORATE GOVERNANCE',nodes:[stats,board]},
+        {key:'resolutions',label:'Board resolutions',id:'governance-resolutions-workspace',kicker:'02 / DECISION RECORD',title:'Board resolutions',description:'Inspect recorded proposals, voting outcomes and formal decisions.',tag:'RESOLUTION REGISTER',nodes:[resolutions]}
+      ],':scope > .hero');
+      if (grid && !grid.children.length) grid.remove();
+    }
+    const population = $('#page-population');
+    if (population) {
+      const stats = population.querySelector(':scope > #npcstats');
+      const people = population.querySelector(':scope > .card:has(#npclist)');
+      const events = population.querySelector(':scope > .card:has(#npcevents)');
+      const hint = population.querySelector(':scope > .hint');
+      const chartSlot = document.createElement('div');
+      chartSlot.id = 'population-age-chart-slot';
+      chartSlot.className = 'population-age-chart-slot';
+      chartSlot.setAttribute('aria-label','Materialized population age profile');
+      installOperationalWorkspaces('page-population',[
+        {key:'registry',label:'People registry',id:'population-registry-workspace',kicker:'01 / MATERIALIZED PEOPLE',title:'Generated people',description:'Inspect the named NPC records currently materialized in this campaign and generate additional people when needed.',tag:'NPC REGISTRY',nodes:[stats,people,chartSlot]},
+        {key:'life',label:'World life events',id:'population-life-workspace',kicker:'02 / AUTONOMOUS LIFE',title:'World life events',description:'Follow recorded births, careers, relationships and other events in the virtual population.',tag:'LIFE EVENTS',nodes:[events,hint]}
+      ],':scope > .hero');
+    }
+    const algorithms = $('#page-algorithms');
+    if (algorithms) {
+      const catalog = algorithms.querySelector(':scope > .card:has(#algorithmcatalog)');
+      const results = algorithms.querySelector(':scope > .card:has(#algorithmresults)');
+      installOperationalWorkspaces('page-algorithms',[
+        {key:'inventory',label:'Algorithm inventory',id:'algorithms-inventory-workspace',kicker:'01 / MODEL COVERAGE',title:'Algorithm inventory',description:'Review which simulation models are implemented, partial or still outstanding.',tag:'REQUIREMENTS REGISTER',nodes:[catalog]},
+        {key:'audit',label:'Validation results',id:'algorithms-audit-workspace',kicker:'02 / VALIDATION',title:'Algorithm validation',description:'Run checks and inspect the latest recorded validation results for the active campaign.',tag:'AUDIT RESULTS',nodes:[results]}
+      ],':scope > .hero');
+    }
+    const clock = $('#page-time');
+    if (clock) {
+      const status = clock.querySelector(':scope > .card:has(#clockdate)');
+      const rules = clock.querySelector(':scope > .grid.cols');
+      installOperationalWorkspaces('page-time',[
+        {key:'status',label:'World clock status',id:'worldclock-status-workspace',kicker:'01 / LIVE CLOCK',title:'In-game time',description:'Inspect the current simulated date and progression within the active world day.',tag:'WORLD CLOCK',nodes:[status]},
+        {key:'rules',label:'Simulation rules',id:'worldclock-rules-workspace',kicker:'02 / AUTOMATION',title:'What advances automatically',description:'Review the daily systems, recurring obligations and rules that govern automatic time progression.',tag:'CLOCK RULES',nodes:[rules]}
+      ],':scope > .hero');
+    }
+    const world = $('#page-world');
+    if (world) {
+      const box = world.querySelector(':scope > .worldbox');
+      const grid = world.querySelector(':scope > .grid.cols');
+      const profile = grid?.querySelector(':scope > .card:has(#worldprofile)');
+      const systems = grid?.querySelector(':scope > .card:has(#worldsystems)');
+      const hint = world.querySelector(':scope > .hint');
+      installOperationalWorkspaces('page-world',[
+        {key:'profile',label:'Era profile',id:'world-era-profile-workspace',kicker:'01 / HISTORICAL CONTEXT',title:'Era profile',description:'Review the campaign era, its tools, market conditions and the historical constraints available to the studio.',tag:'WORLD BASELINE',nodes:[profile,box]},
+        {key:'systems',label:'Historical systems',id:'world-historical-systems-workspace',kicker:'02 / WORLD RULES',title:'Historical systems',description:'Inspect the era-based systems and the limits of the historical simulation.',tag:'SIMULATION SCOPE',nodes:[systems,hint]}
+      ],':scope > .hero');
       if (grid && !grid.children.length) grid.remove();
     }
     const legal = $('#page-legal');

@@ -266,12 +266,11 @@
   }
   function renderPopulationChart() {
     const page = $('page-population');
-    if (!page) return;
-    const hero = page.querySelector(':scope > .hero');
-    if (!hero) return;
-    const card = ensureCard(hero.parentElement,'studio-population-age-chart','Materialized population · age profile','Age distribution of named NPC records currently materialized in this campaign. This is not the full virtual population.','ACTIVE NPC RECORDS');
+    const parent = $('population-age-chart-slot');
+    if (!page || !parent) return;
+    const card = ensureCard(parent,'studio-population-age-chart','Materialized population · age profile','Age distribution of named NPC records currently materialized in this campaign. This is not the full virtual population.','ACTIVE NPC RECORDS');
     if (!card) return;
-    hero.insertAdjacentElement('afterend',card);
+    parent.appendChild(card);
     if (!page.classList.contains('active')) return;
     const rows = populationSeries();
     if (!rows) {
@@ -402,12 +401,11 @@
   }
   function renderDistributionChart() {
     const page = $('page-distribution');
-    if (!page) return;
-    const tabs = page.querySelector('.workspace-tabs') || page.querySelector(':scope > .hero');
-    if (!tabs) return;
-    const card = ensureCard(page,'studio-distribution-settlement-chart','Royalty settlements over time','Cash receipts recorded by the distribution settlement engine, grouped by settlement month.','SETTLEMENT HISTORY');
+    const parent = $('distribution-settlement-chart-slot');
+    if (!page || !parent) return;
+    const card = ensureCard(parent,'studio-distribution-settlement-chart','Royalty settlements over time','Cash receipts recorded by the distribution settlement engine, grouped by settlement month.','SETTLEMENT HISTORY');
     if (!card) return;
-    tabs.insertAdjacentElement('afterend',card);
+    parent.appendChild(card);
     if (!page.classList.contains('active')) return;
     const settlements=Array.isArray(active?.distribution?.settlements)?active.distribution.settlements:[];
     if (!settlements.length) {
