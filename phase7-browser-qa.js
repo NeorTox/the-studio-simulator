@@ -6,6 +6,8 @@ const {chromium}=require('playwright');
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{try{localStorage.setItem('the-studio-onboarding-v1','skipped')}catch(e){}});
  await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
+ await page.locator('#start-load').click();
+ await page.locator('[data-page="overview"]').click();
  await page.locator('#page-overview .hero .actions button').first().click();
  await page.getByRole('button',{name:/Create campaign/}).click();
  for(const [id,value] of [['nfounder','Phase Seven QA Founder'],['ncompany','Phase Seven QA Studios'],['ncountry','India'],['ncity','Mumbai']])await page.locator('#'+id).fill(value);
