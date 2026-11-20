@@ -56,6 +56,7 @@
   let mapLoading = null;
   let mapReady = false;
   let selectedCityId = null;
+  let selectedCountryId = null;
   let selectedItinerary = null;
   let itineraryOptions = [];
   let routeToDraw = null;
@@ -122,10 +123,49 @@
         (same ? 'CURRENT LOCATION' : 'SET AS DESTINATION  ↗') +
       '</button>';
   }
+  function countryDetailMarkup(country) {
+    const airports = G.cities.filter(city =>
+      city.countryId === country.id && city.airport &&
+      Number.isFinite(city.latitude) && Number.isFinite(city.longitude)
+    ).sort((a,b)=>a.name.localeCompare(b.name));
+    const options = airports.map(city =>
+      '<option value="' + esc(city.id) + '">' + esc(city.name + ' · ' + city.airport) + '</option>'
+    ).join('');
+    return '<div class="atlas-detail-kicker">SELECTED COUNTRY / TERRITORY</div>' +
+      '<div class="atlas-detail-name">' + esc(country.name) + '</div>' +
+      '<div class="atlas-detail-country">' + esc(country.continent || 'World') + ' · ' + esc(country.iso3 || country.id) + '</div>' +
+      '<div class="atlas-detail-grid">' +
+        '<div><span>CAPITAL</span><b>' + esc(country.capital || 'Not indexed') + '</b></div>' +
+        '<div><span>CURRENCY</span><b>' + esc(country.currency || 'Not indexed') + '</b></div>' +
+        '<div><span>LANGUAGES</span><b>' + esc((country.languages || []).slice(0,3).join(', ') || 'Not indexed') + '</b></div>' +
+        '<div><span>MAPPED AIRPORT GATEWAYS</span><b>' + airports.length + '</b></div>' +
+      '</div>' +
+      (airports.length ? '<div class="atlas-country-city-select"><label for="atlas-country-city">CHOOSE A DESTINATION CITY</label><select id="atlas-country-city"><option value="">Select a mapped airport city</option>' + options + '</select></div>' :
+        '<div class="atlas-detail-empty">No airport-enabled city is currently indexed for this country. Search another mapped city or use a nearby regional gateway.</div>');
+  }
+  function selectCountry(countryId, coordinates) {
+    const country = G.countries.find(item => item.id === countryId);
+    if (!country) return;
+    selectedCountryId = country.id;
+    selectedCityId = null;
+    const detail = $('studio-atlas-detail');
+    if (detail) detail.innerHTML = countryDetailMarkup(country);
+    const search = $('studio-atlas-search');
+    if (search) search.value = country.name;
+    const selector = $('atlas-country-city');
+    if (selector) selector.onchange = event => {
+      const cityId = event.target.value;
+      if (cityId) selectCity(cityId,false);
+    };
+    if (map && coordinates) {
+      map.flyTo({center:[coordinates.lng,coordinates.lat],zoom:Math.max(map.getZoom(),2.8),duration:700});
+    }
+  }
   function selectCity(cityId, flyTo) {
     const city = G.getCity(cityId);
     if (!city || !Number.isFinite(city.latitude) || !Number.isFinite(city.longitude)) return;
     selectedCityId = city.id;
+    selectedCountryId = null;
     const detail = $('studio-atlas-detail');
     if (detail) detail.innerHTML = cityDetailMarkup(city);
     const search = $('studio-atlas-search');
@@ -243,6 +283,15 @@
     map.on('click','studio-city-points',event => {
       const id = event.features?.[0]?.properties?.id;
       if (id) selectCity(id,false);
+    });
+    map.on('click',event => {
+      const cityHits = map.queryRenderedFeatures(event.point,{layers:['studio-city-points','studio-city-clusters']});
+      if (cityHits.length) return;
+      if (!map.getLayer('country-fill')) return;
+      const countries = map.queryRenderedFeatures(event.point,{layers:['country-fill']});
+      const iso3 = String(countries[0]?.properties?.ADM0_A3 || '');
+      const country = G.countries.find(item => String(item.iso3 || '').toUpperCase() === iso3.toUpperCase());
+      if (country) selectCountry(country.id,event.lngLat);
     });
     map.on('click','studio-city-clusters',event => {
       const features = map.queryRenderedFeatures(event.point,{layers:['studio-city-clusters']});
