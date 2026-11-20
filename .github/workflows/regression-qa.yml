@@ -102,6 +102,8 @@ jobs:
         run: node phase10-browser-qa.js
       - name: Validate and run Phase 11 technology and sustainability regression
         run: node --check phase11-technology-sustainability-engine.js && node --check phase11-technology-sustainability-qa.js && node phase11-technology-sustainability-qa.js
+      - name: Validate and run research investment optimizer regression
+        run: node --check phase11-research-portfolio-optimizer.js && node --check phase11-research-portfolio-qa.js && node phase11-research-portfolio-qa.js
       - name: Run Phase 11 technology and sustainability browser QA
         run: node phase11-browser-qa.js
       - name: Run global geography and travel browser regression
