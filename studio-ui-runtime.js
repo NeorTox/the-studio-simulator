@@ -202,7 +202,7 @@
         {key:'operations',label:'Operations',nodes:[byTitle('Receivables & payables'),byTitle('Fixed asset register')]},
         {key:'capital',label:'Debt & Treasury',nodes:[byTitle('Debt facilities'),byTitle('Corporate tax estimation'),byTitle('Foreign exchange & treasury wallets')]},
         {key:'audit',label:'Audit',nodes:[byTitle('Financial integrity')]}
-      ],'#page-finance > .grid.stats');
+      ],':scope > .grid.stats');
     }
     const projects = $('#page-projects');
     if (projects) {
@@ -211,7 +211,7 @@
       installWorkspaceTabs('page-projects',[
         {key:'slate',label:'Production slate',nodes:[slate]},
         {key:'contracts',label:'Contracts & payments',nodes:[contracts]}
-      ],'#page-projects > .hero');
+      ],':scope > .hero');
     }
     const talent = $('#page-talent');
     if (talent) {
@@ -220,7 +220,7 @@
       installWorkspaceTabs('page-talent',[
         {key:'roster',label:'Roster & auditions',nodes:[register]},
         {key:'contracts',label:'Casting contracts',nodes:[contracts]}
-      ],'#page-talent > .hero');
+      ],':scope > .hero');
     }
     const market = $('#page-market');
     if (market) {
@@ -233,7 +233,7 @@
         {key:'markets',label:'Markets & investment',nodes:[byTitle('Equity market'),byTitle('Treasury portfolio & trading')]},
         {key:'competition',label:'Competitors',nodes:[byTitle('Competitor register'),byTitle('Autonomous competitor operations')]},
         {key:'workforce',label:'Labour market',nodes:[byTitle('Entertainment labour market')]}
-      ],'#page-market > .grid.stats');
+      ],':scope > .grid.stats');
     }
     const media = $('#page-media');
     if (media) {
@@ -243,7 +243,7 @@
       installWorkspaceTabs('page-media',[
         {key:'newsroom',label:'Newsroom & coverage',nodes:[newsroom]},
         {key:'publicity',label:'Publicity campaigns',nodes:[publicity]}
-      ],'#page-media > .grid.stats');
+      ],':scope > .grid.stats');
     }
   }
   installScreenSections();
