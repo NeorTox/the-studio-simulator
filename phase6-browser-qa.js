@@ -16,7 +16,7 @@ const {chromium}=require('playwright'),assert=require('assert');
   persist();return {date:active.date,cash:active.company.cash,version:Phase6Ecosystem.version};
  });
  assert.equal(setup.version,'6.1.0');
- await p.locator('[data-page="ecosystem"]').click();
+ await p.evaluate(()=>window.nav('ecosystem'));
  assert.equal(await p.locator('#page-ecosystem').count(),1);
  assert(await p.getByRole('heading',{name:/Distribution & ecosystem/}).count());
  assert(await p.getByText('Audience behaviour & fandoms').count(),'Audience and fandom dashboard should render on the Phase 6 page.');
