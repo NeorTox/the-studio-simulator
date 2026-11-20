@@ -161,3 +161,18 @@ The latest push regression completed successfully on commit `45ba292f42da8c9872e
 - Three-year cross-phase integration stress test and the one-year save/reload round-trip.
 
 The browser tests were updated to use the current startup contract: `#start-new` opens the creation modal directly, so they now fill the open form without attempting to click an obsolete intermediate “New campaign” or “Create campaign” control. The atlas MapLibre load callback also preserves an explicit country/city selection if map initialization completes asynchronously afterward.
+
+
+## People, Talent, Market and Media native workspace pass
+
+The People page is now organised into an employee-register workspace and a workforce-intelligence workspace. Its hire action and engine render targets (`payrolltotal`, `peoplelist`) remain unchanged. The workforce chart groups active employee records by department and uses their recorded monthly salaries; it shows an explicit empty state before the first hire.
+
+Talent is organised into roster/audition and casting-agreement workspaces. The original `talentcount`, `contractcount`, `talentroster`, `auditionlist` and `contractlist` targets remain intact, along with `startAudition()`, shortlisted-applicant promotion and `offerRole()`. The capability chart reads acting skill and star power from available or contracted roster records; it does not create synthetic performers.
+
+Market is divided into Industry & Economy, Equities & Treasury, Competitors and Labour Market. Existing market statistics, genre/news, macro dashboard, equities, portfolio, orders, dividends, competitors, labour model, rival operations and historical-entity targets remain in their original engine-owned render IDs. The genre-demand and regional-economy charts now live within the Industry & Economy workspace. Acquisition and share-order actions are retained.
+
+Media is divided into Newsroom & Coverage and Publicity Campaigns. Its original outlet, coverage, campaign and eight media KPI targets remain in place, and the publicity action still invokes `launchMediaCampaign()`. The press-cycle coverage chart is housed inside the newsroom workspace and continues to use the coverage records' dates and reach indices.
+
+Responsive styles collapse the Market insight charts and Media/People/Talent workspace grids on narrow viewports. These are presentation changes around the existing campaign state; they do not replace the market, media, payroll, audition, talent or contract engines.
+
+Validation on code commit `c18cf6aa6651e77e003c809d2bc9f8e094157a0f` completed successfully in GitHub Actions run 44760484830: 44 successful steps, zero failures. The run included native desktop/mobile UI browser QA, Market and Media workspace/chart assertions, People/Talent/Finance/Production checks, all phase browser suites through Phase 13, geography/travel, the one-year save/reload round-trip and the three-year cross-phase integration stress test.
