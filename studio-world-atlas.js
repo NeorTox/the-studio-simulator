@@ -379,7 +379,9 @@
         ensureMapLayers();
         setMapStatus('GLOBAL ATLAS ONLINE · ' + G.cities.filter(c => c.airport && Number.isFinite(c.latitude)).length + ' MAPPED CITY GATEWAYS','ready');
         const start = currentCity();
-        if (start) selectCity(start.id,false);
+        // MapLibre can finish booting after a user has already selected a country or city.
+        // Preserve that explicit selection instead of replacing its dossier with the default city.
+        if (start && !selectedCountryId && !selectedCityId) selectCity(start.id,false);
         refreshRouteLayer();
       });
       map.on('error',event => {
