@@ -44,6 +44,8 @@ jobs:
             curl -fsS http://127.0.0.1:4173/index.html >/dev/null && break
             sleep 1
           done
+      - name: Validate autonomous competitor executive decision syntax
+        run: node --check phase10-autonomous-competitors-engine.js && node --check phase10-autonomous-competitors-qa.js && node --check phase10-browser-qa.js
       - name: Run redesigned UI preview browser regression
         timeout-minutes: 6
         run: node studio-ui-next-browser-qa.js
