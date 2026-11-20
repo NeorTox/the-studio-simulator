@@ -13,13 +13,20 @@ const assert = require('node:assert/strict');
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
   await page.addInitScript(() => { window.__STUDIO_DISABLE_AUTO_TUTORIAL = true; });
   try {
-    console.log('UI_QA_STAGE: opening preview');
+    console.log('UI_QA_STAGE: opening default game UI');
+    await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'domcontentloaded', timeout: 15000 });
+    await page.waitForTimeout(250);
+    assert.equal(await page.locator('body').evaluate(el => el.classList.contains('stui-next')), true, 'The full game interface is the default application experience');
+    assert.equal(await page.locator('.stui-game-ribbon').count(), 1, 'Default route mounts the persistent campaign HUD');
+    console.log('UI_QA_STAGE: default game UI launch passed');
+    console.log('UI_QA_STAGE: opening explicit game UI route');
     await page.goto('http://127.0.0.1:4173/index.html?ui=next', { waitUntil: 'domcontentloaded', timeout: 15000 });
-    console.log('UI_QA_STAGE: preview document loaded');
+    console.log('UI_QA_STAGE: game UI document loaded');
     await page.waitForTimeout(250);
     assert.equal(await page.locator('body').evaluate(el => el.classList.contains('stui-next')), true, 'Preview flag activates the redesigned shell');
-    assert.equal(await page.locator('.stui-preview-mode').innerText(), 'DESIGN PREVIEW');
+    assert.equal(await page.locator('.stui-game-mode').innerText(), 'LIVE SIMULATION');
     assert.equal(await page.locator('.stui-nav-group').count() >= 5, true, 'Primary navigation is grouped by player intent');
+    assert.equal(await page.locator('.stui-create-campaign').evaluate(el => el.nextElementSibling === document.querySelector('.stui-nav-container')), true, 'Campaign launch is positioned above navigation');
     for (const group of ['home', 'life', 'world', 'studio', 'empire', 'advanced']) {
       assert.equal(await page.locator('[data-nav-group="' + group + '"]').count(), 1, 'Navigation group exists: ' + group);
     }
@@ -27,6 +34,30 @@ const assert = require('node:assert/strict');
     const routeIds = await page.locator('.nav button[data-page]').evaluateAll(nodes => nodes.map(node => node.dataset.page));
     assert(routeIds.includes('overview') && routeIds.includes('personal') && routeIds.includes('globaltravel') && routeIds.includes('company') && routeIds.includes('finance'));
     assert.equal(new Set(routeIds).size, routeIds.length, 'Every route appears exactly once in navigation');
+
+    // The game overhaul must feel and render like a landscape strategy game,
+    // not merely expose the earlier grouped SaaS navigation.
+    assert.equal(await page.locator('.stui-game-ribbon').count(), 1, 'Persistent campaign HUD is mounted');
+    assert.equal(await page.locator('.stui-command-brief').count(), 1, 'Overview has a game command briefing');
+    assert.equal(await page.locator('.stui-time-control-label').innerText(), 'SIMULATION CONTROLS');
+    assert.equal(await page.locator('.stui-workspace-index').count() >= 5, true, 'Workspaces carry game chapter markers');
+    assert.match(await page.locator('#page-overview .h1').innerText(), /Command your studio/i);
+    const gamePresentation = await page.evaluate(() => ({
+      shellColumns: getComputedStyle(document.querySelector('.shell')).gridTemplateColumns,
+      sidebarPosition: getComputedStyle(document.querySelector('.side')).position,
+      sidebarWidth: Math.round(document.querySelector('.side').getBoundingClientRect().width),
+      panelRadius: getComputedStyle(document.querySelector('#page-overview .card')).borderRadius,
+      buttonRadius: getComputedStyle(document.querySelector('#page-overview .btn')).borderRadius,
+      hudColumns: getComputedStyle(document.querySelector('.stui-game-ribbon')).gridTemplateColumns,
+      pageBackground: getComputedStyle(document.body).backgroundColor
+    }));
+    assert.match(gamePresentation.shellColumns, /^264px /, 'Game shell uses a dedicated command sidebar');
+    assert.equal(gamePresentation.sidebarPosition, 'sticky');
+    assert.equal(gamePresentation.sidebarWidth, 264);
+    assert.equal(gamePresentation.panelRadius, '3px', 'Panels use angular game framing instead of SaaS cards');
+    assert.equal(gamePresentation.buttonRadius, '3px', 'Controls use angular game styling');
+    assert.notEqual(gamePresentation.hudColumns, 'none');
+    console.log('UI_QA_STAGE: game presentation and live HUD passed');
 
     console.log('UI_QA_STAGE: shell and navigation assertions passed');
 
@@ -280,24 +311,33 @@ const assert = require('node:assert/strict');
         sideHeight: side.height,
         contentWidth: content.width,
         bodyWidth: document.body.scrollWidth,
-        navScrollable: document.querySelector('.nav').scrollWidth >= document.querySelector('.nav').clientWidth
+        navScrollable: document.querySelector('.nav').scrollHeight > document.querySelector('.nav').clientHeight,
+        sideWidth: side.width
       };
     });
-    assert(handheld.sideHeight < 390, 'Landscape navigation does not consume the whole viewport');
+    assert.equal(Math.round(handheld.sideWidth), 184, 'Landscape command sidebar stays in the left rail');
+    assert(handheld.sideHeight <= 390, 'Landscape sidebar fits the viewport');
     assert(handheld.contentWidth > 0);
     assert(handheld.bodyWidth <= handheld.width + 2, 'No horizontal page overflow on landscape handheld');
-    assert.equal(handheld.navScrollable, true, 'Grouped navigation can scroll horizontally on handheld');
+    assert.equal(handheld.navScrollable, true, 'Game navigation scrolls vertically inside the command rail');
 
     console.log('UI_QA_STAGE: landscape layout passed');
 
-    // The default production presentation is unchanged without the opt-in flag.
+    // The full game interface is now the default. Classic remains an explicit
+    // recovery/comparison route, never the normal player experience.
     const standard = await browser.newPage({ viewport: { width: 1365, height: 850 } });
     await standard.addInitScript(() => { window.__STUDIO_DISABLE_AUTO_TUTORIAL = true; });
     await standard.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'networkidle' });
-    assert.equal(await standard.locator('body').evaluate(el => el.classList.contains('stui-next')), false);
-    assert.equal(await standard.locator('.stui-preview-mode').count(), 0);
-    console.log('UI_QA_STAGE: default-mode isolation passed');
-    console.log('PASS redesigned shell, overview, campaign, Company, Finance, Productions, life, travel, geography, all routes, landscape layout and default-mode isolation');
+    assert.equal(await standard.locator('body').evaluate(el => el.classList.contains('stui-next')), true);
+    assert.equal(await standard.locator('.stui-game-ribbon').count(), 1);
+    assert.equal(await standard.locator('.stui-game-mode').innerText(), 'LIVE SIMULATION');
+    const classic = await browser.newPage({ viewport: { width: 1365, height: 850 } });
+    await classic.addInitScript(() => { window.__STUDIO_DISABLE_AUTO_TUTORIAL = true; });
+    await classic.goto('http://127.0.0.1:4173/index.html?ui=classic', { waitUntil: 'networkidle' });
+    assert.equal(await classic.locator('body').evaluate(el => el.classList.contains('stui-next')), false, 'Classic fallback is explicit, not the default');
+    assert.equal(await classic.locator('.stui-game-ribbon').count(), 0);
+    console.log('UI_QA_STAGE: default game mode and classic fallback passed');
+    console.log('PASS full game shell, live HUD, overview, campaign, Company, Finance, Productions, life, travel, geography, all routes, landscape layout, default game UI and classic fallback');
   } finally {
     await browser.close();
   }

@@ -5,7 +5,7 @@
 (() => {
   'use strict';
   const params = new URLSearchParams(window.location.search);
-  if (params.get('ui') !== 'next') return;
+  if (params.get('ui') === 'classic') return;
 
   const stylesheet = document.createElement('link');
   stylesheet.rel = 'stylesheet';
@@ -103,7 +103,7 @@
   newCampaign.addEventListener('click', () => {
     if (typeof window.nav === 'function') window.nav('campaign');
   });
-  side.insertBefore(newCampaign, oldFoot || null);
+  side.insertBefore(newCampaign, nav.parentElement || oldFoot || null);
 
   const header = $('.top', main);
   if (header) {
@@ -296,8 +296,8 @@
 
   // A visible opt-in label makes this preview mode unmistakable.
   const mode = document.createElement('span');
-  mode.className = 'stui-preview-mode';
-  mode.textContent = 'DESIGN PREVIEW';
+  mode.className = 'stui-game-mode';
+  mode.textContent = 'LIVE SIMULATION';
   const topRight = $('.topright', header || document);
   if (topRight) topRight.append(mode);
 
@@ -722,4 +722,111 @@
   window.addEventListener('load', refreshPresentation, { once: true });
 
   console.info('[STUDIO_UI_NEXT] Preview shell active. Simulation engines and save data are unchanged.');
+})();
+
+
+/* GAME DECK LAYER — live campaign HUD and command presentation.
+   This layer changes presentation only; every value is mirrored from existing
+   simulation DOM nodes and every action remains owned by the original engine. */
+(() => {
+  'use strict';
+  if (new URLSearchParams(window.location.search).get('ui') === 'classic') return;
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const main = $('.main');
+  const top = $('.top');
+  const content = $('.content');
+  if (!main || !top || !content || $('.stui-game-ribbon')) return;
+
+  const ribbon = document.createElement('section');
+  ribbon.className = 'stui-game-ribbon';
+  ribbon.setAttribute('aria-label', 'Live campaign status');
+  ribbon.innerHTML = '<div class="stui-game-identity"><span class="stui-game-overline">LIVE WORLD</span><strong id="stui-hud-company">NO CAMPAIGN LOADED</strong><small id="stui-hud-location">Create a campaign to establish your studio</small></div><div class="stui-game-resources"><div class="stui-hud-stat"><span>TREASURY</span><strong id="stui-hud-cash">—</strong></div><div class="stui-hud-stat"><span>PRODUCTIONS</span><strong id="stui-hud-projects">—</strong></div><div class="stui-hud-stat"><span>WORKFORCE</span><strong id="stui-hud-staff">—</strong></div><div class="stui-hud-stat"><span>WORLD DATE</span><strong id="stui-hud-date">—</strong></div></div><div class="stui-game-clock"><span class="stui-live-dot"></span><span id="stui-hud-clock">WORLD PAUSED</span></div>';
+  top.insertAdjacentElement('afterend', ribbon);
+
+  const read = id => document.getElementById(id)?.textContent?.trim() || '—';
+  const write = (id, value) => {
+    const node = document.getElementById(id);
+    if (node && node.textContent !== value) node.textContent = value;
+  };
+  const updateHud = () => {
+    const company = read('companyname');
+    const noCampaign = !company || company === '—';
+    write('stui-hud-company', noCampaign ? 'NO CAMPAIGN LOADED' : company.toUpperCase());
+    const headquarters = read('hq');
+    const era = read('erastat');
+    write('stui-hud-location', noCampaign
+      ? 'Create a campaign to establish your studio'
+      : [headquarters !== '—' ? headquarters : '', era !== '—' ? era : ''].filter(Boolean).join('  /  ') || 'Studio headquarters not yet established');
+    write('stui-hud-cash', read('cashstat'));
+    write('stui-hud-projects', read('projectstat'));
+    write('stui-hud-staff', read('staffstat'));
+    const date = read('datestat');
+    write('stui-hud-date', date === '—' ? '—' : date);
+    const clock = read('clockstatus');
+    write('stui-hud-clock', clock === '—' ? 'WORLD PAUSED' : clock.toUpperCase());
+    const clockNode = $('#stui-hud-clock');
+    if (clockNode) clockNode.parentElement?.classList.toggle('is-running', /running|playing|advancing/i.test(clock));
+  };
+  const watched = ['companyname','hq','erastat','cashstat','projectstat','staffstat','datestat','daystat','clockstatus'];
+  watched.map(id => document.getElementById(id)).filter(Boolean).forEach(node => {
+    new MutationObserver(updateHud).observe(node, {childList:true,subtree:true,characterData:true});
+  });
+  updateHud();
+
+  const overview = $('#page-overview');
+  if (overview) {
+    overview.classList.add('stui-command-deck');
+    const hero = $('.hero', overview);
+    const actions = $('.hero .actions', overview);
+    if (hero) {
+      hero.classList.add('stui-command-hero');
+      const eyebrow = $('.eyebrow', hero);
+      const heading = $('.h1', hero);
+      const subtitle = $('.sub', hero);
+      if (eyebrow) eyebrow.textContent = 'THE GLOBAL ENTERTAINMENT SIMULATION';
+      if (heading) heading.textContent = 'Command your studio. Shape an industry.';
+      if (subtitle) subtitle.textContent = 'Build a company, develop stories, manage talent and compete for influence in a living entertainment world.';
+    }
+    if (actions && !$('.stui-time-control-label', actions)) {
+      const label = document.createElement('span');
+      label.className = 'stui-time-control-label';
+      label.textContent = 'SIMULATION CONTROLS';
+      actions.insertBefore(label, actions.firstChild);
+      const replacements = ['DAY +1','WEEK +1','MONTH +1','YEAR +1','EXPORT SAVE'];
+      Array.from(actions.querySelectorAll('button')).slice(1).forEach((button, index) => {
+        if (replacements[index]) button.textContent = replacements[index];
+        button.classList.add('stui-sim-button');
+      });
+    }
+    const brief = document.createElement('div');
+    brief.className = 'stui-command-brief';
+    brief.innerHTML = '<span class="stui-command-brief-mark">◈</span><div><b>THE STUDIO COMMAND DECK</b><p id="stui-command-brief-copy">Your decisions shape productions, careers, markets and the wider world.</p></div><span class="stui-command-brief-tag">PERSISTENT WORLD</span>';
+    const stats = $('.grid.stats', overview);
+    if (stats && !$('.stui-command-brief', overview)) stats.insertAdjacentElement('beforebegin', brief);
+    const updateBrief = () => {
+      const name = read('companyname');
+      const copy = $('#stui-command-brief-copy');
+      if (copy) copy.textContent = name && name !== '—'
+        ? name + ' is your foothold in a living entertainment industry. Every day advances the world around it.'
+        : 'Create a campaign to establish your founder, choose a starting era and build your entertainment company.';
+    };
+    ['companyname','datestat'].map(id => document.getElementById(id)).filter(Boolean).forEach(node => {
+      new MutationObserver(updateBrief).observe(node,{childList:true,subtree:true,characterData:true});
+    });
+    updateBrief();
+  }
+
+  // Give every workspace a game-like chapter marker while preserving its
+  // existing title, buttons, route IDs and engine-specific form structure.
+  document.querySelectorAll('.page').forEach((page, index) => {
+    page.classList.add('stui-game-workspace');
+    const hero = $('.hero', page);
+    if (hero && !$('.stui-workspace-index', hero)) {
+      const marker = document.createElement('span');
+      marker.className = 'stui-workspace-index';
+      marker.textContent = 'WORKSPACE  /  ' + String(index + 1).padStart(2,'0');
+      hero.insertBefore(marker, hero.firstChild);
+    }
+  });
+  console.info('[STUDIO_GAME_UI] Game command deck active. Simulation logic is unchanged.');
 })();

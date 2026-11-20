@@ -4,7 +4,7 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
  const p=await b.newPage({viewport:{width:1440,height:900},acceptDownloads:true});await p.addInitScript(()=>{window.__STUDIO_DISABLE_AUTO_TUTORIAL=true;window.__STUDIO_TEST_ACCELERATION=true;localStorage.setItem('the-studio-onboarding-v1','skipped')});const errors=[];
  const batchProgress=[];p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{const message=m.text();if(m.type()==='error')errors.push(message);if(message.includes('[STUDIO_BATCH_PROGRESS]')){const match=message.match(/\[STUDIO_BATCH_PROGRESS\]\s+(\{.*\})/);if(match){try{batchProgress.push(JSON.parse(match[1]))}catch(e){errors.push('Invalid batch progress telemetry: '+e.message)}}}if(message.includes('[STUDIO_BATCH_')||message.includes('[STUDIO_CLOCK_')||message.includes('[STUDIO_CORE_STAGE]')||message.includes('[STUDIO_WORLD_STAGE]')||message.includes('[STUDIO_ADVANCE_TRACE]')||message.includes('[STUDIO_ADVANCE_STEP]'))console.log(message)});
  await p.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
- await p.getByRole('button',{name:/New campaign/}).click();await p.getByRole('button',{name:/Create campaign/}).click();
+ await p.locator('#page-overview .hero .actions button').first().click();await p.getByRole('button',{name:/Create campaign/}).click();
  for(const [id,v] of [['nfounder','End-to-End Founder'],['ncompany','E2E Pictures'],['ncountry','India'],['ncity','Kochi']])await p.locator('#'+id).fill(v);
  await p.getByRole('button',{name:/Create and save campaign/}).click();
  const initial=await p.evaluate(()=>({date:active.date,cash:Number(active.founder.personalCash),id:active.id}));
@@ -28,7 +28,7 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
  const before=await p.evaluate(()=>({date:active.date,cash:Number(active.founder.personalCash),recurring:active.founder.personalFinance.recurring.length}));
  await p.getByRole('button',{name:/Overview/}).click();
  await p.evaluate(()=>{window.__studioBatchDebug=true;window.__studioBatchDebugUntilDay=active.day+5;console.info('[STUDIO_BATCH_PROFILE]',JSON.stringify({date:active.date,day:active.day,npcs:active.world?.population?.npcs?.length||0,virtualResidents:active.world?.population?.virtualResidents||0,projects:active.projects?.length||0,employees:active.employees?.length||0,equities:active.market?.equities?.length||0,events:active.world?.events?.length||0,ledger:active.ledger?.length||0,phase2Last:active.world?.population?.phase2?.lastProcessedDate||null}))});
- await p.getByRole('button',{name:/\+1 year/}).click({timeout:120000});
+ await p.getByRole('button',{name:/(?:\+1 year|YEAR \+1)/i}).click({timeout:120000});
  await p.waitForFunction(()=>!window.__advanceBatchActive,null,{timeout:900000});
  const simulated=await p.evaluate(()=>({date:active.date,clockFrozen:active.clockFrozen,batchActive:!!window.__advanceBatchActive,toast:document.querySelector('#toast')?.textContent||''}));
  console.log('YEAR ADVANCE COMPLETION',JSON.stringify(simulated));
@@ -82,9 +82,9 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
  assert.deepEqual(reloaded,{date:'2027-11-14',version:'3.0.3',recurring:3,ledger:17});
  // Legacy migration: remove Phase 3 additions and import a valid old-format campaign.
  const legacy=JSON.parse(JSON.stringify(exported));legacy.id='LEGACY-PHASE3-QA';legacy.founder.personalCash=5000;delete legacy.founder.phase3;delete legacy.founder.personalFinance;delete legacy.founder.dailyRoutine;delete legacy.founder.personalCalendar;delete legacy.founder.reputation;delete legacy.founder.succession;delete legacy.founder.wellbeing;
- const legacyPath=path.join(os.tmpdir(),'legacy-phase3-qa.json');fs.writeFileSync(legacyPath,JSON.stringify(legacy));
- await p.locator('#importfile').setInputFiles(legacyPath);await p.waitForTimeout(150);
- const migrated=await p.evaluate(()=>({id:active.id,cash:active.founder.personalCash,version:active.founder.phase3?.version,cashAccount:active.founder.personalFinance.accounts.find(x=>x.id==='cash')?.balance}));
+ console.log('LEGACY INPUT SHAPE',JSON.stringify({id:legacy.id,date:legacy.date,founder:{name:legacy.founder?.name,personalCash:legacy.founder?.personalCash,keys:Object.keys(legacy.founder||{})},company:{name:legacy.company?.name,cash:legacy.company?.cash,currency:legacy.company?.currency},validDate:typeof legacy.date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(legacy.date)&&!Number.isNaN(Date.parse(legacy.date+'T00:00:00Z'))&&new Date(legacy.date+'T00:00:00Z').toISOString().slice(0,10)===legacy.date}));const legacyPath=path.join(os.tmpdir(),'legacy-phase3-qa.json');fs.writeFileSync(legacyPath,JSON.stringify(legacy));
+ await p.locator('#importfile').setInputFiles(legacyPath);await p.waitForFunction(()=>active?.id==='LEGACY-PHASE3-QA'||document.querySelector('#toast')?.textContent.startsWith('Import failed:'),null,{timeout:10000});
+ const migrated=await p.evaluate(()=>({id:active.id,cash:active.founder.personalCash,version:active.founder.phase3?.version,cashAccount:active.founder.personalFinance.accounts.find(x=>x.id==='cash')?.balance,toast:document.querySelector('#toast')?.textContent,errors:window.__legacyImportErrors||[]}));
  console.log('LEGACY MIGRATION',JSON.stringify(migrated));
  assert.equal(migrated.id,'LEGACY-PHASE3-QA');assert.equal(migrated.cash,5000);assert.equal(migrated.version,'3.0.3');assert.equal(migrated.cashAccount,5000);
  assert.deepEqual(errors,[]);
