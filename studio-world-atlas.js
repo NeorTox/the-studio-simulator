@@ -625,9 +625,11 @@
     if (controls && journeyFields && journeyFields.parentElement !== controls) controls.append(journeyFields);
     const legacyActions = $('travel-quote')?.closest('.actions');
     if (legacyActions) legacyActions.hidden = true;
+    const legacyQuoteResult = $('travel-quote-result');
+    if (legacyQuoteResult) legacyQuoteResult.hidden = true;
     const legacyPlanCard = destinationField?.closest('.card');
     const legacyTitle = legacyPlanCard?.querySelector(':scope > .cardtitle');
-    if (legacyTitle) { legacyTitle.hidden = false; legacyTitle.textContent = 'Passport & entry documents'; }
+    if (legacyTitle) legacyTitle.hidden = true;
     const origin = currentCity();
     const destination = G.getCity($('travel-destination')?.value);
     $('studio-flight-origin').textContent = origin?.name || '—';
