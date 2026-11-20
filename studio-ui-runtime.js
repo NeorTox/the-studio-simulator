@@ -331,7 +331,44 @@
       ],':scope > .grid.stats');
     }
   }
+  function installCommandCentre() {
+    const page = $('#page-overview');
+    const stats = page?.querySelector(':scope > .grid.stats');
+    if (!page || !stats || $('#studio-command-launchpad')) return;
+    const card = document.createElement('section');
+    card.className = 'card studio-command-launchpad';
+    card.id = 'studio-command-launchpad';
+    card.innerHTML = '<div class="cardhead"><div><b class="cardtitle">Operations launchpad</b><div class="tiny">YOUR NEXT MOVE · QUICK ACCESS</div></div><span class="tag gold">STUDIO CONTROL</span></div><div class="studio-command-grid"></div>';
+    const actions = [
+      {id:'production',title:'Develop a production',detail:'Create a film, series or animation project',run:()=>window.createProject?.()},
+      {id:'finance',title:'Record a transaction',detail:'Post income or expenses to the ledger',run:()=>window.transactionForm?.()},
+      {id:'people',title:'Build your team',detail:'Hire an employee and set monthly payroll',run:()=>window.hire?.()},
+      {id:'talent',title:'Manage talent',detail:'Run auditions and negotiate casting',run:()=>window.nav?.('talent')},
+      {id:'market',title:'Industry intelligence',detail:'Review competitors and audience demand',run:()=>window.nav?.('market')},
+      {id:'travel',title:'Travel & world atlas',detail:'Plan a journey or explore destinations',run:()=>window.nav?.('globaltravel')}
+    ];
+    const grid = card.querySelector('.studio-command-grid');
+    actions.forEach(action=>{
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'studio-command-action';
+      button.dataset.commandAction = action.id;
+      button.setAttribute('aria-label',action.title+'. '+action.detail);
+      const title = document.createElement('b');
+      title.textContent = action.title;
+      const detail = document.createElement('span');
+      detail.textContent = action.detail;
+      const arrow = document.createElement('i');
+      arrow.setAttribute('aria-hidden','true');
+      arrow.textContent = '↗';
+      button.append(title,detail,arrow);
+      button.addEventListener('click',action.run);
+      grid.append(button);
+    });
+    stats.insertAdjacentElement('afterend',card);
+  }
   installScreenSections();
+  installCommandCentre();
   const ready = () => {
     document.body.classList.add('startup-open');
     shell.setAttribute('aria-hidden','true');
