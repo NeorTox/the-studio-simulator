@@ -104,6 +104,7 @@
     const card = ensureCard(stats.parentElement,'studio-overview-cash-chart','Company cash position','Running balance reconstructed from posted company ledger entries. Values are actual campaign data.','LEDGER / LAST 90 DATES');
     if (!card) return;
     stats.insertAdjacentElement('afterend',card);
+    if (!page.classList.contains('active')) return;
     const rows = cashSeries();
     if (!rows) {
       showEmpty('studio-overview-cash-chart','Company cash history will appear after the first financial transactions are posted.');
@@ -130,6 +131,7 @@
     const card = ensureCard(parent,'studio-finance-category-chart','Expense structure','Posted company expenses grouped by ledger category.','ACTUAL TRANSACTIONS');
     if (!card) return;
     tabs.insertAdjacentElement('afterend',card);
+    if (!page.classList.contains('active')) return;
     const rows = categorySeries();
     if (!rows.length) {
       showEmpty('studio-finance-category-chart','Expense composition will appear when the company posts categorized expenses.');
@@ -161,6 +163,7 @@
     const card = ensureCard(hero.parentElement,'studio-population-age-chart','Materialized population · age profile','Age distribution of named NPC records currently materialized in this campaign. This is not the full virtual population.','ACTIVE NPC RECORDS');
     if (!card) return;
     hero.insertAdjacentElement('afterend',card);
+    if (!page.classList.contains('active')) return;
     const rows = populationSeries();
     if (!rows) {
       showEmpty('studio-population-age-chart','Generate or load named NPCs to inspect the current age profile.');
