@@ -129,6 +129,124 @@
   });
   $('#start-load')?.addEventListener('click', () => { enter(); activate('campaign'); });
   $('#start-advanced')?.addEventListener('click', () => { enter(); activate('algorithms'); });
+  function installWorkspaceTabs(pageId, groups, anchorSelector) {
+    const page = $('#'+pageId);
+    if (!page || page.dataset.workspaceTabs === 'true') return;
+    const bar = document.createElement('div');
+    bar.className = 'workspace-tabs';
+    bar.setAttribute('role','tablist');
+    bar.setAttribute('aria-label',page.querySelector('.h1')?.textContent.trim() + ' sections');
+    const panels = document.createElement('div');
+    panels.className = 'workspace-panels';
+    const available = groups.map(group => ({...group,nodes:group.nodes.filter(Boolean)})).filter(group => group.nodes.length);
+    if (available.length < 2) return;
+    function activateTab(key) {
+      available.forEach(group => {
+        const active = group.key === key;
+        const button = $('[data-workspace-tab="'+group.key+'"]',bar);
+        const panel = $('#'+pageId+'-panel-'+group.key);
+        if (button) {
+          button.classList.toggle('active',active);
+          button.setAttribute('aria-selected',String(active));
+          button.tabIndex = active ? 0 : -1;
+        }
+        if (panel) panel.hidden = !active;
+      });
+      try { sessionStorage.setItem('studio-ui-tab-'+pageId,key); } catch (_) {}
+    }
+    available.forEach(group => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'workspace-tab';
+      button.dataset.workspaceTab = group.key;
+      button.setAttribute('role','tab');
+      button.setAttribute('aria-controls',pageId+'-panel-'+group.key);
+      button.setAttribute('aria-selected','false');
+      button.textContent = group.label;
+      button.addEventListener('click',() => activateTab(group.key));
+      button.addEventListener('keydown',event => {
+        if (!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+        event.preventDefault();
+        const index = available.findIndex(item => item.key === group.key);
+        const next = event.key === 'Home' ? 0 : event.key === 'End' ? available.length-1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + available.length) % available.length;
+        const nextButton = $('[data-workspace-tab="'+available[next].key+'"]',bar);
+        nextButton?.focus();
+        activateTab(available[next].key);
+      });
+      bar.append(button);
+      const panel = document.createElement('section');
+      panel.className = 'workspace-panel';
+      panel.id = pageId+'-panel-'+group.key;
+      panel.setAttribute('role','tabpanel');
+      panel.setAttribute('aria-label',group.label);
+      group.nodes.forEach(node => panel.append(node));
+      panels.append(panel);
+    });
+    const anchor = anchorSelector ? $(anchorSelector,page) : page.querySelector('.hero');
+    if (anchor) anchor.after(bar);
+    else page.prepend(bar);
+    bar.after(panels);
+    page.dataset.workspaceTabs = 'true';
+    let preferred = 'overview';
+    try { preferred = sessionStorage.getItem('studio-ui-tab-'+pageId) || preferred; } catch (_) {}
+    activateTab(available.some(group => group.key === preferred) ? preferred : available[0].key);
+  }
+  function installScreenSections() {
+    const finance = $('#page-finance');
+    if (finance) {
+      const cards = Array.from(finance.children).filter(node => node.classList.contains('card'));
+      const byTitle = title => cards.find(node => node.querySelector('.cardtitle')?.textContent.trim() === title);
+      installWorkspaceTabs('page-finance',[
+        {key:'overview',label:'Overview',nodes:[byTitle('Balance sheet snapshot')]},
+        {key:'accounting',label:'Accounting',nodes:[byTitle('General ledger'),byTitle('Double-entry accounting'),byTitle('Journal register')]},
+        {key:'operations',label:'Operations',nodes:[byTitle('Receivables & payables'),byTitle('Fixed asset register')]},
+        {key:'capital',label:'Debt & Treasury',nodes:[byTitle('Debt facilities'),byTitle('Corporate tax estimation'),byTitle('Foreign exchange & treasury wallets')]},
+        {key:'audit',label:'Audit',nodes:[byTitle('Financial integrity')]}
+      ],'#page-finance > .grid.stats');
+    }
+    const projects = $('#page-projects');
+    if (projects) {
+      const slate = projects.querySelector(':scope > .card:has(#projectlist)');
+      const contracts = projects.querySelector(':scope > .card:has(#productioncontracts)');
+      installWorkspaceTabs('page-projects',[
+        {key:'slate',label:'Production slate',nodes:[slate]},
+        {key:'contracts',label:'Contracts & payments',nodes:[contracts]}
+      ],'#page-projects > .hero');
+    }
+    const talent = $('#page-talent');
+    if (talent) {
+      const register = talent.querySelector(':scope > .grid.cols');
+      const contracts = talent.querySelector(':scope > .card:has(#contractlist)');
+      installWorkspaceTabs('page-talent',[
+        {key:'roster',label:'Roster & auditions',nodes:[register]},
+        {key:'contracts',label:'Casting contracts',nodes:[contracts]}
+      ],'#page-talent > .hero');
+    }
+    const market = $('#page-market');
+    if (market) {
+      const stats = market.querySelector(':scope > .grid.stats');
+      const grid = market.querySelector(':scope > .grid.cols');
+      const cards = Array.from(market.children).filter(node => node.classList.contains('card'));
+      const byTitle = title => cards.find(node => node.querySelector('.cardtitle')?.textContent.trim() === title);
+      installWorkspaceTabs('page-market',[
+        {key:'industry',label:'Industry',nodes:[grid,byTitle('Macroeconomic dashboard'),byTitle('Selected real-world industry entities')]},
+        {key:'markets',label:'Markets & investment',nodes:[byTitle('Equity market'),byTitle('Treasury portfolio & trading')]},
+        {key:'competition',label:'Competitors',nodes:[byTitle('Competitor register'),byTitle('Autonomous competitor operations')]},
+        {key:'workforce',label:'Labour market',nodes:[byTitle('Entertainment labour market')]}
+      ],'#page-market > .grid.stats');
+    }
+    const media = $('#page-media');
+    if (media) {
+      const stats = media.querySelector(':scope > .grid.stats');
+      const newsroom = media.querySelector(':scope > .grid.cols');
+      const publicity = media.querySelector(':scope > .card:has(#mediacampaignlist)');
+      installWorkspaceTabs('page-media',[
+        {key:'newsroom',label:'Newsroom & coverage',nodes:[newsroom]},
+        {key:'publicity',label:'Publicity campaigns',nodes:[publicity]}
+      ],'#page-media > .grid.stats');
+    }
+  }
+  installScreenSections();
   const ready = () => {
     document.body.classList.add('startup-open');
     shell.setAttribute('aria-hidden','true');
