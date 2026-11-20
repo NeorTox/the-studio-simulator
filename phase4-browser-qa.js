@@ -5,6 +5,8 @@ const {chromium}=require('playwright'),assert=require('assert');
  await p.addInitScript(()=>localStorage.setItem('the-studio-onboarding-v1','skipped'));
  p.on('pageerror',e=>errors.push(e.message));
  await p.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
+ await p.locator('#start-load').click();
+ await p.locator('[data-page="overview"]').click();
  const orientation=await p.evaluate(()=>({width:innerWidth,height:innerHeight,portraitOverlay:getComputedStyle(document.body,'::before').content}));assert(orientation.width>orientation.height,'The mobile game must be tested in landscape');assert.equal(orientation.portraitOverlay,'none','Portrait rotation prompt must not cover landscape controls');
  await p.locator('#page-overview .hero .actions button').first().evaluate(el=>el.click());
  await p.getByRole('button',{name:/Create campaign/}).evaluate(el=>el.click());
