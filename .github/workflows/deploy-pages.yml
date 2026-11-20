@@ -27,8 +27,8 @@ jobs:
           python3 - <<'PY'
           import pathlib, re, subprocess
           html = pathlib.Path("index.html").read_text()
-          refs = re.findall(r"""<script[^>]+src=["'](\./[^']+\.js)["']""", html)
-          styles = re.findall(r"""<link[^>]+href=["'](\./[^']+\.css)["']""", html)
+          refs = re.findall(r'<script[^>]*\\bsrc="(\\./[^"]+\\.js)"', html)
+          styles = re.findall(r'<link[^>]*\\bhref="(\\./[^"]+\\.css)"', html)
           if not refs:
               raise SystemExit("No local application engines were found in index.html")
           assets = list(dict.fromkeys(refs + styles))
@@ -49,8 +49,8 @@ jobs:
           python3 - <<'PY'
           import pathlib, re, shutil
           html = pathlib.Path("index.html").read_text()
-          refs = re.findall(r"""<script[^>]+src=["'](\./[^']+\.js)["']""", html)
-          styles = re.findall(r"""<link[^>]+href=["'](\./[^']+\.css)["']""", html)
+          refs = re.findall(r'<script[^>]*\\bsrc="(\\./[^"]+\\.js)"', html)
+          styles = re.findall(r'<link[^>]*\\bhref="(\\./[^"]+\\.css)"', html)
           assets = list(dict.fromkeys(refs + styles))
           for ref in assets:
               source = pathlib.Path(ref[2:])
