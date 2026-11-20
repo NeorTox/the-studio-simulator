@@ -196,11 +196,13 @@
     if (finance) {
       const cards = Array.from(finance.children).filter(node => node.classList.contains('card'));
       const byTitle = title => cards.find(node => node.querySelector('.cardtitle')?.textContent.trim() === title);
+      const investments = finance.querySelector(':scope > .card:has(#phase8-empire)');
       installWorkspaceTabs('page-finance',[
         {key:'overview',label:'Overview',nodes:[byTitle('Balance sheet snapshot')]},
         {key:'accounting',label:'Accounting',nodes:[byTitle('General ledger'),byTitle('Double-entry accounting'),byTitle('Journal register')]},
         {key:'operations',label:'Operations',nodes:[byTitle('Receivables & payables'),byTitle('Fixed asset register')]},
         {key:'capital',label:'Debt & Treasury',nodes:[byTitle('Debt facilities'),byTitle('Corporate tax estimation'),byTitle('Foreign exchange & treasury wallets')]},
+        {key:'investments',label:'Investments',nodes:[investments]},
         {key:'audit',label:'Audit',nodes:[byTitle('Financial integrity')]}
       ],':scope > .grid.stats');
     }
@@ -208,6 +210,12 @@
     if (projects) {
       const slate = projects.querySelector(':scope > .card:has(#projectlist)');
       const contracts = projects.querySelector(':scope > .card:has(#productioncontracts)');
+      if (slate) {
+        const developmentRoom = $('#phase5-development');
+        const productionOptimizer = $('#production-portfolio-optimizer');
+        if (developmentRoom) slate.append(developmentRoom);
+        if (productionOptimizer) slate.append(productionOptimizer);
+      }
       installWorkspaceTabs('page-projects',[
         {key:'slate',label:'Production slate',nodes:[slate]},
         {key:'contracts',label:'Contracts & payments',nodes:[contracts]}
