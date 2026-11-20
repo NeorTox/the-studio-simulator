@@ -288,27 +288,26 @@
     }
     const legal = $('#page-legal');
     if (legal) {
-      const grid = legal.querySelector(':scope > .grid.cols');
-      const register = grid?.querySelector(':scope > .card:has(#legalregister)');
-      const insurance = grid?.querySelector(':scope > .card:has(#insuranceregister)');
       installWorkspaceTabs('page-legal',[
-        {key:'matters',label:'Legal matters',nodes:[register]},
-        {key:'insurance',label:'Insurance & risk',nodes:[insurance]}
+        {key:'matters',label:'Legal matters',nodes:[$('#legal-matters-workspace')]},
+        {key:'insurance',label:'Insurance & risk',nodes:[$('#legal-insurance-workspace')]}
       ],':scope > .grid.stats');
-      if (grid && !grid.children.length) grid.remove();
     }
     const awards = $('#page-awards');
     if (awards) {
-      const grid = awards.querySelector(':scope > .grid.cols');
-      const events = grid?.querySelector(':scope > .card:has(#awardcatalog)');
-      const submissions = grid?.querySelector(':scope > .card:has(#awardsubmissions)');
       installWorkspaceTabs('page-awards',[
-        {key:'events',label:'Award events',nodes:[events]},
-        {key:'submissions',label:'Submissions',nodes:[submissions]}
+        {key:'events',label:'Award events',nodes:[$('#awards-events-workspace')]},
+        {key:'submissions',label:'Submissions',nodes:[$('#awards-submissions-workspace')]}
       ],':scope > .hero');
-      if (grid && !grid.children.length) grid.remove();
     }
-    const market = $('#page-market');
+    const ip = $('#page-ip');
+    if (ip) {
+      installWorkspaceTabs('page-ip',[
+        {key:'catalogue',label:'IP catalogue',nodes:[$('#ip-catalogue-workspace')]},
+        {key:'licensing',label:'Rights & licensing',nodes:[$('#ip-licensing-workspace')]}
+      ],':scope > .grid.stats');
+    }
+        const market = $('#page-market');
     if (market) {
       installWorkspaceTabs('page-market',[
         {key:'industry',label:'Industry & economy',nodes:[$('#market-industry-workspace')]},
