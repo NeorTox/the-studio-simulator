@@ -3,7 +3,7 @@ const assert=require('assert');const {chromium}=require('playwright');
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});const page=await browser.newPage({viewport:{width:844,height:390}});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
  await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
- await page.getByRole('button',{name:/New campaign/}).click();await page.getByRole('button',{name:/Create campaign/}).click();
+ await page.getByRole('button',{name:'New campaign',exact:true}).click();await page.getByRole('button',{name:/Create campaign/}).click();
  for(const [id,value] of [['nfounder','Phase 9 QA Founder'],['ncompany','Global Economy Test Studios'],['ncountry','India'],['ncity','Mumbai']])await page.locator('#'+id).fill(value);
  await page.getByRole('button',{name:/Create and save campaign/}).click();
  const initial=await page.evaluate(()=>{const p=window.Phase9GlobalEconomy;if(!p)throw Error('Phase 9 engine failed to load');const g=p.ensure();return {version:p.version,regions:g.regions.length,commodities:g.commodities.length,routes:g.tradeRoutes.length,audit:p.audit()}});
