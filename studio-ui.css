@@ -186,3 +186,36 @@
 .atlas-country-city-select label{display:block;margin-bottom:7px;color:#91a29e;font-size:8px;font-weight:900;letter-spacing:.12em}
 .atlas-country-city-select select{width:100%;min-height:40px;padding:8px 10px;border:1px solid #3b4d52;background:#0d171c;color:#e9e9e1;font-size:10px}
 .atlas-country-city-select select:focus{border-color:#c4a477;outline:none;box-shadow:0 0 0 2px rgba(196,164,119,.12)}
+
+
+/* Management workspaces: consistent, touch-first screen hierarchy. */
+.workspace-panels{display:grid;gap:14px}
+.workspace-panel>.grid{min-width:0}
+.workspace-panel>.grid.cols{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.workspace-panel>.card,.workspace-panel>.grid>.card{min-width:0}
+.page>.hero{align-items:flex-end}
+.page>.hero .actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.page .cardhead{min-width:0;gap:10px}
+.page .cardtitle{min-width:0}
+.page .tablewrap{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+.page .tablewrap table{min-width:560px}
+.page .empty{line-height:1.65}
+.page .hint{max-width:100%;line-height:1.65}
+.workspace-tab:focus-visible,.page .btn:focus-visible,.page button:focus-visible{outline:2px solid #d4b17e;outline-offset:2px}
+@media(max-width:760px){
+  .workspace-panel>.grid.cols{grid-template-columns:minmax(0,1fr)}
+  .page>.hero{align-items:stretch;flex-direction:column;gap:12px}
+  .page>.hero .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .page>.hero .actions>.btn{width:100%;justify-content:center}
+  .workspace-tabs{gap:3px;margin:10px 0;padding:3px}
+  .workspace-tab{min-height:44px;padding:10px 12px}
+  .workspace-panel{gap:10px}
+  .page .grid.stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .page .card{min-width:0}
+}
+@media(max-width:390px){
+  .page>.hero .actions{grid-template-columns:minmax(0,1fr)}
+  .page .grid.stats{gap:7px}
+  .page .grid.stats>.card{padding:11px}
+  .page .statvalue{font-size:clamp(17px,6vw,23px)}
+}
