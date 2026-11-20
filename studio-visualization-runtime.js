@@ -140,10 +140,10 @@
     if (!page) return;
     const tabs = page.querySelector('.workspace-tabs') || page.querySelector('.workspace-panels') || page.querySelector(':scope > .hero');
     if (!tabs) return;
-    const parent = tabs.parentElement;
+    const parent = $('#finance-overview-charts') || tabs.parentElement;
     const card = ensureCard(parent,'studio-finance-category-chart','Expense structure','Posted company expenses grouped by ledger category.','ACTUAL TRANSACTIONS');
     if (!card) return;
-    tabs.insertAdjacentElement('afterend',card);
+    parent.appendChild(card);
     if (!page.classList.contains('active')) return;
     const rows = categorySeries();
     if (!rows.length) {
@@ -174,11 +174,12 @@
     if (!page) return;
     const tabs = page.querySelector('.workspace-tabs') || page.querySelector('.workspace-panels') || page.querySelector(':scope > .hero');
     if (!tabs) return;
-    const card = ensureCard(tabs.parentElement,'studio-finance-portfolio-chart','Treasury & investment allocation','Actual company cash and marked value of active financial-empire holdings.','CURRENT PORTFOLIO');
+    const parent = $('#finance-overview-charts') || tabs.parentElement;
+    const card = ensureCard(parent,'studio-finance-portfolio-chart','Treasury & investment allocation','Actual company cash and marked value of active financial-empire holdings.','CURRENT PORTFOLIO');
     if (!card) return;
     const expense = $('studio-finance-category-chart');
-    if (expense) expense.insertAdjacentElement('afterend',card);
-    else tabs.insertAdjacentElement('afterend',card);
+    if (expense && expense.parentElement === parent) expense.insertAdjacentElement('afterend',card);
+    else parent.appendChild(card);
     if (!page.classList.contains('active')) return;
     const rows = investmentSeries();
     if (!rows.length) {
@@ -195,11 +196,10 @@
   function renderProductionChart() {
     const page = $('page-projects');
     if (!page) return;
-    const host = $('phase5-development') || page.querySelector(':scope > .hero');
-    if (!host) return;
-    const card = ensureCard(page,'studio-production-readiness-chart','Production development readiness','Completion of each project’s recorded creative-development checklist.','PROJECT PORTFOLIO');
+    const parent = $('production-slate-charts') || page;
+    const card = ensureCard(parent,'studio-production-readiness-chart','Production development readiness','Completion of each project’s recorded creative-development checklist.','PROJECT PORTFOLIO');
     if (!card) return;
-    host.insertAdjacentElement('afterend',card);
+    parent.appendChild(card);
     if (!page.classList.contains('active')) return;
     const projects = Array.isArray(active?.projects) ? active.projects : [];
     if (!projects.length) {
