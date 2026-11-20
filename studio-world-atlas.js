@@ -769,6 +769,8 @@
   window.StudioWorldAtlas = {
     version:'1.0.0',
     findItineraries,
+    selectCity,
+    selectCountry,
     routeGeometry:routeFeature,
     renderAtlas:renderAtlasPanel,
     renderTravel:renderTravelPlanner,
