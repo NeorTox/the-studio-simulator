@@ -412,7 +412,7 @@
     if (!page) return;
     const tabs = page.querySelector('.workspace-tabs') || page.querySelector(':scope > .hero');
     if (!tabs) return;
-    const card = ensureCard(page,'studio-personal-assets-chart','Founder personal balance','Personal cash, asset values and personal debt are kept separate from company accounts.','FOUNDER FINANCES');
+    const card = ensureCard(page,'studio-personal-assets-chart','Founder assets & liabilities','Personal cash, asset values and debt are shown separately from company accounts.','FOUNDER FINANCES');
     if (!card) return;
     tabs.insertAdjacentElement('afterend',card);
     if (!page.classList.contains('active')) return;
@@ -421,13 +421,15 @@
     const rows=[];
     if(number(founder.personalCash)>0)rows.push({name:'Cash',value:number(founder.personalCash)});
     (Array.isArray(founder.personalAssets)?founder.personalAssets:[]).forEach(asset=>{if(number(asset.currentValue)>0)rows.push({name:String(asset.name||asset.type||'Personal asset'),value:number(asset.currentValue)});});
-    if(number(founder.personalDebt)>0)rows.push({name:'Debt',value:number(founder.personalDebt)});
+    if(number(founder.personalDebt)>0)rows.push({name:'Personal debt',value:-number(founder.personalDebt)});
     if(!rows.length){showEmpty('studio-personal-assets-chart','No personal assets or cash balances have been recorded.');return;}
     mount('studio-personal-assets-chart',{
       animationDuration:420,
-      tooltip:{trigger:'item',backgroundColor:'#111a1f',borderColor:'#6f624e',textStyle:{color:'#eee9dc'},formatter:item=>item.name+'<br><b>'+item.value.toLocaleString()+'</b> ('+item.percent+'%)'},
-      legend:{type:'scroll',bottom:0,textStyle:{color:'#a8b4b0',fontSize:9}},
-      series:[{type:'pie',radius:['38%','70%'],center:['50%','44%'],itemStyle:{borderColor:'#152025',borderWidth:3},label:{color:'#dfe3da',fontSize:9,formatter:'{b}'},data:rows}]
+      grid:{left:115,right:45,top:16,bottom:24},
+      tooltip:{trigger:'axis',axisPointer:{type:'shadow'},backgroundColor:'#111a1f',borderColor:'#6f624e',textStyle:{color:'#eee9dc'},formatter:items=>items[0].name+'<br><b>'+number(items[0].data).toLocaleString()+'</b>'},
+      xAxis:{type:'value',axisLabel:{color:'#a3b0ab',fontSize:9},splitLine:{lineStyle:{color:'rgba(137,157,155,.13)',type:'dashed'}}},
+      yAxis:{type:'category',data:rows.map(row=>row.name),axisLabel:{color:'#c0cac4',fontSize:9,overflow:'truncate',width:105},axisLine:{show:false},axisTick:{show:false}},
+      series:[{type:'bar',data:rows.map(row=>row.value),barMaxWidth:22,itemStyle:{color:params=>params.value<0?'#b87965':'#8eaa9a',borderRadius:[0,4,4,0]},label:{show:true,position:'right',color:'#d7d9cf',fontSize:9,formatter:params=>number(params.value).toLocaleString()}}]
     });
   }
   function refresh() {
