@@ -350,7 +350,7 @@
         name:'THE STUDIO · Global Atlas',
         glyphs:'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
         sources:{
-          studioWorld:{type:'vector',url:'https://demotiles.maplibre.org/tiles/tiles.json',attribution:'World outlines · MapLibre demo vector tiles'}
+          studioWorld:{type:'vector',url:'https://demotiles.maplibre.org/tiles/tiles.json',attribution:'Country boundaries: Natural Earth · Demonstration vector tiles: MapLibre'}
         },
         layers:[
           {id:'studio-ocean',type:'background',paint:{'background-color':'#0b171e'}},
