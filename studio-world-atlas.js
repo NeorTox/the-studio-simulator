@@ -344,7 +344,9 @@
       '</section>';
   }
   function bindAtlasControls() {
-    $('atlas-toggle-globe')?.addEventListener('click',() => {
+    const globeButton = $('atlas-toggle-globe');
+    if (globeButton) globeButton.textContent = globeMode ? 'VIEW FLAT MAP' : 'VIEW 3D GLOBE';
+    globeButton?.addEventListener('click',() => {
       globeMode=!globeMode;
       if(map) map.setProjection({type:globeMode?'globe':'mercator'});
       const button=$('atlas-toggle-globe');
