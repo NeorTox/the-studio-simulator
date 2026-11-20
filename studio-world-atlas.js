@@ -581,6 +581,20 @@
         '<div id="studio-flight-results"><div class="flight-empty">Select a destination and departure date, then search for available in-game itineraries.</div></div>';
       root.insertBefore(panel,root.firstChild);
     }
+    if (window.__STUDIO_TRAVEL_DESTINATION && $('travel-destination')) {
+      $('travel-destination').value = window.__STUDIO_TRAVEL_DESTINATION;
+      window.__STUDIO_TRAVEL_DESTINATION = null;
+    }
+    const destinationField = $('travel-destination')?.closest('.field');
+    const journeyFields = $('travel-mode')?.closest('.formgrid');
+    const controls = $('studio-flight-controls');
+    if (controls && destinationField && destinationField.parentElement !== controls) controls.append(destinationField);
+    if (controls && journeyFields && journeyFields.parentElement !== controls) controls.append(journeyFields);
+    const legacyActions = $('travel-quote')?.closest('.actions');
+    if (legacyActions) legacyActions.hidden = true;
+    const legacyPlanCard = destinationField?.closest('.card');
+    const legacyTitle = legacyPlanCard?.querySelector(':scope > .cardtitle');
+    if (legacyTitle) legacyTitle.hidden = true;
     const origin = currentCity();
     if (window.__STUDIO_TRAVEL_DESTINATION && $('travel-destination')) {
       $('travel-destination').value = window.__STUDIO_TRAVEL_DESTINATION;
