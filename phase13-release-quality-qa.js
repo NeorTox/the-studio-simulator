@@ -13,7 +13,7 @@ const {chromium}=require('playwright'),assert=require('assert');
   return {refs,results,manifest,sw,apis:{phase12:!!window.Phase12Generations?.audit,phase13:!!window.StudioReleaseQuality?.audit,integration:!!window.StudioPhaseIntegration}};
  });
  assert(assets.results.every(x=>x.ok),'Every local engine script must be reachable: '+JSON.stringify(assets.results.filter(x=>!x.ok)));
- assert.equal(assets.manifest.orientation,'any');
+ assert.equal(assets.manifest.orientation,'landscape');
  assert(assets.sw.includes('phase12-generations-engine.js'));
  assert(assets.sw.includes('phase13-release-quality-engine.js'));
  assert(assets.apis.phase12&&assets.apis.phase13&&assets.apis.integration,JSON.stringify(assets.apis));
