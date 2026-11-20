@@ -129,3 +129,20 @@ The responsive styling now gives management pages a consistent mobile hierarchy,
 5. Continue bespoke screen redesigns for remaining management workspaces, with action-level and mobile QA.
 6. Extend charts to people, media, distribution, competitors and additional finance/production series using their real engine data.
 7. Implement layered NPC identity/appearance generation and population streaming as a separate simulation milestone; the virtual 100-million population is not 100 million fully materialized agents.
+
+
+## Native Finance and Production workspace pass
+
+The Finance and Productions pages now have native section structures in `index.html`, rather than relying only on runtime relocation of legacy top-level cards.
+
+Finance is organised into six explicit workspaces: financial position, accounting, working capital and assets, debt/tax/treasury, investments, and reconciliation. The existing campaign render targets remain unchanged (`fcash`, `fincome`, `fexpense`, `fnet`, `fdebt`, `balancesheet`, `ledger`, `trialbalance`, `journalregister`, `invoicelist`, `assetlist`, `loanlist`, tax and FX targets). The investment-empire card is moved into a dedicated host when its engine renders. Expense and treasury charts are mounted inside the Finance overview section, so they do not occupy space across every Finance tab.
+
+Productions now has dedicated native sections for the project slate and production contracts/payment schedules. The existing `projectlist` and `productioncontracts` renderer targets and `createProject()` / `createProductionContract()` actions are preserved. The Phase 5 development room and portfolio optimizer are moved into the slate workspace when present. Project-readiness visualization has a dedicated chart slot inside that workspace.
+
+Responsive layout rules collapse the Finance chart grid and workspace headings on narrow screens. The change intentionally leaves the underlying accounting, project progression, vendor-payment, persistence and simulation engines untouched.
+
+Validation performed for this pass:
+- JavaScript syntax checks passed for `studio-ui-runtime.js`, `studio-visualization-runtime.js`, and `studio-ui-rebuild-browser-qa.js`.
+- Inline scripts in `index.html` parsed successfully.
+- Finance and Production page HTML was checked for balanced nesting, unique renderer IDs and required workspace mounts.
+- Browser QA now asserts the native workspace mounts, preserved engine renderer targets and chart placement. A completed Playwright/GitHub Actions result for the latest commit remains unconfirmed.
