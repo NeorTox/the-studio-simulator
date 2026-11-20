@@ -214,10 +214,9 @@
         'circle-stroke-width':1.5
       }
     });
+    map.addSource('studio-flight-route',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
     map.addLayer({
-      id:'studio-flight-route',type:'line',source:{
-        type:'geojson',data:{type:'FeatureCollection',features:[]}
-      },
+      id:'studio-flight-route',type:'line',source:'studio-flight-route',
       paint:{'line-color':'#e2bd83','line-width':2.7,'line-opacity':0.95,'line-dasharray':[2,1.2]}
     });
     map.on('click','studio-city-points',event => {
