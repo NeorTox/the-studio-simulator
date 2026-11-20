@@ -194,56 +194,56 @@
   function installScreenSections() {
     const finance = $('#page-finance');
     if (finance) {
-      const cards = Array.from(finance.children).filter(node => node.classList.contains('card'));
-      const byTitle = title => cards.find(node => node.querySelector('.cardtitle')?.textContent.trim() === title);
-      const investments = finance.querySelector(':scope > .card:has(#phase8-empire)');
+      const workspaces = {
+        overview:$('#finance-overview-workspace'),
+        accounting:$('#finance-accounting-workspace'),
+        operations:$('#finance-operations-workspace'),
+        capital:$('#finance-capital-workspace'),
+        investments:$('#finance-investment-workspace'),
+        audit:$('#finance-audit-workspace')
+      };
       installWorkspaceTabs('page-finance',[
-        {key:'overview',label:'Overview',nodes:[byTitle('Balance sheet snapshot')]},
-        {key:'accounting',label:'Accounting',nodes:[byTitle('General ledger'),byTitle('Double-entry accounting'),byTitle('Journal register')]},
-        {key:'operations',label:'Operations',nodes:[byTitle('Receivables & payables'),byTitle('Fixed asset register')]},
-        {key:'capital',label:'Debt & Treasury',nodes:[byTitle('Debt facilities'),byTitle('Corporate tax estimation'),byTitle('Foreign exchange & treasury wallets')]},
-        {key:'investments',label:'Investments',nodes:[investments],keepEmpty:true},
-        {key:'audit',label:'Audit',nodes:[byTitle('Financial integrity')]}
+        {key:'overview',label:'Overview',nodes:[workspaces.overview]},
+        {key:'accounting',label:'Accounting',nodes:[workspaces.accounting]},
+        {key:'operations',label:'Operations',nodes:[workspaces.operations]},
+        {key:'capital',label:'Debt & Treasury',nodes:[workspaces.capital]},
+        {key:'investments',label:'Investments',nodes:[workspaces.investments],keepEmpty:true},
+        {key:'audit',label:'Audit',nodes:[workspaces.audit]}
       ],':scope > .grid.stats');
-      const investmentPanel = $('#page-finance-panel-investments');
+      const investmentHost = $('#finance-investment-host');
       const moveInvestmentWorkspace = () => {
         const investmentCard = $('#phase8-empire')?.closest('.card');
-        if (investmentCard && investmentPanel && investmentCard.parentElement !== investmentPanel) investmentPanel.append(investmentCard);
+        if (investmentCard && investmentHost && investmentCard.parentElement !== investmentHost) investmentHost.append(investmentCard);
       };
       moveInvestmentWorkspace();
-      if (investmentPanel) {
+      if (investmentHost) {
         const investmentObserver = new MutationObserver(moveInvestmentWorkspace);
         investmentObserver.observe(finance,{childList:true,subtree:true});
       }
     }
     const projects = $('#page-projects');
     if (projects) {
-      const slate = projects.querySelector(':scope > .card:has(#projectlist)');
-      const contracts = projects.querySelector(':scope > .card:has(#productioncontracts)');
-      if (slate) {
+      const slate = $('#production-slate-workspace');
+      const contracts = $('#production-contract-workspace');
+      const moveProductionTools = () => {
         const developmentRoom = $('#phase5-development');
         const productionOptimizer = $('#production-portfolio-optimizer');
-        if (developmentRoom) slate.append(developmentRoom);
-        if (productionOptimizer) slate.append(productionOptimizer);
-      }
+        const chartSlot = $('#production-slate-charts');
+        if (developmentRoom && slate && !slate.contains(developmentRoom)) slate.insertBefore(developmentRoom,chartSlot || null);
+        if (productionOptimizer && slate && !slate.contains(productionOptimizer)) slate.insertBefore(productionOptimizer,chartSlot || null);
+      };
+      moveProductionTools();
       installWorkspaceTabs('page-projects',[
         {key:'slate',label:'Production slate',nodes:[slate]},
         {key:'contracts',label:'Contracts & payments',nodes:[contracts]}
       ],':scope > .hero');
-      const slatePanel = $('#page-projects-panel-slate');
-      const moveProductionTools = () => {
-        const developmentRoom = $('#phase5-development');
-        const productionOptimizer = $('#production-portfolio-optimizer');
-        if (developmentRoom && slatePanel && !slatePanel.contains(developmentRoom)) slatePanel.append(developmentRoom);
-        if (productionOptimizer && slatePanel && !slatePanel.contains(productionOptimizer)) slatePanel.append(productionOptimizer);
-      };
       moveProductionTools();
-      if (slatePanel) {
+      if (slate) {
         const productionObserver = new MutationObserver(moveProductionTools);
         productionObserver.observe(projects,{childList:true,subtree:true});
       }
     }
-    const talent = $('#page-talent');
+        const talent = $('#page-talent');
     if (talent) {
       const register = talent.querySelector(':scope > .grid.cols');
       const contracts = talent.querySelector(':scope > .card:has(#contractlist)');
