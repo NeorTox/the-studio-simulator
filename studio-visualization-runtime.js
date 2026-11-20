@@ -144,6 +144,103 @@
       series:[{type:'pie',radius:['43%','72%'],center:['50%','44%'],avoidLabelOverlap:true,itemStyle:{borderColor:'#152025',borderWidth:3},label:{color:'#dfe3da',fontSize:9,formatter:'{b}'},labelLine:{lineStyle:{color:'#667671'}},data:rows}]
     });
   }
+  function investmentSeries() {
+    const empire = active?.financialEmpire;
+    const holdings = Array.isArray(empire?.holdings) ? empire.holdings.filter(item => item.status === 'Active') : [];
+    const rows = new Map();
+    holdings.forEach(item => {
+      const key = String(item.assetClass || 'Other');
+      rows.set(key,(rows.get(key)||0)+number(item.marketValue));
+    });
+    const cash = number(active?.company?.cash);
+    if (cash > 0) rows.set('Treasury cash',cash);
+    return Array.from(rows.entries()).filter(row=>row[1]>0).sort((a,b)=>b[1]-a[1]).map(([name,value])=>({name,value:Math.round(value*100)/100}));
+  }
+  function renderPortfolioChart() {
+    const page = $('page-finance');
+    if (!page) return;
+    const tabs = page.querySelector('.workspace-tabs') || page.querySelector('.workspace-panels') || page.querySelector(':scope > .hero');
+    if (!tabs) return;
+    const card = ensureCard(tabs.parentElement,'studio-finance-portfolio-chart','Treasury & investment allocation','Actual company cash and marked value of active financial-empire holdings.','CURRENT PORTFOLIO');
+    if (!card) return;
+    const expense = $('studio-finance-category-chart');
+    if (expense) expense.insertAdjacentElement('afterend',card);
+    else tabs.insertAdjacentElement('afterend',card);
+    if (!page.classList.contains('active')) return;
+    const rows = investmentSeries();
+    if (!rows.length) {
+      showEmpty('studio-finance-portfolio-chart','Treasury allocation will appear when cash is available or an investment holding is recorded.');
+      return;
+    }
+    mount('studio-finance-portfolio-chart',{
+      animationDuration:420,
+      tooltip:{trigger:'item',backgroundColor:'#111a1f',borderColor:'#6f624e',textStyle:{color:'#eee9dc'},formatter:item=>item.name+'<br><b>'+item.value.toLocaleString()+'</b> ('+item.percent+'%)'},
+      legend:{type:'scroll',bottom:0,textStyle:{color:'#a8b4b0',fontSize:9},pageTextStyle:{color:'#a8b4b0'}},
+      series:[{type:'pie',radius:['38%','70%'],center:['50%','44%'],roseType:false,itemStyle:{borderColor:'#152025',borderWidth:3},label:{color:'#dfe3da',fontSize:9,formatter:'{b}'},labelLine:{lineStyle:{color:'#667671'}},data:rows}]
+    });
+  }
+  function renderProductionChart() {
+    const page = $('page-projects');
+    if (!page) return;
+    const host = $('phase5-development') || page.querySelector(':scope > .hero');
+    if (!host) return;
+    const card = ensureCard(page,'studio-production-readiness-chart','Production development readiness','Completion of each project’s recorded creative-development checklist.','PROJECT PORTFOLIO');
+    if (!card) return;
+    host.insertAdjacentElement('afterend',card);
+    if (!page.classList.contains('active')) return;
+    const projects = Array.isArray(active?.projects) ? active.projects : [];
+    if (!projects.length) {
+      showEmpty('studio-production-readiness-chart','Production readiness will appear when the campaign has development projects.');
+      return;
+    }
+    const rows = projects.map(project=>{
+      const checklist = project.development?.checklist || {};
+      const entries = Object.values(checklist);
+      const complete = entries.filter(Boolean).length;
+      return {name:String(project.title||project.name||project.id||'Untitled project'),value:entries.length?Math.round(complete/entries.length*100):0,complete,total:entries.length};
+    }).slice(0,12);
+    mount('studio-production-readiness-chart',{
+      animationDuration:420,
+      grid:{left:100,right:32,top:14,bottom:18},
+      tooltip:{trigger:'axis',axisPointer:{type:'shadow'},backgroundColor:'#111a1f',borderColor:'#6f624e',textStyle:{color:'#eee9dc'},formatter:items=>{const item=items[0],row=rows[item.dataIndex];return row.name+'<br><b>'+row.complete+' / '+row.total+' checks</b> · '+row.value+'%';}},
+      xAxis:{type:'value',min:0,max:100,axisLabel:{color:'#a3b0ab',fontSize:9,formatter:'{value}%'},splitLine:{lineStyle:{color:'rgba(137,157,155,.13)',type:'dashed'}}},
+      yAxis:{type:'category',data:rows.map(row=>row.name),axisLabel:{color:'#c0cac4',fontSize:9,overflow:'truncate',width:90},axisLine:{show:false},axisTick:{show:false}},
+      series:[{type:'bar',data:rows.map(row=>row.value),barMaxWidth:18,itemStyle:{color:'#b99a6d',borderRadius:[0,4,4,0]},label:{show:true,position:'right',color:'#d7d9cf',fontSize:9,formatter:'{c}%'}}]
+    });
+  }
+  function regionalEconomySeries() {
+    const regions = active?.market?.globalEconomy?.regions;
+    if (!Array.isArray(regions) || !regions.length) return null;
+    return regions.filter(region=>Number.isFinite(Number(region.gdpIndex))).map(region=>({
+      name:String(region.name||region.id||'Region'),
+      gdp:number(region.gdpIndex),
+      inflation:number(region.inflationPct),
+      unemployment:number(region.unemploymentPct)
+    }));
+  }
+  function renderRegionalEconomyChart() {
+    const page = $('page-market');
+    if (!page) return;
+    const tabs = page.querySelector('.workspace-tabs') || page.querySelector(':scope > .hero');
+    if (!tabs) return;
+    const card = ensureCard(tabs.parentElement,'studio-market-regional-economy-chart','Regional economic conditions','GDP index from the campaign’s simulated global economy.','SIMULATION DATA');
+    if (!card) return;
+    tabs.insertAdjacentElement('afterend',card);
+    if (!page.classList.contains('active')) return;
+    const rows = regionalEconomySeries();
+    if (!rows) {
+      showEmpty('studio-market-regional-economy-chart','Regional economic comparisons will appear when the global economy has initialized.');
+      return;
+    }
+    mount('studio-market-regional-economy-chart',{
+      animationDuration:420,
+      grid:{left:115,right:26,top:16,bottom:20},
+      tooltip:{trigger:'axis',axisPointer:{type:'shadow'},backgroundColor:'#111a1f',borderColor:'#6f624e',textStyle:{color:'#eee9dc'},formatter:items=>{const row=rows[items[0].dataIndex];return row.name+'<br>GDP index: <b>'+row.gdp.toFixed(1)+'</b><br>Inflation: '+row.inflation.toFixed(2)+'%<br>Unemployment: '+row.unemployment.toFixed(2)+'%';}},
+      xAxis:{type:'value',axisLabel:{color:'#a3b0ab',fontSize:9},splitLine:{lineStyle:{color:'rgba(137,157,155,.13)',type:'dashed'}}},
+      yAxis:{type:'category',data:rows.map(row=>row.name),axisLabel:{color:'#c0cac4',fontSize:9,overflow:'truncate',width:105},axisLine:{show:false},axisTick:{show:false}},
+      series:[{type:'bar',data:rows.map(row=>row.gdp),barMaxWidth:20,itemStyle:{color:'#8eaa9a',borderRadius:[0,4,4,0]},label:{show:true,position:'right',color:'#d7d9cf',fontSize:8,formatter:params=>Number(params.value).toFixed(1)}}]
+    });
+  }
   function populationSeries() {
     const people = active?.world?.population?.npcs;
     if (!Array.isArray(people) || !people.length) return null;
@@ -181,6 +278,9 @@
   function refresh() {
     renderOverviewChart();
     renderFinanceChart();
+    renderPortfolioChart();
+    renderProductionChart();
+    renderRegionalEconomyChart();
     renderPopulationChart();
     for (const [id,chart] of charts) if (!$(id+'-plot')?.isConnected) {
       chart.dispose();
