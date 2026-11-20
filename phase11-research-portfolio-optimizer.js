@@ -64,7 +64,7 @@ function analyze(fundingPct=40){
 }
 function savePlan(fundingPct=40){
  const r=analyze(fundingPct),s=context().state;
- s.researchPortfolio={version:VERSION,algorithmVersion:r.algorithmVersion,created:active.date,status:'Advisory only',fundingPct:r.fundingPct,companyCashAtSave:r.companyCash,fundingEnvelope:r.fundingEnvelope,currency:r.currency,labCapacity:r.labCapacity,activeResearch:r.activeResearch,selectedTechnologyIds:r.selected.map(t=>t.id),selectedTechnologies:r.selected.map(t=>({id:t.id,name:t.name,cost:t.cost,days:t.days,impact:t.impact})),totalSelectedCost:r.totalSelectedCost,lockedCount:r.locked.length};
+ s.researchPortfolio={version:VERSION,algorithmVersion:r.algorithmVersion,created:active.date,status:'Advisory only',fundingPct:r.fundingPct,companyCashAtSave:r.companyCash,fundingEnvelope:r.fundingEnvelope,currency:r.currency,labCapacity:r.labCapacity,activeResearch:r.activeResearch,selectedTechnologyIds:r.selected.map(t=>t.id),selectedTechnologies:r.selected.map(t=>({id:t.id,name:t.name,cost:t.cost,days:t.days,impact:t.impact})),totalSelectedCost:r.totalSelectedCost,lockedCount:r.locked.length,startedAtSave:false};
  if(typeof persist==='function')persist();
  return s.researchPortfolio;
 }
