@@ -146,3 +146,18 @@ Validation performed for this pass:
 - Inline scripts in `index.html` parsed successfully.
 - Finance and Production page HTML was checked for balanced nesting, unique renderer IDs and required workspace mounts.
 - Browser QA now asserts the native workspace mounts, preserved engine renderer targets and chart placement. A completed Playwright/GitHub Actions result for the latest commit remains unconfirmed.
+
+
+## Landscape-first install and final regression result
+
+The PWA manifest now requests `orientation: "landscape"` and remains `display: "standalone"`. The service-worker cache namespace was advanced to `the-studio-shell-v4.55.0-world-systems-market-landscape-ui` so an offline client receives the updated manifest. Browser coverage still exercises narrow portrait and landscape viewports; the manifest preference does not replace responsive layout testing.
+
+The latest push regression completed successfully on commit `45ba292f42da8c9872ecbe1bcd078212d71e3112` (GitHub Actions run 44758603454). The run passed:
+- Native desktop/mobile UI browser QA, including Finance/Production workspace mounts, chart placement and the atlas country-city dossier.
+- Player-experience and startup browser checks.
+- Geography/travel, Phase 4 company, Phase 5 production, Phase 6 mobile, Phase 7 smartphone/digital-life, Phase 8 financial empire, Phase 9 global economy, Phase 10 competitors, Phase 11 technology/sustainability, Phase 12 generations and Phase 13 release-quality browser suites.
+- Phase 13 release audit with 66 checks, all 14 phase contracts connected, and no browser errors.
+- Autonomous simulation and NPC autonomy checks.
+- Three-year cross-phase integration stress test and the one-year save/reload round-trip.
+
+The browser tests were updated to use the current startup contract: `#start-new` opens the creation modal directly, so they now fill the open form without attempting to click an obsolete intermediate “New campaign” or “Create campaign” control. The atlas MapLibre load callback also preserves an explicit country/city selection if map initialization completes asynchronously afterward.
