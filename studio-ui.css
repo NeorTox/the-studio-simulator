@@ -16,3 +16,13 @@
 /* Narrow-phone fit: keep the campaign HUD from forcing the viewport wider. */
 @media(max-width:900px){.top{width:100%;max-width:100%;overflow:hidden}.top-left{flex:1 1 auto;min-width:0}.crumb{max-width:35vw}.topright{min-width:0;gap:4px}.topright .pill{white-space:nowrap}}
 @media(max-width:440px){.topright .save-pill,.topright .top-world-label{display:none}.crumb{max-width:31vw}.topright .pill{max-width:112px;overflow:hidden;text-overflow:ellipsis}}
+
+.workspace-tabs{display:flex;align-items:stretch;gap:4px;max-width:100%;margin:17px 0 13px;padding:4px;overflow-x:auto;border:1px solid var(--line);background:#0e161b;scrollbar-width:thin;scrollbar-color:#46535a transparent;-webkit-overflow-scrolling:touch}
+.workspace-tab{flex:0 0 auto;min-height:39px;padding:9px 15px;border:1px solid transparent;background:transparent;color:#9eacad;font-size:10px;font-weight:800;letter-spacing:.035em;white-space:nowrap}
+.workspace-tab:hover{background:#1a252b;color:#f0eee6}
+.workspace-tab.active{border-color:rgba(201,168,121,.28);background:linear-gradient(180deg,rgba(201,168,121,.17),rgba(201,168,121,.07));color:var(--brass-hi)}
+.workspace-panels{min-width:0}
+.workspace-panel{display:grid;gap:12px;min-width:0}
+.workspace-panel[hidden]{display:none!important}
+.workspace-panel>.card{margin-top:0!important}
+@media(max-width:900px){.workspace-tabs{position:relative;top:auto;margin:12px 0;padding:3px}.workspace-tab{min-height:42px;padding:10px 13px;font-size:9px}}
