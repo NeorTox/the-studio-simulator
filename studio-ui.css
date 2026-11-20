@@ -12,3 +12,7 @@
 @media(max-width:380px){.topright .save-pill{display:none}.crumb{max-width:145px}.content{padding-left:10px;padding-right:10px}.start-content{padding-left:20px;padding-right:20px}.start-title{font-size:72px}.stats .card{padding:10px}.statvalue{font-size:19px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 @media(display-mode:standalone){body{overscroll-behavior-y:contain}}
+
+/* Narrow-phone fit: keep the campaign HUD from forcing the viewport wider. */
+@media(max-width:820px){.top{width:100%;max-width:100%;overflow:hidden}.top-left{flex:1 1 auto;min-width:0}.crumb{max-width:35vw}.topright{min-width:0;gap:4px}.topright .pill{white-space:nowrap}}
+@media(max-width:440px){.topright .save-pill,.topright .top-world-label{display:none}.crumb{max-width:31vw}.topright .pill{max-width:112px;overflow:hidden;text-overflow:ellipsis}}
