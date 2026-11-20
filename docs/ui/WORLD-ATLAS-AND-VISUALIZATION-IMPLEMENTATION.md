@@ -81,6 +81,11 @@ Current charts:
 | Productions | Development readiness | Actual boolean values in each project's Phase 5 development checklist |
 | Market | Regional economic conditions | GDP index from `active.market.globalEconomy.regions`, with inflation and unemployment in tooltip |
 | Population | Materialized NPC age profile | Age values of named NPC records currently stored in the campaign |
+| People | Workforce and payroll by department | Active employee records and their monthly salary values |
+| Market | Audience demand by genre | Current campaign `active.market.genres` values |
+| Media | Press cycle and coverage reach | Dated `active.market.media.coverage` records |
+| Distribution | Royalty settlements over time | Dated `active.distribution.settlements` receipts |
+| Founder | Personal assets and liabilities | Founder personal cash, asset values and debt, separate from company accounts |
 
 The NPC chart is explicitly a profile of materialized NPC records, not the full virtual resident population. No example or placeholder values are inserted into production charts.
 
@@ -93,6 +98,25 @@ The regression workflow now syntax-checks the atlas and visualization modules an
 - `phase1-global-geography-travel-qa.js`: existing geography/travel engine audit plus direct and one-stop itinerary structure, leg metadata, curved route geometry, world-atlas/travel panel integration, relocated travel controls and passport-section preservation.
 
 An isolated itinerary logic check should verify direct/connecting itinerary availability and finite great-circle coordinates. Full browser/CI success must be based on the actual workflow run result, not source inspection alone.
+
+## Management workspace layout
+
+The native interface now organizes more of the legacy management pages into player-facing workspaces without replacing their underlying renderers or action handlers:
+
+- Finance: Overview, Accounting, Operations, Debt & Treasury, Investments and Audit.
+- Productions: Production slate and Contracts & payments.
+- Talent: Roster & auditions and Casting contracts.
+- Market: Industry, Markets & investment, Competitors and Labour market.
+- Media: Newsroom & coverage and Publicity campaigns.
+- Company: Corporate profile and Divisions & subsidiaries.
+- Founder personal life: Assets & finances and Relationships & family.
+- Distribution: Rights agreements and Royalty settlements.
+- Legal: Legal matters and Insurance & risk.
+- Awards: Award events and Submissions.
+
+Workspace tabs preserve the original DOM nodes and their IDs, so existing inline actions and engine render targets continue to address the same elements. The active tab is retained for the browser session. Tabs support keyboard navigation and horizontal scrolling on narrow screens. Empty legacy grid wrappers are removed after their cards are moved into the new panels.
+
+The responsive styling now gives management pages a consistent mobile hierarchy, collapses paired cards into a single column, keeps wide data tables horizontally scrollable rather than forcing the entire viewport wider, and provides visible keyboard focus states.
 
 ## Next implementation work
 
