@@ -54,7 +54,18 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('#page-market').evaluate(e=>e.classList.contains('active')),true,'Command-centre industry shortcut opens Market');
     await page.locator('.nav button[data-page="finance"]').click();
     assert.equal(await page.locator('#page-finance .workspace-tab').count(),6,'Finance is separated into six operational workspaces');
+    for (const id of ['finance-overview-workspace','finance-accounting-workspace','finance-operations-workspace','finance-capital-workspace','finance-investment-workspace','finance-audit-workspace']) {
+      assert.equal(await page.locator('#'+id).count(),1,'Finance has a native page structure for '+id);
+    }
+    assert.equal(await page.locator('#balancesheet').count(),1,'Balance sheet renderer target is preserved');
+    assert.equal(await page.locator('#ledger').count(),1,'General ledger renderer target is preserved');
+    assert.equal(await page.locator('#trialbalance').count(),1,'Trial balance renderer target is preserved');
+    assert.equal(await page.locator('#invoicelist').count(),1,'Invoice register renderer target is preserved');
+    assert.equal(await page.locator('#assetlist').count(),1,'Fixed asset renderer target is preserved');
+    assert.equal(await page.locator('#loanlist').count(),1,'Debt facility renderer target is preserved');
+    assert.equal(await page.locator('#page-finance button[onclick*="transactionForm"]').count(),1,'Finance transaction action remains mounted');
     assert.equal(await page.locator('#studio-finance-category-chart').count(),1,'Finance exposes a real expense-category chart');
+    assert.equal(await page.locator('#studio-finance-category-chart').evaluate(e=>e.parentElement.id),'finance-overview-charts','Expense chart is mounted in the Finance overview workspace');
     assert.equal(await page.locator('#studio-finance-portfolio-chart').count(),1,'Finance exposes a real treasury and investment allocation chart');
     for (const tab of ['accounting','operations','capital','investments','audit','overview']) {
       await page.locator('#page-finance [data-workspace-tab="'+tab+'"]').click();
@@ -62,7 +73,13 @@ const assert = require('node:assert/strict');
     }
     await page.locator('.nav button[data-page="projects"]').click();
     assert.equal(await page.locator('#page-projects .workspace-tab').count(),2,'Production slate and contracts are separate workspaces');
+    assert.equal(await page.locator('#production-slate-workspace').count(),1,'Production slate has its own native page structure');
+    assert.equal(await page.locator('#production-contract-workspace').count(),1,'Vendor contracts have their own native page structure');
+    assert.equal(await page.locator('#projectlist').count(),1,'Project slate renderer target is preserved');
+    assert.equal(await page.locator('#productioncontracts').count(),1,'Production payment renderer target is preserved');
+    assert.equal(await page.locator('#page-projects button[onclick*="createProject"]').count(),1,'New-project action remains mounted');
     assert.equal(await page.locator('#studio-production-readiness-chart').count(),1,'Production exposes a project-readiness chart');
+    assert.equal(await page.locator('#studio-production-readiness-chart').evaluate(e=>e.parentElement.id),'production-slate-charts','Production chart is mounted in the slate workspace');
     await page.locator('#page-projects [data-workspace-tab="contracts"]').click();
     assert.equal(await page.locator('#productioncontracts').isVisible(),true);
     await page.locator('.nav button[data-page="talent"]').click();
