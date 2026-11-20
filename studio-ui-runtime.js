@@ -318,25 +318,18 @@
     }
     const market = $('#page-market');
     if (market) {
-      const stats = market.querySelector(':scope > .grid.stats');
-      const grid = market.querySelector(':scope > .grid.cols');
-      const cards = Array.from(market.children).filter(node => node.classList.contains('card'));
-      const byTitle = title => cards.find(node => node.querySelector('.cardtitle')?.textContent.trim() === title);
       installWorkspaceTabs('page-market',[
-        {key:'industry',label:'Industry',nodes:[grid,byTitle('Macroeconomic dashboard'),byTitle('Selected real-world industry entities')]},
-        {key:'markets',label:'Markets & investment',nodes:[byTitle('Equity market'),byTitle('Treasury portfolio & trading')]},
-        {key:'competition',label:'Competitors',nodes:[byTitle('Competitor register'),byTitle('Autonomous competitor operations')]},
-        {key:'workforce',label:'Labour market',nodes:[byTitle('Entertainment labour market')]}
+        {key:'industry',label:'Industry & economy',nodes:[$('#market-industry-workspace')]},
+        {key:'markets',label:'Equities & treasury',nodes:[$('#market-markets-workspace')]},
+        {key:'competition',label:'Competitors',nodes:[$('#market-competition-workspace')]},
+        {key:'workforce',label:'Labour market',nodes:[$('#market-labour-workspace')]}
       ],':scope > .grid.stats');
     }
     const media = $('#page-media');
     if (media) {
-      const stats = media.querySelector(':scope > .grid.stats');
-      const newsroom = media.querySelector(':scope > .grid.cols');
-      const publicity = media.querySelector(':scope > .card:has(#mediacampaignlist)');
       installWorkspaceTabs('page-media',[
-        {key:'newsroom',label:'Newsroom & coverage',nodes:[newsroom]},
-        {key:'publicity',label:'Publicity campaigns',nodes:[publicity]}
+        {key:'newsroom',label:'Newsroom & coverage',nodes:[$('#media-newsroom-workspace')]},
+        {key:'publicity',label:'Publicity campaigns',nodes:[$('#media-publicity-workspace')]}
       ],':scope > .grid.stats');
     }
   }

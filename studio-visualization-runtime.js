@@ -233,12 +233,11 @@
   }
   function renderRegionalEconomyChart() {
     const page = $('page-market');
-    if (!page) return;
-    const tabs = page.querySelector('.workspace-tabs') || page.querySelector(':scope > .hero');
-    if (!tabs) return;
-    const card = ensureCard(tabs.parentElement,'studio-market-regional-economy-chart','Regional economic conditions','GDP index from the campaign’s simulated global economy.','SIMULATION DATA');
+    const parent = $('market-regional-chart-slot');
+    if (!page || !parent) return;
+    const card = ensureCard(parent,'studio-market-regional-economy-chart','Regional economic conditions','GDP index from the campaign’s simulated global economy.','SIMULATION DATA');
     if (!card) return;
-    tabs.insertAdjacentElement('afterend',card);
+    parent.appendChild(card);
     if (!page.classList.contains('active')) return;
     const rows = regionalEconomySeries();
     if (!rows) {
@@ -348,12 +347,11 @@
   }
   function renderGenreDemandChart() {
     const page = $('page-market');
-    if (!page) return;
-    const tabs = page.querySelector('.workspace-tabs') || page.querySelector(':scope > .hero');
-    if (!tabs) return;
-    const card = ensureCard(page,'studio-market-genre-chart','Audience demand by genre','Current campaign demand index, using the market engine’s live genre values.','DEMAND INDEX');
+    const parent = $('market-genre-chart-slot');
+    if (!page || !parent) return;
+    const card = ensureCard(parent,'studio-market-genre-chart','Audience demand by genre','Current campaign demand index, using the market engine’s live genre values.','DEMAND INDEX');
     if (!card) return;
-    tabs.insertAdjacentElement('afterend',card);
+    parent.appendChild(card);
     if (!page.classList.contains('active')) return;
     const genres=active?.market?.genres;
     if (!genres || typeof genres!=='object' || !Object.keys(genres).length) {
@@ -372,12 +370,11 @@
   }
   function renderMediaCoverageChart() {
     const page = $('page-media');
-    if (!page) return;
-    const tabs = page.querySelector('.workspace-tabs') || page.querySelector(':scope > .hero');
-    if (!tabs) return;
-    const card = ensureCard(page,'studio-media-coverage-chart','Press cycle & coverage reach','Recorded coverage items grouped by campaign date. Reach is the media engine’s index, not a verified audience count.','RECORDED COVERAGE');
+    const parent = $('media-coverage-chart-slot');
+    if (!page || !parent) return;
+    const card = ensureCard(parent,'studio-media-coverage-chart','Press cycle & coverage reach','Recorded coverage items grouped by campaign date. Reach is the media engine’s index, not a verified audience count.','RECORDED COVERAGE');
     if (!card) return;
-    tabs.insertAdjacentElement('afterend',card);
+    parent.appendChild(card);
     if (!page.classList.contains('active')) return;
     const coverage=Array.isArray(active?.market?.media?.coverage)?active.market.media.coverage:[];
     if (!coverage.length) {
