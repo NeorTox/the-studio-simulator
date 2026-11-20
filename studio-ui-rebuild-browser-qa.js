@@ -36,6 +36,7 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('#mobile-menu-toggle').isVisible(),true,'Mobile has an accessible workspace drawer control');
     const mobile = await page.evaluate(()=>({
       bodyWidth:document.body.scrollWidth,
+      overflowElements:Array.from(document.querySelectorAll('body *')).map(e=>({tag:e.tagName,id:e.id,cls:String(e.className||'').slice(0,80),left:Math.round(e.getBoundingClientRect().left),right:Math.round(e.getBoundingClientRect().right),width:Math.round(e.getBoundingClientRect().width)})).filter(e=>e.right>document.documentElement.clientWidth+1&&e.width>0).slice(0,12),
       viewportWidth:document.documentElement.clientWidth,
       bottomNavHeight:Math.round(document.querySelector('#mobile-nav').getBoundingClientRect().height),
       contentWidth:Math.round(document.querySelector('#game-content').getBoundingClientRect().width),
