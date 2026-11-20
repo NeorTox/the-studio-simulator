@@ -59,7 +59,7 @@
   let selectedItinerary = null;
   let itineraryOptions = [];
   let routeToDraw = null;
-  let globeMode = false;
+  let globeMode = true;
   let geographyObserver = null;
   let travelObserver = null;
   let lastTravelRoot = null;
@@ -308,6 +308,7 @@
         cooperativeGestures:true
       });
       map.addControl(new lib.NavigationControl({showCompass:true,showZoom:true}), 'top-right');
+      map.addControl(new lib.ScaleControl({unit:'metric',maxWidth:110}), 'bottom-left');
       map.on('style.load',() => {
         if(globeMode) map.setProjection({type:'globe'});
       });
