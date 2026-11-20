@@ -22,6 +22,8 @@
     if (!parent) return null;
     let card = $(id);
     if (!card || card.parentElement !== parent) {
+      const stale = charts.get(id);
+      if (stale) { stale.dispose(); charts.delete(id); }
       if (card) card.remove();
       card = document.createElement('section');
       card.className = 'studio-chart-card';
@@ -52,7 +54,12 @@
       plot.classList.remove('studio-chart-empty');
       plot.textContent = '';
       let instance = charts.get(id);
-      if (!instance || instance.isDisposed?.()) {
+      if (instance && (instance.isDisposed?.() || instance.getDom?.() !== plot)) {
+        instance.dispose();
+        charts.delete(id);
+        instance = null;
+      }
+      if (!instance) {
         instance = echarts.init(plot,null,{renderer:'canvas',useDirtyRect:true});
         charts.set(id,instance);
       }
