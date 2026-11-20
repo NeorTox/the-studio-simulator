@@ -101,6 +101,8 @@ An isolated itinerary logic check should verify direct/connecting itinerary avai
 
 ## Management workspace layout
 
+The Command Centre now includes an Operations launchpad with six direct actions: create a production, record a transaction, hire an employee, open Talent, open Market, and open Global Travel. These actions call the existing game functions and navigation routes rather than introducing duplicate command logic.
+
 The native interface now organizes more of the legacy management pages into player-facing workspaces without replacing their underlying renderers or action handlers:
 
 - Finance: Overview, Accounting, Operations, Debt & Treasury, Investments and Audit.
