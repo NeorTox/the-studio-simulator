@@ -176,3 +176,14 @@ Media is divided into Newsroom & Coverage and Publicity Campaigns. Its original 
 Responsive styles collapse the Market insight charts and Media/People/Talent workspace grids on narrow viewports. These are presentation changes around the existing campaign state; they do not replace the market, media, payroll, audition, talent or contract engines.
 
 Validation on code commit `c18cf6aa6651e77e003c809d2bc9f8e094157a0f` completed successfully in GitHub Actions run 44760484830: 44 successful steps, zero failures. The run included native desktop/mobile UI browser QA, Market and Media workspace/chart assertions, People/Talent/Finance/Production checks, all phase browser suites through Phase 13, geography/travel, the one-year save/reload round-trip and the three-year cross-phase integration stress test.
+
+
+## Company, Founder, Legal, Awards, Facilities and IP workspace passes
+
+Company now has dedicated corporate-profile/ownership and operating-structure workspaces. The original `legalstatus`, `companydetails` and `divisions` targets remain present, and the actions for incorporation, subsidiaries, divisions, equity and IPO are retained.
+
+Founder personal life now has a separate personal balance-sheet workspace and relationships/family workspace. Cash, assets, net worth and stress indicators remain visible above the workspace tabs. The personal-assets chart is mounted inside the personal finance workspace and is sourced from founder personal cash, personal assets and personal debt. Company accounts are not mixed into this chart or the founder's personal balance sheet.
+
+Legal & Risk now separates the legal matter register from insurance policies while retaining the legal exposure, premium and record targets and both creation actions. Awards & Festivals separates era-eligible events from project submissions and keeps the original event, count and submission IDs plus the submission action. Facilities has a dedicated estate-register workspace around the existing facility KPIs, register and add-facility action. IP & Rights separates catalogue ownership from outbound licensing while preserving all four IP/licensing KPIs, both registers and the create/acquire/license actions.
+
+The latest full regression for commit `3ce4b71c93ce7fd2e44ad8139ed17e00d5740173` passed in workflow run 44761671890: 44 successful steps, zero failures, including native desktop/mobile browser QA, all phase browser suites, geography/travel, save/reload and the three-year cross-phase integration stress test.
