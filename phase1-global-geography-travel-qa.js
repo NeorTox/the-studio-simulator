@@ -33,7 +33,9 @@ const assert=require('assert');const {chromium}=require('playwright');
   const tokyo=G.cities.find(x=>x.countryId==='JP'&&x.name==='Tokyo');
   const atlas=window.StudioWorldAtlas;if(!atlas)throw Error('Interactive world atlas module did not load');
   const itineraries=atlas.findItineraries(tokyo.id,active.date);
-  if(!itineraries.length||!itineraries.some(x=>x.stopCount===0)||!itineraries.every(x=>x.legs.length===x.stopCount+1&&x.legs.every(l=>l.flightNumber&&l.aircraft&&l.departureLocal&&l.arrivalLocal)))throw Error('Generated flight itinerary structure is incomplete');
+  if(!itineraries.length||!itineraries.some(x=>x.stopCount===0)||!itineraries.some(x=>x.stopCount===1)||!itineraries.every(x=>x.legs.length===x.stopCount+1&&x.legs.every(l=>l.flightNumber&&l.aircraft&&l.departureLocal&&l.arrivalLocal)))throw Error('Generated direct and connecting flight itinerary structure is incomplete');
+  const connection=itineraries.find(x=>x.stopCount===1),route=atlas.routeGeometry(connection);
+  if(!route||route.geometry.type!=='LineString'||route.geometry.coordinates.length<80)throw Error('Connecting route did not produce a curved multi-leg world-map geometry');
   let blocked=false;try{T.planTrip(tokyo.id,'flight',active.date,2,'standard')}catch(e){blocked=/entry permit/i.test(e.message)}
   if(!blocked)throw Error('International travel should require an in-game entry permit');
   const visa=T.applyForEntryPermit('JP');if(visa.status!=='valid')throw Error('Entry permit was not issued');T.passportNationality('GB');let nationalityBlocked=false;try{T.planTrip(tokyo.id,'flight',active.date,2,'standard')}catch(e){nationalityBlocked=/entry permit/i.test(e.message)}if(!nationalityBlocked)throw Error('Entry permit must be tied to passport nationality');T.passportNationality('IN');
