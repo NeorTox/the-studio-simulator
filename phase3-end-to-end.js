@@ -5,7 +5,7 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
  const batchProgress=[];p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{const message=m.text();if(m.type()==='error')errors.push(message);if(message.includes('[STUDIO_BATCH_PROGRESS]')){const match=message.match(/\[STUDIO_BATCH_PROGRESS\]\s+(\{.*\})/);if(match){try{batchProgress.push(JSON.parse(match[1]))}catch(e){errors.push('Invalid batch progress telemetry: '+e.message)}}}if(message.includes('[STUDIO_BATCH_')||message.includes('[STUDIO_CLOCK_')||message.includes('[STUDIO_CORE_STAGE]')||message.includes('[STUDIO_WORLD_STAGE]')||message.includes('[STUDIO_ADVANCE_TRACE]')||message.includes('[STUDIO_ADVANCE_STEP]'))console.log(message)});
  await p.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
  await p.locator('#start-load').click();
- await p.locator('[data-page="overview"]').click();
+ await p.evaluate(()=>window.nav('overview'));
  await p.locator('#page-overview .hero .actions button').first().click();await p.getByRole('button',{name:/Create campaign/}).click();
  for(const [id,v] of [['nfounder','End-to-End Founder'],['ncompany','E2E Pictures'],['ncountry','India'],['ncity','Kochi']])await p.locator('#'+id).fill(v);
  await p.getByRole('button',{name:/Create and save campaign/}).click();
