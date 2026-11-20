@@ -627,7 +627,7 @@
     if (legacyActions) legacyActions.hidden = true;
     const legacyPlanCard = destinationField?.closest('.card');
     const legacyTitle = legacyPlanCard?.querySelector(':scope > .cardtitle');
-    if (legacyTitle) legacyTitle.hidden = true;
+    if (legacyTitle) { legacyTitle.hidden = false; legacyTitle.textContent = 'Passport & entry documents'; }
     const origin = currentCity();
     const destination = G.getCity($('travel-destination')?.value);
     $('studio-flight-origin').textContent = origin?.name || '—';
