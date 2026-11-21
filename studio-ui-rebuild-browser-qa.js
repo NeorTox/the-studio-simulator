@@ -174,6 +174,69 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('.production-wizard-step-title').textContent(),'Think about the release','Player can revisit a prior setup step before submission');
     await page.locator('#studio-production-wizard [data-wizard-close]').click();
     assert.equal(await page.locator('#studio-production-wizard').evaluate(e=>e.open),false,'Wizard can be safely closed before project submission');
+    await page.evaluate(()=>{
+      active.projects=[{
+        id:'PRJ-QA-001',title:'The Meridian Project',format:'Feature film',genre:'Science fiction',
+        budget:12500000,spent:0,committed:180000,contractCommitted:'25000',cast:[{actorName:'Ava QA',role:'Lead',fee:125000}],
+        crew:[{name:'Niko QA',role:'Director',contractType:'Fixed project engagement',fee:180000}],
+        stage:0,stageStarted:active.date,stageHistory:[{stage:'Concept',date:active.date,cost:0}],
+        budgetLines:[
+          {stageIndex:0,stageName:'Concept',category:'Story & development',budget:'1250000',actual:'0',committed:'0',status:'Planned'},
+          {stageIndex:1,stageName:'Development',category:'Creative development',budget:'1875000',actual:'0',committed:'0',status:'Planned'}
+        ],
+        developmentBrief:{
+          logline:'A crew discovers an impossible signal.',synopsis:'A deep-space discovery changes the course of an expedition.',
+          creativeTone:'Grounded and suspenseful',intendedAudience:'Teen and young adult',classificationTarget:'Teen audience target',
+          financingApproach:'Company-funded',productionBase:'Mumbai, India',productionApproach:'Hybrid',
+          plannedStartDate:'2026-12-01',targetCompletionDate:'2027-06-01',
+          intendedReleaseRoute:'Streaming license',targetReleaseDate:'2027-08-18',targetTerritories:'Worldwide'
+        }
+      }];
+      active.productionContracts=[{
+        id:'PC-QA-001',projectId:'PRJ-QA-001',projectTitle:'The Meridian Project',vendor:'Northlight Rentals',
+        category:'Camera equipment',total:'25000',schedule:[{label:'Deposit',dueDate:'2026-12-10',amount:'25000',status:'Pending'}]
+      }];
+      window.StudioProductionWorkflow.refresh();
+    });
+    assert.equal(await page.locator('#studio-production-pipeline [data-pipeline-open="PRJ-QA-001"]').count(),1,'Each pipeline project exposes its own command-centre entry point');
+    await page.locator('#studio-production-pipeline [data-pipeline-open="PRJ-QA-001"]').click();
+    assert.equal(await page.locator('#studio-project-command-centre').evaluate(e=>e.open),true,'Project command centre opens as a dedicated native workspace');
+    assert.equal(await page.locator('#studio-project-command-centre [data-project-tab]').count(),5,'Project command centre separates command, creative, budget, people and release');
+    assert.match(await page.locator('[data-project-content]').innerText(),/0 of 14 required days elapsed/,'Project command centre displays the real stage time gate');
+    assert.match(await page.locator('[data-project-content]').innerText(),/TIME GATE IN PROGRESS/,'Project command centre does not mark an ineligible stage as ready');
+    await page.locator('[data-project-tab="creative"]').click();
+    assert.match(await page.locator('[data-project-content]').innerText(),/A deep-space discovery changes the course/,'Creative brief reads the campaign-backed synopsis');
+    assert.match(await page.locator('[data-project-content]').innerText(),/Mumbai, India/,'Creative brief shows the recorded production base');
+    await page.locator('[data-project-tab="budget"]').click();
+    assert.match(await page.locator('[data-project-content]').innerText(),/12,500,000/,'Budget workspace displays the approved project envelope');
+    assert.match(await page.locator('[data-project-content]').innerText(),/Story & development/,'Budget workspace displays real itemized budget lines');
+    assert.match(await page.locator('[data-project-content]').innerText(),/Vendor contract value/,'Budget workspace separates vendor commitments');
+    await page.locator('[data-project-tab="people"]').click();
+    assert.match(await page.locator('[data-project-content]').innerText(),/Ava QA/,'People workspace reads the project cast list');
+    assert.match(await page.locator('[data-project-content]').innerText(),/Niko QA/,'People workspace reads the crew register');
+    assert.match(await page.locator('[data-project-content]').innerText(),/Northlight Rentals/,'People workspace reads the production contract register');
+    await page.locator('[data-project-tab="delivery"]').click();
+    assert.match(await page.locator('[data-project-content]').innerText(),/Streaming license/,'Release workspace shows the planned distribution route');
+    assert.match(await page.locator('[data-project-content]').innerText(),/2027-08-18/,'Release workspace shows the target release date');
+    await page.locator('[data-project-tab="command"]').click();
+    await page.locator('[data-project-action="advance"]').click();
+    assert.equal(await page.locator('#studio-project-command-centre').evaluate(e=>e.open),false,'Stage approval action exits the command centre before opening the existing approval flow');
+    assert.equal(await page.locator('#stagego').isDisabled(),true,'Existing stage approval blocks advancement before the minimum time has elapsed');
+    assert.match(await page.locator('#mbody').innerText(),/0 \/ 14 days/,'Existing approval dialog retains the simulation engine time check');
+    await page.evaluate(()=>closeModal());
+    assert.equal(await page.locator('#modal').isVisible(),false,'Existing stage approval modal closes normally');
+    await page.locator('#studio-production-pipeline [data-pipeline-open="PRJ-QA-001"]').click();
+    await page.setViewportSize({width:390,height:844});
+    const projectCentreMobile=await page.locator('#studio-project-command-centre').evaluate(e=>({
+      viewport:document.documentElement.clientWidth,
+      bounds:e.getBoundingClientRect().width,
+      contentWidth:e.querySelector('.project-centre-content').clientWidth,
+      contentScrollWidth:e.querySelector('.project-centre-content').scrollWidth
+    }));
+    assert(projectCentreMobile.bounds<=projectCentreMobile.viewport,'Project command centre fits the mobile viewport');
+    assert(projectCentreMobile.contentScrollWidth<=projectCentreMobile.contentWidth+2,'Project command centre content does not force horizontal scrolling on mobile: '+JSON.stringify(projectCentreMobile));
+    await page.locator('#studio-project-command-centre [data-project-close]').first().click();
+    await page.setViewportSize({width:1440,height:900});
     await page.evaluate(()=>{active=null;window.StudioProductionWorkflow.refresh();});
     await page.locator('#page-projects [data-workspace-tab="contracts"]').click();
     assert.equal(await page.locator('#productioncontracts').isVisible(),true);
