@@ -160,7 +160,7 @@
   function install(){
     const page=$('#page-projects');if(!page)return;
     const createButtons=page.querySelectorAll('button[onclick*="createProject"]');
-    createButtons.forEach(button=>{button.removeAttribute('onclick');button.addEventListener('click',openWizard);});
+    createButtons.forEach(button=>{button.removeAttribute('onclick');button.dataset.productionWizardTrigger='true';button.addEventListener('click',openWizard);});
     window.createProject=openWizard;
     renderPipeline();bindPipeline();
     const list=$('#projectlist');
