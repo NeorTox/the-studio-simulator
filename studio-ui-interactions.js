@@ -153,8 +153,48 @@
     } catch (error) {
       console.warn('[Studio conversations] Relationship update unavailable:',error);
     }
+    // Route the exchange through the universal situation/consequence engine.
+    // Social trust and rapport remain owned by StudioSocialNetwork; delayed
+    // effects and the NPC's decision memory remain owned by their existing engines.
+    let decisionOutcome=null;
+    const decisionApi=window.StudioNPCDecisionConsequences;
+    const responseByChoice={
+      support:'help-directly',
+      curiosity:'investigate-first',
+      plan:'negotiate',
+      challenge:'offer-advice'
+    };
+    if(decisionApi?.createSituation && decisionApi?.resolveSituation) {
+      try {
+        const situationId='DIALOGUE-SIT-'+hash(session.id+'|'+(session.turns+1));
+        const created=decisionApi.createSituation({
+          id:situationId,npcId:p.id,date:campaign().date,type:'relationships',
+          title:'A conversation with '+(p.name||'a colleague'),
+          description:choice.line,
+          severity:30,visibility:.28,relevance:.42,
+          createdBy:'cinematic-interaction-layer'
+        });
+        const situation=created?.situation;
+        const responseId=responseByChoice[choice.id];
+        if(situation?.status==='open' && responseId) {
+          const resolved=decisionApi.resolveSituation(situation.id,responseId,{actor:'player',date:campaign().date});
+          if(resolved?.resolved) decisionOutcome={
+            situationId:situation.id,
+            response:resolved.situation?.response?.label||responseId,
+            consequences:(resolved.consequences||[]).map(item=>({domain:item.domain,impact:item.impact,dueDate:item.dueDate,direction:item.direction}))
+          };
+        }
+      } catch(error) {
+        console.warn('[Studio conversations] Decision consequence integration unavailable:',error);
+      }
+    }
     const reply=makeReply(p,session.topic,choice,edgeAfter||edgeBefore);
     session.lines.push({speaker:'npc',name:p.name||'Colleague',text:reply,date:campaign().date});
+    if(decisionOutcome) {
+      session.lastSimulationOutcome=decisionOutcome;
+      const effects=decisionOutcome.consequences.map(item=>item.domain+' ('+item.direction+', due '+item.dueDate+')').join(' · ');
+      session.lines.push({speaker:'narration',name:'',text:'The exchange has been recorded. Its wider effects may unfold over time'+(effects?': '+effects:'')+'.',date:campaign().date});
+    }
     session.turns++;
     session.lastChoice=choice.id;
     session.updatedAt=campaign().date;
