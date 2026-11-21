@@ -377,9 +377,10 @@
       else if (action === 'toggle-app') {
         const item = (s.platforms || []).find(p => p.id === id);
         if (!item) throw new Error('Application not found.');
-        if (item.installed) core.uninstallApp(id);
+        const wasInstalled = !!item.installed;
+        if (wasInstalled) core.uninstallApp(id);
         else core.installApp(id);
-        announce(item.installed ? 'Application removed.' : 'Application installed.');
+        announce(wasInstalled ? 'Application removed.' : 'Application installed.');
       } else if (action === 'read-news') {
         if (typeof core.markNewsRead === 'function') core.markNewsRead(id);
       } else if (action === 'read-notice') {
