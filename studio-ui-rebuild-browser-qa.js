@@ -236,6 +236,7 @@ const assert = require('node:assert/strict');
     assert.match(await page.locator('[data-project-content]').innerText(),/Script draft/,'Command centre explains the missing script requirement');
     await page.locator('[data-project-action="scriptRoom"]').click();
     assert.equal(await page.locator('#studio-project-command-centre').evaluate(e=>e.open),false,'Opening the Script room exits the project command centre');
+    await page.waitForFunction(()=>document.querySelector('#modal').classList.contains('show'));
     assert.equal(await page.locator('#modal').isVisible(),true,'Project command centre opens the existing Phase 5 Script room');
     assert.equal(await page.locator('#p5form').count(),1,'Existing Script room form remains the authoritative development editor');
     await page.locator('#p5draft').fill('FADE IN: EXT. DEEP SPACE — A research vessel drifts beyond the mapped frontier. A signal repeats from the dark. The crew prepares to investigate and records the first transmission.');
