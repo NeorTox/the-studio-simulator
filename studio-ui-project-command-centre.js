@@ -93,12 +93,24 @@
     else dialog.setAttribute('open', '');
   }
 
+  function openPhase5Action(id, attribute, datasetKey) {
+    if (typeof window.nav === 'function') window.nav('projects');
+    const host = $('#phase5-development') || $('#page-projects');
+    const target = all('[' + attribute + ']', host).find(node => String(node.dataset[datasetKey]) === String(id));
+    if (target) target.click();
+    else if (typeof toast === 'function') toast('The Phase 5 development workspace is not available right now.');
+  }
+
   function runAction(action) {
     const id = projectId;
     const project = projectById(id);
     if (!project) return;
     const actions = {
       advance: () => typeof advanceProject === 'function' && advanceProject(id),
+      scriptRoom: () => openPhase5Action(id, 'data-p5-edit', 'p5Edit'),
+      reviewScript: () => openPhase5Action(id, 'data-p5-review', 'p5Review'),
+      greenlight: () => openPhase5Action(id, 'data-p5-green', 'p5Green'),
+      readiness: () => openPhase5Action(id, 'data-p5-check', 'p5Check'),
       crew: () => typeof hireCrew === 'function' && hireCrew(id),
       budget: () => typeof showProjectBudget === 'function' && showProjectBudget(id),
       marketing: () => typeof planMarketing === 'function' && planMarketing(id),
@@ -147,7 +159,26 @@
     const labour = a.market && a.market.labor;
     const labourBlocked = stage === 3 && labour && labour.disruptionUntil && a.date <= labour.disruptionUntil;
     const timeReady = stage >= 6 || elapsed >= required;
-    const status = stage >= 6 ? 'RELEASED' : labourBlocked ? 'LABOUR DISRUPTION' : timeReady ? 'READY FOR STAGE REVIEW' : 'TIME GATE IN PROGRESS';
+    const development = project.development || {};
+    const phase5 = window.Phase5Production;
+    const developmentBlockers = [];
+    let developmentGateLabel = '';
+    if (stage === 0) {
+      developmentGateLabel = 'Creative development package';
+      if (String(development.logline || '').trim().length < 10) developmentBlockers.push('Logline (at least 10 characters)');
+      if (String(development.synopsis || '').trim().length < 30) developmentBlockers.push('Synopsis / treatment (at least 30 characters)');
+      if (String(development.scriptDraft || '').trim().length < 30) developmentBlockers.push('Script draft (at least 30 characters)');
+    } else if (stage === 1) {
+      developmentGateLabel = 'Script approval & studio greenlight';
+      if (development.scriptStatus !== 'Approved') developmentBlockers.push('Script review approval');
+      if (!development.greenlight) developmentBlockers.push('Studio greenlight');
+    } else if (stage === 2 && phase5 && typeof phase5.readiness === 'function') {
+      developmentGateLabel = 'Pre-production readiness';
+      const readiness = phase5.readiness(project.id);
+      if (!readiness.ready) developmentBlockers.push(...readiness.missing);
+    }
+    const developmentBlocked = developmentBlockers.length > 0;
+    const status = stage >= 6 ? 'RELEASED' : labourBlocked ? 'LABOUR DISRUPTION' : developmentBlocked ? 'PHASE 5 DEPENDENCY' : timeReady ? 'READY FOR STAGE REVIEW' : 'TIME GATE IN PROGRESS';
     const stages = STAGES.map((name, index) => {
       const state = index < stage ? 'complete' : index === stage ? 'current' : 'upcoming';
       const history = (project.stageHistory || []).find(entry => entry.stage === name);
@@ -155,11 +186,16 @@
     }).join('');
     const gates = [
       '<div class="project-centre-gate ' + (timeReady ? 'passed' : 'pending') + '"><span class="project-centre-gate-icon">' + (timeReady ? '✓' : '◷') + '</span><div><b>Minimum stage duration</b><small>' + elapsed + ' of ' + required + ' required days elapsed</small></div><strong>' + (timeReady ? 'MET' : 'WAITING') + '</strong></div>',
-      '<div class="project-centre-gate ' + (labourBlocked ? 'blocked' : 'passed') + '"><span class="project-centre-gate-icon">' + (labourBlocked ? '!' : '✓') + '</span><div><b>Industry labour status</b><small>' + (labourBlocked ? 'Production disruption through ' + esc(labour.disruptionUntil) : stage === 3 ? 'No active photography disruption reported' : 'No photography-specific hold applies at this stage') + '</small></div><strong>' + (labourBlocked ? 'BLOCKED' : 'CLEAR') + '</strong></div>'
+      '<div class="project-centre-gate ' + (labourBlocked ? 'blocked' : 'passed') + '"><span class="project-centre-gate-icon">' + (labourBlocked ? '!' : '✓') + '</span><div><b>Industry labour status</b><small>' + (labourBlocked ? 'Production disruption through ' + esc(labour.disruptionUntil) : stage === 3 ? 'No active photography disruption reported' : 'No photography-specific hold applies at this stage') + '</small></div><strong>' + (labourBlocked ? 'BLOCKED' : 'CLEAR') + '</strong></div>',
+      ...(developmentGateLabel ? ['<div class="project-centre-gate ' + (developmentBlocked ? 'blocked' : 'passed') + '"><span class="project-centre-gate-icon">' + (developmentBlocked ? '!' : '✓') + '</span><div><b>' + esc(developmentGateLabel) + '</b><small>' + esc(developmentBlocked ? developmentBlockers.join(' · ') : 'Phase 5 requirements recorded') + '</small></div><strong>' + (developmentBlocked ? 'ACTION REQUIRED' : 'CLEAR') + '</strong></div>'] : [])
     ].join('');
     let actions = '';
     if (stage < 6) {
       actions += button('Review next-stage approval <span aria-hidden="true">↗</span>', 'advance', true);
+      if (stage === 0 && developmentBlocked) actions += button('Open Script room', 'scriptRoom', false);
+      if (stage === 1 && development.scriptStatus !== 'Approved') actions += button('Review script', 'reviewScript', false);
+      else if (stage === 1 && !development.greenlight) actions += button('Greenlight project', 'greenlight', false);
+      if (stage === 2 && developmentBlocked) actions += button('Open readiness checklist', 'readiness', false);
       actions += button('Hire production crew', 'crew', false);
       if (stage >= 4) actions += button(project.marketingPlan ? 'Edit marketing plan' : 'Plan marketing campaign', 'marketing', false);
       if (stage >= 5 && project.marketingPlan && project.marketingPlan.status !== 'Active') actions += button('Launch marketing', 'launchMarketing', false);
@@ -181,7 +217,7 @@
         (stage < 6 ? '<div class="project-centre-gates">' + gates + '</div><div class="project-centre-next-stage"><small>NEXT STAGE</small><b>' + esc(STAGES[stage + 1]) + '</b><span>Stage costs, cash and itemized allocations are confirmed in the simulation approval review.</span></div>' : '<p class="project-centre-release-note">The production has completed all seven campaign stages. Record actual distribution results when the release is ready to report.</p>') +
         '<div class="project-centre-action-row">' + actions + '</div>' +
       '</section><section class="project-centre-panel"><div class="project-centre-panel-heading"><div><div class="eyebrow">PRODUCTION HISTORY</div><h4>Stage progression</h4></div><span class="project-centre-count">' + (project.stageHistory || []).length + ' records</span></div><div class="project-centre-timeline">' + stages + '</div></section></div>' +
-      '<div class="project-centre-footnote">The stage-review action opens the existing simulation approval. It does not skip elapsed-time, cash, itemized-cost or disruption checks.</div>' +
+      '<div class="project-centre-footnote">Stage progression is governed by the live simulation and Phase 5 development gates: script material, script approval, greenlight, pre-production readiness, elapsed time, cash, itemized costs and labour disruptions.</div>' +
     '</section>';
   }
 
