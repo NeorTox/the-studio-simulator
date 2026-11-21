@@ -77,6 +77,7 @@
     if (!validDate(date)) return 'Date unavailable';
     return new Intl.DateTimeFormat('en', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(date + 'T12:00:00Z'));
   };
+  const dateDay = date => validDate(date) ? String(new Date(date + 'T12:00:00Z').getUTCDate()).padStart(2, '0') : '—';
   const campaign = () => {
     try { return typeof active !== 'undefined' && active ? active : null; }
     catch (_) { return null; }
@@ -208,7 +209,8 @@
   }
 
   function choicesFor(meeting) {
-    if (meeting.activity === 'professional' || meeting.activity === 'lunch' || meeting.activity === 'studio') return CHOICES.professional;
+    const activity = ACTIVITIES[meeting.activity];
+    if (activity && activity.category === 'professional') return CHOICES.professional;
     if (meeting.activity === 'celebration') return CHOICES.celebration;
     if (meeting.activity === 'reconciliation') return CHOICES.reconciliation;
     return CHOICES.everyday;
@@ -301,10 +303,11 @@
 
   function renderScene(meeting, contact) {
     const options = choicesFor(meeting);
+    const activity = ACTIVITIES[meeting.activity] || ACTIVITIES.coffee;
     return '<article class="stps-scene-card">' +
       '<div class="stps-kicker">MEETING READY · ' + esc(dateLabel(meeting.scheduledDate)) + '</div>' +
       '<h3>' + esc(meeting.activityLabel) + ' with ' + esc(contact.npc.name) + '</h3>' +
-      '<p>' + esc(ACTIVITIES[meeting.activity].summary) + '</p>' +
+      '<p>' + esc(activity.summary) + '</p>' +
       '<div class="stps-choice-list">' + options.map(option =>
         '<button type="button" class="stps-choice" data-stph-action="social-resolve-meeting" data-id="' + esc(meeting.id) +
         '" data-choice="' + esc(option.id) + '"><b>' + esc(option.label) + '</b><small>' + esc(option.result) + '</small></button>'
@@ -363,7 +366,7 @@
       '<section class="stps-section"><div class="stps-section-heading"><h3>Your people</h3><span>SHARED RELATIONSHIP GRAPH</span></div>' +
         (sorted.length ? '<div class="stps-contact-grid">' + sorted.slice(0, 10).map(renderContactCard).join('') + '</div>' : '<div class="stps-empty">No contacts are available.</div>') + '</section>' +
       '<section class="stps-section"><div class="stps-section-heading"><h3>Upcoming</h3><span>' + planned.length + ' ACCEPTED</span></div>' +
-        (planned.length ? planned.slice(0, 10).map(meeting => { const person = contactById(meeting.contactId); return '<article class="stps-event-row"><div class="stps-event-date"><b>' + esc(dateLabel(meeting.scheduledDate).split(' ')[1] || '—') + '</b><small>' + esc(meeting.scheduledDate) + '</small></div><div><b>' + esc(meeting.activityLabel) + '</b><small>' + esc(person ? person.npc.name : 'Unknown contact') + ' · ' + esc(meeting.responseReason) + '</small></div><span class="stps-status accepted">ACCEPTED</span></article>'; }).join('') : '<div class="stps-empty">No accepted meetings scheduled. Send an invitation above to make a plan.</div>') +
+        (planned.length ? planned.slice(0, 10).map(meeting => { const person = contactById(meeting.contactId); return '<article class="stps-event-row"><div class="stps-event-date"><b>' + esc(dateDay(meeting.scheduledDate)) + '</b><small>' + esc(meeting.scheduledDate) + '</small></div><div><b>' + esc(meeting.activityLabel) + '</b><small>' + esc(person ? person.npc.name : 'Unknown contact') + ' · ' + esc(meeting.responseReason) + '</small></div><span class="stps-status accepted">ACCEPTED</span></article>'; }).join('') : '<div class="stps-empty">No accepted meetings scheduled. Send an invitation above to make a plan.</div>') +
       '</section>' +
       '<section class="stps-section"><div class="stps-section-heading"><h3>Recent history</h3><span>LAST 6</span></div>' +
         (recent.length ? recent.map(meeting => { const person = contactById(meeting.contactId); return '<article class="stps-event-row"><div class="stps-event-date"><b>' + esc(meeting.resolvedAt || meeting.scheduledDate) + '</b><small>' + esc(meeting.status.toUpperCase()) + '</small></div><div><b>' + esc(meeting.activityLabel) + '</b><small>' + esc(person ? person.npc.name : 'Unknown contact') + ' · ' + esc(meeting.outcome || meeting.responseReason || '') + '</small></div><span class="stps-status ' + esc(meeting.status) + '">' + esc(meeting.status.replace('-', ' ').toUpperCase()) + '</span></article>'; }).join('') : '<div class="stps-empty">Completed meetings and invitations will appear here.</div>') +
@@ -383,6 +386,7 @@
     add('Unique meeting IDs', new Set(meetings.map(item => item.id)).size === meetings.length, meetings.length + ' IDs');
     add('Meeting contacts exist', meetings.every(item => known.has(String(item.contactId))), 'Every meeting references a materialized character');
     add('Meeting dates are valid', meetings.every(item => validDate(item.invitedDate) && validDate(item.scheduledDate) && (!item.resolvedAt || validDate(item.resolvedAt))), 'Invitation, scheduled and resolution dates checked');
+    add('Meeting activities are valid', meetings.every(item => !!ACTIVITIES[item.activity]), Object.keys(ACTIVITIES).join(', '));
     add('Meeting statuses are valid', meetings.every(item => STATUS.includes(item.status)), STATUS.join(', '));
     add('Completed scenes have outcomes', meetings.filter(item => item.status === 'completed').every(item => !!item.choiceId && !!item.outcome), 'Resolved meetings retain their selected approach');
     add('Serialisable meeting history', (() => { try { JSON.stringify(social); return true; } catch (_) { return false; } })(), 'Social calendar data survives campaign JSON save');
