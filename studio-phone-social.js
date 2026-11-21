@@ -15,7 +15,7 @@
   const MAX_MEETINGS = 120;
   const MIN_DAYS_AHEAD = 1;
   const MAX_DAYS_AHEAD = 30;
-  const STATUS = ['accepted', 'declined', 'awaiting-scene', 'completed', 'missed', 'cancelled'];
+  const STATUS = ['invited', 'accepted', 'declined', 'awaiting-scene', 'completed', 'missed', 'expired', 'cancelled'];
 
   const ACTIVITIES = {
     coffee: { label: 'Coffee catch-up', category: 'social', summary: 'A relaxed chance to reconnect.' },
@@ -95,13 +95,13 @@
     const comms = window.StudioPhoneCommunications.ensureState(s);
     if (!comms) return null;
     if (!comms.social || typeof comms.social !== 'object' || Array.isArray(comms.social)) {
-      comms.social = { version: VERSION, meetings: [], metrics: { invitations: 0, accepted: 0, declined: 0, completed: 0, missed: 0 } };
+      comms.social = { version: VERSION, meetings: [], metrics: { invitations: 0, incomingInvitations: 0, accepted: 0, declined: 0, completed: 0, missed: 0 } };
     }
     const social = comms.social;
     social.version = VERSION;
     social.meetings = Array.isArray(social.meetings) ? social.meetings : [];
-    social.metrics = social.metrics || { invitations: 0, accepted: 0, declined: 0, completed: 0, missed: 0 };
-    ['invitations', 'accepted', 'declined', 'completed', 'missed'].forEach(key => {
+    social.metrics = social.metrics || { invitations: 0, incomingInvitations: 0, accepted: 0, declined: 0, completed: 0, missed: 0 };
+    ['invitations', 'incomingInvitations', 'accepted', 'declined', 'completed', 'missed'].forEach(key => {
       social.metrics[key] = Math.max(0, Number(social.metrics[key]) || 0);
     });
     return social;
@@ -165,7 +165,7 @@
     const scheduledDate = addDays(c.date, offset);
     if (!validDate(scheduledDate)) throw new Error('The campaign date is invalid.');
     if (social.meetings.some(item => String(item.contactId) === String(contactId) &&
-        item.scheduledDate === scheduledDate && ['accepted', 'awaiting-scene'].includes(item.status))) {
+        item.scheduledDate === scheduledDate && ['invited', 'accepted', 'awaiting-scene'].includes(item.status))) {
       throw new Error('You already have a meeting planned with this person on that date.');
     }
 
@@ -188,6 +188,7 @@
     const meeting = {
       id,
       contactId: String(contactId),
+      direction: 'outgoing',
       activity: String(activityId),
       activityLabel: activity.label,
       invitedDate: c.date,
@@ -208,6 +209,108 @@
     return meeting;
   }
 
+  function createNpcInvitation(date, ctx, social) {
+    const pending = social.meetings.filter(item => item.direction === 'incoming' && item.status === 'invited').length;
+    if (pending >= 2 || social.meetings.some(item => item.direction === 'incoming' && item.invitedDate === date)) return null;
+    const candidates = contacts().filter(contact => {
+      if (!alive(contact)) return false;
+      const state = rapport(contact);
+      const socialNeed = clamp(contact.npc.needs && contact.npc.needs.social != null ? contact.npc.needs.social : 50, 0, 100);
+      if (state.closeness < 63 || state.trust < 55 || state.tension > 42 || clamp(contact.npc.stress, 0, 100) > 82) return false;
+      if (socialNeed > 60 && state.closeness < 78) return false;
+      const recent = social.meetings.some(item => {
+        if (String(item.contactId) !== String(contact.id) || !item.invitedDate) return false;
+        const delta = Math.floor((Date.parse(date + 'T12:00:00Z') - Date.parse(item.invitedDate + 'T12:00:00Z')) / 86400000);
+        return delta >= 0 && delta < 10;
+      });
+      const alreadyPlanned = social.meetings.some(item =>
+        String(item.contactId) === String(contact.id) &&
+        ['invited', 'accepted', 'awaiting-scene'].includes(item.status) &&
+        item.scheduledDate >= date
+      );
+      return !recent && !alreadyPlanned;
+    }).sort((a, b) => {
+      const ra = rapport(a), rb = rapport(b);
+      return (rb.closeness + rb.trust - rb.tension) - (ra.closeness + ra.trust - ra.tension);
+    }).slice(0, 120);
+    for (const contact of candidates) {
+      const state = rapport(contact);
+      const socialNeed = clamp(contact.npc.needs && contact.npc.needs.social != null ? contact.npc.needs.social : 50, 0, 100);
+      const type = String(state.type || '').toLowerCase();
+      const closeRelationship = type === 'friend' || type === 'family' || type === 'romantic';
+      const chance = clamp(
+        0.0025 + (state.closeness - 60) * 0.00035 +
+        Math.max(0, 40 - socialNeed) * 0.00025 + (closeRelationship ? 0.003 : 0),
+        0.0025, 0.035
+      );
+      const roll = ctx && typeof ctx.random === 'function'
+        ? ctx.random('social-invitation:' + contact.id)
+        : hash(date + '|social-invitation|' + contact.id) / 4294967296;
+      if (roll >= chance) continue;
+      const activityId = type === 'family' ? 'dinner' :
+        (type === 'colleague' || type === 'professional-contact' || type === 'mentor') ? 'lunch' : 'coffee';
+      const offset = 2 + (hash(date + '|' + contact.id + '|date') % 5);
+      const scheduledDate = addDays(date, offset);
+      const activity = ACTIVITIES[activityId];
+      const id = 'MEET-' + hash(c.id + '|npc-invite|' + date + '|' + contact.id).toString(16);
+      const meeting = {
+        id,
+        contactId: String(contact.id),
+        direction: 'incoming',
+        activity: activityId,
+        activityLabel: activity.label,
+        invitedDate: date,
+        scheduledDate,
+        responseBy: addDays(scheduledDate, -1),
+        status: 'invited',
+        responseReason: 'They would like to spend some time with you.',
+        acceptanceProbability: null,
+        resolvedAt: null,
+        choiceId: null,
+        outcome: null,
+        relationshipAfter: null
+      };
+      social.meetings.unshift(meeting);
+      if (social.meetings.length > MAX_MEETINGS) social.meetings.length = MAX_MEETINGS;
+      social.metrics.invitations++;
+      social.metrics.incomingInvitations++;
+      return meeting;
+    }
+    return null;
+  }
+
+  function respondToInvitation(meetingId, response) {
+    const c = campaign();
+    const social = ensureSocial(phoneState());
+    const meeting = social && social.meetings.find(item => String(item.id) === String(meetingId));
+    if (!c || !meeting || meeting.direction !== 'incoming' || meeting.status !== 'invited') {
+      throw new Error('This invitation is no longer awaiting a response.');
+    }
+    if (meeting.responseBy && c.date > meeting.responseBy) {
+      meeting.status = 'expired';
+      meeting.resolvedAt = c.date;
+      meeting.outcome = 'The invitation expired before a response was made.';
+      persist();
+      throw new Error('The response window for this invitation has passed.');
+    }
+    if (response === 'accept') {
+      meeting.status = 'accepted';
+      meeting.respondedDate = c.date;
+      meeting.responseReason = 'You accepted the invitation.';
+      social.metrics.accepted++;
+    } else if (response === 'decline') {
+      meeting.status = 'declined';
+      meeting.respondedDate = c.date;
+      meeting.responseReason = 'You declined the invitation.';
+      meeting.outcome = 'You decided not to attend. The relationship was left unchanged.';
+      social.metrics.declined++;
+    } else {
+      throw new Error('Choose accept or decline.');
+    }
+    persist();
+    return meeting;
+  }
+
   function choicesFor(meeting) {
     const activity = ACTIVITIES[meeting.activity];
     if (activity && activity.category === 'professional') return CHOICES.professional;
@@ -216,13 +319,21 @@
     return CHOICES.everyday;
   }
 
-  function processMeetings(date) {
+  function processMeetings(date, ctx) {
     const c = campaign();
     const s = phoneState();
     const social = ensureSocial(s);
-    if (!c || !social || !validDate(date)) return { processed: 0, ready: 0, missed: 0 };
-    let ready = 0, missed = 0;
+    if (!c || !social || !validDate(date)) return { processed: 0, ready: 0, missed: 0, expired: 0 };
+    let ready = 0, missed = 0, expired = 0;
     social.meetings.forEach(meeting => {
+      if (meeting.direction === 'incoming' && meeting.status === 'invited' &&
+          meeting.responseBy && meeting.responseBy < date) {
+        meeting.status = 'expired';
+        meeting.outcome = 'The invitation expired because no response was made before the scheduled date.';
+        meeting.resolvedAt = date;
+        expired++;
+        return;
+      }
       if (meeting.status !== 'accepted' || meeting.scheduledDate > date) return;
       const contact = contactById(meeting.contactId);
       if (!alive(contact)) {
@@ -238,10 +349,10 @@
       meeting.sceneOpenedAt = date;
       ready++;
     });
-    if (ready || missed) persist();
-    return { processed: ready + missed, ready, missed };
+    const incomingInvitation = ctx ? createNpcInvitation(date, ctx, social) : null;
+    if (ready || missed || expired || incomingInvitation) persist();
+    return { processed: ready + missed + expired, ready, missed, expired, incomingInvite: incomingInvitation ? incomingInvitation.id : null };
   }
-
   function resolveMeeting(meetingId, choiceId) {
     const c = campaign();
     const s = phoneState();
@@ -301,6 +412,17 @@
     return { meeting, choice, relationship: meeting.relationshipAfter };
   }
 
+  function renderIncomingInvite(meeting) {
+    const person = contactById(meeting.contactId);
+    if (!person) return '';
+    return '<article class="stps-incoming-card"><div><span class="stps-kicker">INVITATION FROM YOUR CONTACT</span>' +
+      '<b>' + esc(person.npc.name) + ' · ' + esc(meeting.activityLabel) + '</b>' +
+      '<small>' + esc(dateLabel(meeting.scheduledDate)) + ' · Please respond by ' + esc(dateLabel(meeting.responseBy)) + '</small>' +
+      '<p>' + esc(meeting.responseReason || 'They would like to spend some time with you.') + '</p></div>' +
+      '<div class="stps-incoming-actions"><button type="button" class="stps-accept" data-stph-action="social-respond-invitation" data-id="' + esc(meeting.id) + '" data-response="accept">Accept</button>' +
+      '<button type="button" class="stps-decline" data-stph-action="social-respond-invitation" data-id="' + esc(meeting.id) + '" data-response="decline">Decline</button></div></article>';
+  }
+
   function renderScene(meeting, contact) {
     const options = choicesFor(meeting);
     const activity = ACTIVITIES[meeting.activity] || ACTIVITIES.coffee;
@@ -341,8 +463,9 @@
     const living = allContacts.filter(alive);
     const sorted = living.slice().sort((a, b) => rapport(b).closeness - rapport(a).closeness);
     const ready = social.meetings.filter(item => item.status === 'awaiting-scene');
+    const incoming = social.meetings.filter(item => item.direction === 'incoming' && item.status === 'invited');
     const planned = social.meetings.filter(item => item.status === 'accepted').sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate));
-    const recent = social.meetings.filter(item => ['completed', 'declined', 'missed', 'cancelled'].includes(item.status)).slice(0, 6);
+    const recent = social.meetings.filter(item => ['completed', 'declined', 'missed', 'expired', 'cancelled'].includes(item.status)).slice(0, 6);
     const nextOffsets = [1, 2, 3, 7, 14, 30];
 
     const form = living.length
@@ -359,9 +482,10 @@
 
     return '<div class="stps-dashboard">' +
       '<section class="stps-hero"><div><span class="stps-kicker">STUDIOOS · SOCIAL LIFE</span><h2>Relationships & plans</h2><p>Arrange time with people in your world. Their responses reflect the relationship you have built.</p></div>' +
-      '<div class="stps-hero-stats"><div><b>' + living.length + '</b><small>CONTACTS</small></div><div><b>' + planned.length + '</b><small>PLANNED</small></div><div><b>' + ready.length + '</b><small>READY</small></div></div></section>' +
+      '<div class="stps-hero-stats"><div><b>' + living.length + '</b><small>CONTACTS</small></div><div><b>' + planned.length + '</b><small>PLANNED</small></div><div><b>' + ready.length + '</b><small>READY</small></div><div><b>' + incoming.length + '</b><small>INVITES</small></div></div></section>' +
       (ready.length ? '<section class="stps-section"><div class="stps-section-heading"><h3>Meetings waiting for you</h3><span>' + ready.length + ' SCENE' + (ready.length === 1 ? '' : 'S') + '</span></div>' +
         ready.map(meeting => { const person = contactById(meeting.contactId); return person ? renderScene(meeting, person) : ''; }).join('') + '</section>' : '') +
+      (incoming.length ? '<section class="stps-section"><div class="stps-section-heading"><h3>Invitations from your contacts</h3><span>' + incoming.length + ' NEED RESPONSE</span></div>' + incoming.map(renderIncomingInvite).join('') + '</section>' : '') +
       '<section class="stps-section"><div class="stps-section-heading"><h3>Plan time together</h3><span>IN-GAME CALENDAR</span></div>' + form + '</section>' +
       '<section class="stps-section"><div class="stps-section-heading"><h3>Your people</h3><span>SHARED RELATIONSHIP GRAPH</span></div>' +
         (sorted.length ? '<div class="stps-contact-grid">' + sorted.slice(0, 10).map(renderContactCard).join('') + '</div>' : '<div class="stps-empty">No contacts are available.</div>') + '</section>' +
@@ -385,8 +509,9 @@
     add('Meeting history is bounded', meetings.length <= MAX_MEETINGS, meetings.length + ' records');
     add('Unique meeting IDs', new Set(meetings.map(item => item.id)).size === meetings.length, meetings.length + ' IDs');
     add('Meeting contacts exist', meetings.every(item => known.has(String(item.contactId))), 'Every meeting references a materialized character');
-    add('Meeting dates are valid', meetings.every(item => validDate(item.invitedDate) && validDate(item.scheduledDate) && (!item.resolvedAt || validDate(item.resolvedAt))), 'Invitation, scheduled and resolution dates checked');
+    add('Meeting dates are valid', meetings.every(item => validDate(item.invitedDate) && validDate(item.scheduledDate) && (!item.responseBy || validDate(item.responseBy)) && (!item.resolvedAt || validDate(item.resolvedAt))), 'Invitation, scheduled and resolution dates checked');
     add('Meeting activities are valid', meetings.every(item => !!ACTIVITIES[item.activity]), Object.keys(ACTIVITIES).join(', '));
+    add('Invitation directions are valid', meetings.every(item => !item.direction || ['incoming', 'outgoing'].includes(item.direction)), 'Incoming or outgoing event provenance');
     add('Meeting statuses are valid', meetings.every(item => STATUS.includes(item.status)), STATUS.join(', '));
     add('Completed scenes have outcomes', meetings.filter(item => item.status === 'completed').every(item => !!item.choiceId && !!item.outcome), 'Resolved meetings retain their selected approach');
     add('Serialisable meeting history', (() => { try { JSON.stringify(social); return true; } catch (_) { return false; } })(), 'Social calendar data survives campaign JSON save');
@@ -399,11 +524,11 @@
     try {
       autonomy.registerTask({
         id: TASK,
-        name: 'StudioOS scheduled social meetings',
+        name: 'StudioOS scheduled social meetings and NPC invitations',
         cadenceDays: 1,
         priority: 50,
         deps: ['npc.social-networks', 'npc.memory-reputation'],
-        run: ctx => processMeetings(ctx.date)
+        run: ctx => processMeetings(ctx.date, ctx)
       });
       registerTask.done = true;
       return true;
@@ -436,6 +561,11 @@
       announce(meeting.status === 'accepted'
         ? 'Invitation accepted · ' + meeting.activityLabel + ' on ' + meeting.scheduledDate + '.'
         : 'Invitation declined · ' + meeting.responseReason);
+    });
+
+    window.StudioOS.registerAction('social-respond-invitation', ({ button, id, announce }) => {
+      const meeting = respondToInvitation(id, button.dataset.response);
+      announce(meeting.status === 'accepted' ? 'Invitation accepted · ' + meeting.activityLabel + ' on ' + meeting.scheduledDate + '.' : 'Invitation declined · no relationship penalty.');
     });
 
     window.StudioOS.registerAction('social-resolve-meeting', ({ button, id, announce }) => {
@@ -481,6 +611,7 @@
   window.StudioPhoneSocial = {
     version: VERSION,
     invite,
+    respondToInvitation,
     processMeetings,
     resolveMeeting,
     choicesFor,
