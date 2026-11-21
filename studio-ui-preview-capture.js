@@ -73,6 +73,19 @@ async function prepareCampaign(page) {
       total: '25000',
       schedule: [{ label: 'Deposit', dueDate: '2026-12-10', amount: '25000', status: 'Pending' }]
     }];
+    active.world = active.world || {};
+    active.world.population = active.world.population || { npcs: [] };
+    active.world.population.npcs = active.world.population.npcs || [];
+    if (!active.world.population.npcs.some(n => n.id === 'NPC-PREVIEW-MIRA')) active.world.population.npcs.push({
+      id:'NPC-PREVIEW-MIRA',name:'Mira Sen',age:34,gender:'Female',nationality:'Indian',region:'South Asia',city:'Mumbai',
+      occupation:'Creative Director',department:'Creative',personality:'Thoughtful',secondaryTrait:'Ambitious',
+      goal:'Lead an original international production',status:'Employed',alive:true,stress:28,mood:72,
+      needs:{health:88,energy:74,social:66,security:70,purpose:81},skills:{creative:88,leadership:76},
+      social:{relationshipCount:0},memory:{version:'1.0.0',memories:[],reputation:{},ambitions:[],learning:{},metrics:{created:0,recalled:0,forgotten:0,lessons:0}}
+    });
+    active.employees = active.employees || [];
+    if (!active.employees.some(e => e.npcId === 'NPC-PREVIEW-MIRA')) active.employees.push({id:'EMP-NPC-PREVIEW-MIRA',npcId:'NPC-PREVIEW-MIRA',role:'Creative Director',salary:180000});
+    window.StudioCinematicInteractions?.mount();
     if (typeof window.StudioProductionWorkflow?.refresh === 'function') {
       window.StudioProductionWorkflow.refresh();
     }
@@ -116,6 +129,12 @@ async function screenshot(page, filename, fullPage = true) {
       await desktop.locator('#studio-project-command-centre [data-project-close]').first().click();
       await desktop.locator('#studio-project-command-centre').waitFor({ state: 'hidden' });
     }
+    await desktop.locator('.nav button[data-page="interactions"]').click();
+    await desktop.locator('[data-contact="NPC-PREVIEW-MIRA"]').click();
+    await desktop.locator('[data-topic="career"]').click();
+    await desktop.locator('[data-start-conversation]').click();
+    await desktop.locator('[data-choice="support"]').click();
+    await screenshot(desktop, 'desktop-conversations.png');
     await desktop.locator('.nav button[data-page="finance"]').click();
     await screenshot(desktop, 'desktop-finance.png');
     await desktop.evaluate(() => window.nav('phone'));
@@ -137,6 +156,13 @@ async function screenshot(page, filename, fullPage = true) {
     await screenshot(mobile, 'mobile-productions.png');
     await mobile.locator('#mobile-nav [data-mobile-page="personal"]').click();
     await screenshot(mobile, 'mobile-life.png');
+    await mobile.locator('#mobile-menu-toggle').click();
+    await mobile.locator('.nav button[data-page="interactions"]').click();
+    await mobile.locator('[data-contact="NPC-PREVIEW-MIRA"]').click();
+    await mobile.locator('[data-topic="personal"]').click();
+    await mobile.locator('[data-start-conversation]').click();
+    await mobile.locator('[data-choice="support"]').click();
+    await screenshot(mobile, 'mobile-conversations.png');
     await mobile.evaluate(() => window.nav('phone'));
     await screenshot(mobile, 'mobile-smartphone-home.png', false);
     await mobile.evaluate(() => document.querySelector('#page-phone [data-open-app="studiosphere"]')?.click());
