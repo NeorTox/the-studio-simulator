@@ -76,6 +76,7 @@
 .stpc-first-message p { color:#8fa0ad; font-size:8px; line-height:1.5; }
 .stpc-quick-replies { display:flex; flex-wrap:wrap; align-items:center; gap:5px; }
 .stpc-quick-replies > span { flex:0 0 100%; color:#8093a2; font-size:7px; font-weight:750; letter-spacing:.12em; }
+.stpc-readonly { padding:10px; border:1px solid #ffffff18; border-radius:9px; background:#ffffff07; color:#a8b4bf; font-size:8px; line-height:1.45; }
 .stpc-compose { display:flex; gap:6px; padding:6px; border:1px solid #ffffff22; border-radius:10px; background:#08111a; }
 .stpc-compose input { min-width:0; flex:1; border:0; outline:none; background:transparent; color:#eef5f8; font-size:9px; }
 .stpc-compose button { width:30px; height:29px; border:0; border-radius:8px; background:#82ccd0; color:#0a2228; font-weight:900; cursor:pointer; }
