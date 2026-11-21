@@ -51,10 +51,10 @@ const assert = require('node:assert/strict');
     await page.locator('.nav button[data-page="overview"]').click();
     assert.equal(await page.locator('#app-shell').getAttribute('aria-hidden'),'false');
     assert.equal(await page.locator('.side').count(),1);
-    assert.equal(await page.locator('.nav-group').count(),6);
+    assert.equal(await page.locator('.nav-group').count(),7,'Life and people have a dedicated navigation group');
     assert.equal(await page.locator('#page-overview').evaluate(e=>e.classList.contains('active')),true);
     const routes = await page.locator('.nav button[data-page]').evaluateAll(nodes=>nodes.map(n=>n.dataset.page));
-    assert(routes.includes('overview')&&routes.includes('finance')&&routes.includes('projects')&&routes.includes('globaltravel'));
+    assert(routes.includes('overview')&&routes.includes('finance')&&routes.includes('projects')&&routes.includes('globaltravel')&&routes.includes('interactions'));
     assert.equal(new Set(routes).size,routes.length,'Every workspace appears exactly once');
     for (const route of routes) {
       await page.locator('.nav button[data-page="'+route+'"]').click();
@@ -155,6 +155,43 @@ const assert = require('node:assert/strict');
     await page.locator('#ncapital').fill('20000000');
     await page.locator('#newform button[type="submit"],#newform button').click();
     await page.waitForFunction(()=>active?.founder?.name==='QA Founder');
+    await page.evaluate(()=>{
+      active.world=active.world||{};
+      active.world.population=active.world.population||{npcs:[]};
+      active.world.population.npcs=active.world.population.npcs||[];
+      if(!active.world.population.npcs.some(n=>n.id==='NPC-CONVO-QA')) active.world.population.npcs.push({
+        id:'NPC-CONVO-QA',name:'Mira Sen',age:34,gender:'Female',nationality:'Indian',region:'South Asia',city:'Mumbai',
+        occupation:'Creative Director',department:'Creative',personality:'Thoughtful',secondaryTrait:'Ambitious',
+        goal:'Lead an original international production',status:'Employed',alive:true,stress:28,mood:72,
+        needs:{health:88,energy:74,social:66,security:70,purpose:81},skills:{creative:88,leadership:76},
+        social:{relationshipCount:0},memory:{version:'1.0.0',memories:[],reputation:{},ambitions:[],learning:{},metrics:{created:0,recalled:0,forgotten:0,lessons:0}}
+      });
+      active.employees=active.employees||[];
+      if(!active.employees.some(e=>e.npcId==='NPC-CONVO-QA')) active.employees.push({id:'EMP-NPC-CONVO-QA',npcId:'NPC-CONVO-QA',role:'Creative Director',salary:180000});
+      window.StudioCinematicInteractions.mount();
+    });
+    await page.locator('.nav button[data-page="interactions"]').click();
+    assert.equal(await page.locator('#page-interactions').isVisible(),true,'Cinematic Conversations route opens');
+    assert.equal(await page.locator('[data-contact="NPC-CONVO-QA"]').count(),1,'Contacts are sourced from a real campaign NPC record');
+    await page.locator('[data-contact="NPC-CONVO-QA"]').click();
+    assert.match(await page.locator('.st-character-caption').innerText(),/Mira Sen/,'Scene stage displays the selected character');
+    await page.locator('[data-topic="career"]').click();
+    await page.locator('[data-start-conversation]').click();
+    assert.equal(await page.locator('[data-choice]').count(),4,'Conversation offers four contextual response approaches');
+    await page.locator('[data-choice="support"]').click();
+    const conversationResult=await page.evaluate(()=>{
+      const npc=active.world.population.npcs.find(n=>n.id==='NPC-CONVO-QA');
+      const edge=active.world.socialNetwork.edges.find(e=>e.key.split('|').includes('NPC-CONVO-QA')&&e.key.split('|').includes('PLAYER'));
+      const session=active.world.cinematicInteractions.sessions.find(s=>s.npcId==='NPC-CONVO-QA');
+      return {memories:npc.memory.memories.length,trust:edge?.trust||0,turns:session?.turns||0,lines:session?.lines?.length||0};
+    });
+    assert.equal(conversationResult.turns,1,'Dialogue choice advances the persistent conversation');
+    assert.equal(conversationResult.lines,3,'Player and NPC dialogue are recorded in the scene transcript');
+    assert(conversationResult.memories>=1,'Conversation is written to the NPC long-term memory engine');
+    assert(conversationResult.trust>35,'Conversation updates the authoritative relationship graph');
+    await page.locator('[data-end-conversation]').click();
+    assert.match(await page.locator('.st-conversation-ended').innerText(),/CONVERSATION SAVED/,'Ending a conversation retains the thread');
+
     await page.evaluate(()=>{
       active.projects=[];
       active.productionContracts=[];
