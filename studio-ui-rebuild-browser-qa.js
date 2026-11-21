@@ -227,20 +227,25 @@ const assert = require('node:assert/strict');
     assert.match(await page.locator('[data-project-content]').innerText(),/Streaming license/,'Release workspace shows the planned distribution route');
     assert.match(await page.locator('[data-project-content]').innerText(),/2027-08-18/,'Release workspace shows the target release date');
     await page.locator('[data-project-tab="command"]').click();
+    await page.evaluate(()=>{
+      const project=active.projects.find(p=>p.id==='PRJ-QA-001');
+      project.development.scriptDraft='';
+      window.StudioProjectCommandCentre.refresh();
+    });
+    assert.match(await page.locator('[data-project-content]').innerText(),/PHASE 5 DEPENDENCY/,'Command centre surfaces the live Phase 5 development blocker');
+    assert.match(await page.locator('[data-project-content]').innerText(),/Script draft/,'Command centre explains the missing script requirement');
+    await page.locator('[data-project-action="scriptRoom"]').click();
+    assert.equal(await page.locator('#studio-project-command-centre').evaluate(e=>e.open),false,'Opening the Script room exits the project command centre');
+    assert.equal(await page.locator('#modal').isVisible(),true,'Project command centre opens the existing Phase 5 Script room');
+    assert.equal(await page.locator('#p5form').count(),1,'Existing Script room form remains the authoritative development editor');
+    await page.locator('#p5draft').fill('FADE IN: EXT. DEEP SPACE — A research vessel drifts beyond the mapped frontier. A signal repeats from the dark. The crew prepares to investigate and records the first transmission.');
+    await page.locator('#p5form button[type="submit"],#p5form button').click();
+    await page.waitForFunction(()=>!document.querySelector('#modal').classList.contains('show')&&active.projects.find(p=>p.id==='PRJ-QA-001')?.development?.scriptDraft?.length>30);
+    await page.locator('#studio-production-pipeline [data-pipeline-open="PRJ-QA-001"]').click();
+    assert.doesNotMatch(await page.locator('[data-project-content]').innerText(),/PHASE 5 DEPENDENCY/,'Saving the script in the real Script room clears the Concept prerequisite');
     await page.locator('[data-project-action="advance"]').click();
-    const stageActionDebug=await page.evaluate(()=>({
-      advanceFunction:typeof advanceProject,
-      windowAdvanceFunction:typeof window.advanceProject,
-      activeCampaign:!!active,
-      projectStage:active?.projects?.find(p=>p.id==='PRJ-QA-001')?.stage,
-      showFunction:typeof show,
-      legacyModalDisplay:getComputedStyle(document.querySelector('#modal')).display,
-      legacyModalClass:document.querySelector('#modal').className,
-      legacyModalText:document.querySelector('#mbody').innerText,
-      toast:document.querySelector('#toast').innerText,
-    }));
-    console.log('PROJECT_CENTRE_STAGE_ACTION_DEBUG '+JSON.stringify(stageActionDebug));
-    assert.equal(await page.locator('#studio-project-command-centre').evaluate(e=>e.open),false,'Stage approval action exits the command centre before opening the existing approval flow');
+    assert.equal(await page.locator('#studio-project-command-centre').evaluate(e=>e.open),false,'Stage approval action exits the project command centre');
+    assert.equal(await page.locator('#modal').isVisible(),true,'Stage review opens the original simulation approval modal');
     assert.equal(await page.locator('#stagego').isDisabled(),true,'Existing stage approval blocks advancement before the minimum time has elapsed');
     assert.match(await page.locator('#mbody').innerText(),/0 \/ 14 days/,'Existing approval dialog retains the simulation engine time check');
     await page.evaluate(()=>closeModal());
