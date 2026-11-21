@@ -82,7 +82,7 @@
 .production-pipeline-next span{color:#7e8c90;font-size:7px;font-weight:850;letter-spacing:.12em}
 .production-pipeline-next b{color:var(--brass-hi);font-size:9px;text-align:right}
 .production-pipeline-next.released b{color:var(--green)}
-.production-pipeline-actions{display:flex;justify-content:flex-end;margin-top:12px}
+.production-pipeline-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:12px}
 .production-pipeline-actions .btn{min-height:34px;padding:7px 10px;font-size:9px}
 .production-pipeline-empty{display:flex;align-items:center;gap:14px;padding:17px;border:1px dashed #3b484e;border-radius:9px}
 .production-pipeline-empty-mark{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border:1px solid rgba(201,168,121,.3);color:var(--brass);font-size:18px}
