@@ -51,7 +51,7 @@ const assert = require('node:assert/strict');
     await page.locator('.nav button[data-page="overview"]').click();
     assert.equal(await page.locator('#app-shell').getAttribute('aria-hidden'),'false');
     assert.equal(await page.locator('.side').count(),1);
-    assert.equal(await page.locator('.nav-group').count(),7,'Life and people have a dedicated navigation group');
+    assert.equal(await page.locator('.nav-group').count(),6,'Conversations is integrated into the existing Life navigation group');
     assert.equal(await page.locator('#page-overview').evaluate(e=>e.classList.contains('active')),true);
     const routes = await page.locator('.nav button[data-page]').evaluateAll(nodes=>nodes.map(n=>n.dataset.page));
     assert(routes.includes('overview')&&routes.includes('finance')&&routes.includes('projects')&&routes.includes('globaltravel')&&routes.includes('interactions'));
