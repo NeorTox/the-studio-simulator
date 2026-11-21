@@ -31,6 +31,9 @@ assert.match(world,/function cityWeatherFor\(/,'City microclimate function must 
 assert.match(world,/currentHourlyByRegion/,'Hourly regional weather must persist');
 assert.match(experience,/Hourly city microclimate/,'World dashboard must expose hourly city weather');
 assert.match(index,/\.\/simulation-depth-engine\.js/,'Application must load the depth engine');
+assert.match(index,/\.\/studio-ui\.css/,'Application must load the native game interface stylesheet');
+assert.match(index,/\.\/studio-ui-runtime\.js/,'Application must load the native game interface runtime');
+assert.doesNotMatch(index,/studio-overhaul\.css|studio-ui-next\.css|studio-ui-next\.js/,'Legacy presentation overlays must not be loaded by the rebuilt application');
 assert.match(index,/StudioMarketLiquidity\.processDay\(next\)/,'Daily stock liquidity must run before order execution');
 assert.match(index,/q\.bidAskSpreadPct/,'Order execution must use the modeled bid-ask spread');
 assert.match(index,/q\.askDepthLevels/,'Buy orders must consume modeled ask depth');
@@ -43,4 +46,4 @@ assert.doesNotMatch(index,/'Cybersecurity and platform trust','Technology','MISS
 assert.match(experience,/'Crime, safety and law enforcement':\['PARTIAL'/,'Dynamic algorithm inventory must report the new safety model');
 assert.match(experience,/'Cybersecurity and platform trust':\['PARTIAL'/,'Dynamic algorithm inventory must report the new cyber model');
 assert.match(depth,/Simulation depth systems integrity/,'Cross-phase QA must include the depth systems audit');
-console.log('SIMULATION DEPTH STATIC QA PASSED: safety, cyber, relationships, macro, supply chain, hourly climate, UI, cache and integration contracts.');
+console.log('SIMULATION DEPTH STATIC QA PASSED: safety, cyber, relationships, macro, supply chain, hourly climate, native UI, cache and integration contracts.');

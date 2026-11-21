@@ -4,6 +4,8 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
  const p=await b.newPage({viewport:{width:1440,height:900},acceptDownloads:true});await p.addInitScript(()=>{window.__STUDIO_DISABLE_AUTO_TUTORIAL=true;window.__STUDIO_TEST_ACCELERATION=true;localStorage.setItem('the-studio-onboarding-v1','skipped')});const errors=[];
  const batchProgress=[];p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{const message=m.text();if(m.type()==='error')errors.push(message);if(message.includes('[STUDIO_BATCH_PROGRESS]')){const match=message.match(/\[STUDIO_BATCH_PROGRESS\]\s+(\{.*\})/);if(match){try{batchProgress.push(JSON.parse(match[1]))}catch(e){errors.push('Invalid batch progress telemetry: '+e.message)}}}if(message.includes('[STUDIO_BATCH_')||message.includes('[STUDIO_CLOCK_')||message.includes('[STUDIO_CORE_STAGE]')||message.includes('[STUDIO_WORLD_STAGE]')||message.includes('[STUDIO_ADVANCE_TRACE]')||message.includes('[STUDIO_ADVANCE_STEP]'))console.log(message)});
  await p.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
+ await p.locator('#start-load').click();
+ await p.evaluate(()=>window.nav('overview'));
  await p.locator('#page-overview .hero .actions button').first().click();await p.getByRole('button',{name:/Create campaign/}).click();
  for(const [id,v] of [['nfounder','End-to-End Founder'],['ncompany','E2E Pictures'],['ncountry','India'],['ncity','Kochi']])await p.locator('#'+id).fill(v);
  await p.getByRole('button',{name:/Create and save campaign/}).click();
@@ -68,6 +70,8 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
  console.log('ASSET / INVESTMENT DRIFT',JSON.stringify(assetDrift));
  assert(assetDrift.property>12000);assert(assetDrift.vehicle<5000);assert(assetDrift.investment>1000);assert.equal(assetDrift.maintenance,24);
  await p.getByRole('button',{name:/Campaigns/}).click();
+ await p.locator('#page-campaign [data-workspace-tab="backup"]').click();
+ assert.equal(await p.locator('#page-campaign button[onclick*="exportSave"]').isVisible(),true,'Export action must be visible in Backup & Restore');
  const dlPromise=p.waitForEvent('download');
  await p.getByRole('button',{name:/Export active save/}).click();
  const dl=await dlPromise;

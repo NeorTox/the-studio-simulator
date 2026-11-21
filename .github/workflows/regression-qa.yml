@@ -46,9 +46,21 @@ jobs:
           done
       - name: Validate autonomous competitor executive decision syntax
         run: node --check phase10-autonomous-competitors-engine.js && node --check phase10-autonomous-competitors-qa.js && node --check phase10-browser-qa.js
-      - name: Run redesigned UI preview browser regression
-        timeout-minutes: 6
-        run: node studio-ui-next-browser-qa.js
+      - name: Validate native game interface runtime and run desktop/mobile UI regression
+        timeout-minutes: 8
+        run: node --check studio-ui-runtime.js && node --check studio-world-atlas.js && node --check studio-ui-project-command-centre.js && node --check studio-ui-interactions.js && node --check studio-visualization-runtime.js && node --check studio-ui-rebuild-browser-qa.js && node studio-ui-rebuild-browser-qa.js
+      - name: Capture actual desktop and mobile UI preview
+        timeout-minutes: 4
+        continue-on-error: true
+        run: node --check studio-ui-preview-capture.js && node studio-ui-preview-capture.js
+      - name: Upload desktop and mobile UI preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: the-studio-ui-preview-${{ github.sha }}
+          path: artifacts/ui-preview/
+          if-no-files-found: warn
+          retention-days: 7
       - name: Run player experience browser smoke test
         run: node player-experience-browser-qa.js
       - name: Verify all seven world systems execute on real simulation days
