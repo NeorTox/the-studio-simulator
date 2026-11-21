@@ -2,7 +2,7 @@
   'use strict';
   const STAGES=['Concept','Development','Pre-production','Principal photography','Post-production','Marketing & distribution','Released'];
   const MIN_DAYS=[14,60,30,45,90,30];
-  const $=(selector,root=document)=>root.querySelector(selector),$=(selector,root=document)=>Array.from(root.querySelectorAll(selector));
+  const $=(selector,root=document)=>root.querySelector(selector),all=(selector,root=document)=>Array.from(root.querySelectorAll(selector));
   const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   let dialog=null,step=0,state={};
   const plusDays=(date,days)=>{const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);};
@@ -82,7 +82,7 @@
     dialog.scrollTop=0;
   }
   function validateCurrent(){
-    const formFields=$$('.production-wizard-fields input[required],.production-wizard-fields select[required],.production-wizard-fields textarea[required]',dialog);
+    const formFields=all('.production-wizard-fields input[required],.production-wizard-fields select[required],.production-wizard-fields textarea[required]',dialog);
     for(const control of formFields){if(!control.reportValidity())return false;}
     const budget=Number(state.budget);
     if(step===2&&(!Number.isFinite(budget)||budget<=0)){toast('Enter a valid project budget greater than zero.');return false;}
