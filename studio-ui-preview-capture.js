@@ -81,11 +81,11 @@ async function prepareCampaign(page) {
   await page.waitForTimeout(700);
 }
 
-async function screenshot(page, filename) {
+async function screenshot(page, filename, fullPage = true) {
   await page.waitForTimeout(350);
   await page.screenshot({
     path: path.join(OUT, filename),
-    fullPage: true,
+    fullPage,
     animations: 'disabled'
   });
   console.log('Captured ' + filename);
@@ -99,7 +99,7 @@ async function screenshot(page, filename) {
     const desktop = await browser.newPage({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1 });
     await desktop.goto(BASE, { waitUntil: 'domcontentloaded' });
     await desktop.waitForFunction(() => window.__STUDIO_UI_READY__ === true);
-    await screenshot(desktop, 'desktop-startup.png');
+    await screenshot(desktop, 'desktop-startup.png', false);
     await prepareCampaign(desktop);
     await desktop.evaluate(() => window.nav('overview'));
     await screenshot(desktop, 'desktop-overview.png');
@@ -109,7 +109,9 @@ async function screenshot(page, filename) {
     if (await openProject.count()) {
       await openProject.click();
       await desktop.locator('#studio-project-command-centre').waitFor({ state: 'visible' });
-      await screenshot(desktop, 'desktop-project-command-centre.png');
+      await screenshot(desktop, 'desktop-project-command-centre.png', false);
+      await desktop.locator('#studio-project-command-centre [data-project-close]').click();
+      await desktop.locator('#studio-project-command-centre').waitFor({ state: 'hidden' });
     }
     await desktop.locator('.nav button[data-page="finance"]').click();
     await screenshot(desktop, 'desktop-finance.png');
