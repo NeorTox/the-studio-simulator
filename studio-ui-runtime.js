@@ -15,8 +15,11 @@
   const nav = $('.nav'), shell = $('#app-shell'), side = $('#desktop-sidebar'), sideNavWrap = $('.side-nav-wrap', side);
   if (!nav || !shell || !side) return;
   function mountPinnedSettings() {
-    const button = $(':scope > button[data-page="settings"]', nav);
-    if (!button || !sideNavWrap) return;
+    if (!sideNavWrap) return;
+    const settingsButtons = Array.from(sideNavWrap.querySelectorAll('button[data-page="settings"]'));
+    const button = settingsButtons[0] || null;
+    settingsButtons.slice(1).forEach(extra => extra.remove());
+    if (!button) return;
     let dock = $('#studio-settings-dock', sideNavWrap);
     if (!dock) {
       dock = document.createElement('div');
