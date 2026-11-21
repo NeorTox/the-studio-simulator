@@ -416,8 +416,8 @@
 
     try {
       window.StudioOS.registerApp({
-        id: 'social',
-        label: 'Social',
+        id: 'meetups',
+        label: 'Meetups',
         glyph: '♡',
         tone: 'contacts',
         detail: 'Relationships and meetings',
