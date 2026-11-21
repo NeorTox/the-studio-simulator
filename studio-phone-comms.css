@@ -100,3 +100,13 @@
 @media(prefers-reduced-motion:reduce) {
   .stpc-inbox-row { scroll-behavior:auto; }
 }
+
+.stpc-situations { display:grid; gap:7px; }
+.stpc-situation-heading { display:grid; gap:4px; }
+.stpc-situation-heading b { font-size:9px; color:#e7eff4; }
+.stpc-situation-card { display:grid; gap:6px; padding:9px; border:1px solid #b99b5b55; border-radius:10px; background:linear-gradient(125deg,#3b3122aa,#21242d); }
+.stpc-situation-meta { color:#c4aa76; font-size:7px; font-weight:750; letter-spacing:.1em; text-transform:uppercase; }
+.stpc-situation-card > b { color:#f2ead8; font-size:10px; }
+.stpc-situation-card > p { margin:0; color:#c2c4c8; font-size:8px; line-height:1.45; }
+.stpc-response-list { display:flex; flex-wrap:wrap; gap:5px; }
+.stpc-situation-card > small { color:#9b9a92; font-size:7px; line-height:1.35; }
