@@ -243,6 +243,8 @@ const assert = require('node:assert/strict');
     await page.waitForFunction(()=>document.querySelector('#modal').classList.contains('show'));
     assert.equal(await page.locator('#modal').isVisible(),true,'Project command centre opens the existing Phase 5 Script room');
     assert.equal(await page.locator('#p5form').count(),1,'Existing Script room form remains the authoritative development editor');
+    await page.locator('#p5logline').fill('A research crew follows a repeating signal beyond mapped space.');
+    await page.locator('#p5synopsis').fill('A research vessel receives a repeating transmission from beyond the mapped frontier. The crew investigates its origin while tensions rise over the risks of answering an unknown signal.');
     await page.locator('#p5draft').fill('FADE IN: EXT. DEEP SPACE — A research vessel drifts beyond the mapped frontier. A signal repeats from the dark. The crew prepares to investigate and records the first transmission.');
     await page.locator('#p5form button[type="submit"],#p5form button').click();
     await page.waitForFunction(()=>!document.querySelector('#modal').classList.contains('show')&&active.projects.find(p=>p.id==='PRJ-QA-001')?.development?.scriptDraft?.length>30);
