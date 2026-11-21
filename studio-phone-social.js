@@ -210,6 +210,8 @@
   }
 
   function createNpcInvitation(date, ctx, social) {
+    const c = campaign();
+    if (!c || !social || !validDate(date)) return null;
     const pending = social.meetings.filter(item => item.direction === 'incoming' && item.status === 'invited').length;
     if (pending >= 2 || social.meetings.some(item => item.direction === 'incoming' && item.invitedDate === date)) return null;
     const candidates = contacts().filter(contact => {
