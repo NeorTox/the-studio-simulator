@@ -240,7 +240,29 @@ const assert = require('node:assert/strict');
     assert.match(await page.locator('[data-project-content]').innerText(),/Script draft/,'Command centre explains the missing script requirement');
     await page.locator('[data-project-action="scriptRoom"]').click();
     assert.equal(await page.locator('#studio-project-command-centre').evaluate(e=>e.open),false,'Opening the Script room exits the project command centre');
-    await page.waitForFunction(()=>document.querySelector('#modal').classList.contains('show'));
+    await page.waitForTimeout(250);
+    const phase5Handoff = await page.evaluate(() => {
+      const host = document.querySelector('#phase5-development');
+      const editButtons = Array.from(document.querySelectorAll('[data-p5-edit]')).map(button => ({
+        projectId: button.getAttribute('data-p5-edit'),
+        hasClickHandler: typeof button.onclick === 'function'
+      }));
+      return {
+        projectsPageActive: document.querySelector('#page-projects')?.classList.contains('active') || false,
+        phase5ApiPresent: !!window.Phase5Production,
+        phase5RenderType: typeof window.Phase5Production?.render,
+        phase5OpenScriptRoomType: typeof window.Phase5Production?.openScriptRoom,
+        phase5HostPresent: !!host,
+        phase5HostText: host?.innerText?.slice(0, 500) || '',
+        editButtons,
+        modalClass: document.querySelector('#modal')?.className || '',
+        toastText: document.querySelector('#toast')?.innerText || '',
+        commandCentreOpen: document.querySelector('#studio-project-command-centre')?.open || false
+      };
+    });
+    console.log('PHASE5_HANDOFF_DIAGNOSTIC ' + JSON.stringify({state:phase5Handoff,errors}));
+    assert.equal(phase5Handoff.modalClass.split(/\\s+/).includes('show'),true,
+      'Project command centre opens the existing Phase 5 Script room: ' + JSON.stringify({state:phase5Handoff,errors}));
     assert.equal(await page.locator('#modal').isVisible(),true,'Project command centre opens the existing Phase 5 Script room');
     assert.equal(await page.locator('#p5form').count(),1,'Existing Script room form remains the authoritative development editor');
     await page.locator('#p5logline').fill('A research crew follows a repeating signal beyond mapped space.');
