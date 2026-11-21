@@ -210,7 +210,7 @@ const assert = require('node:assert/strict');
     await page.locator('[data-project-tab="budget"]').click();
     assert.match(await page.locator('[data-project-content]').innerText(),/12,500,000/,'Budget workspace displays the approved project envelope');
     assert.match(await page.locator('[data-project-content]').innerText(),/Story & development/,'Budget workspace displays real itemized budget lines');
-    assert.match(await page.locator('[data-project-content]').innerText(),/Vendor contract value/,'Budget workspace separates vendor commitments');
+    assert.match(await page.locator('[data-project-content]').innerText(),/Vendor contract value/i,'Budget workspace separates vendor commitments');
     await page.locator('[data-project-tab="people"]').click();
     assert.match(await page.locator('[data-project-content]').innerText(),/Ava QA/,'People workspace reads the project cast list');
     assert.match(await page.locator('[data-project-content]').innerText(),/Niko QA/,'People workspace reads the crew register');
