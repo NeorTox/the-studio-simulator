@@ -1,0 +1,84 @@
+/* THE STUDIO — StudioOS social calendar and relationship scenes */
+#page-phone .stps-dashboard { display:grid; gap:12px; color:#e8eef4; }
+#page-phone .stps-hero { display:flex; align-items:flex-end; justify-content:space-between; gap:14px; padding:16px; border:1px solid #91b7c42b; border-radius:15px; background:radial-gradient(circle at 88% 0%,#426b7138,transparent 48%),linear-gradient(135deg,#182b36,#111a24 70%); }
+#page-phone .stps-kicker { color:#84c9c8; font-size:7px; font-weight:850; letter-spacing:.16em; text-transform:uppercase; }
+#page-phone .stps-hero h2 { margin:5px 0; color:#f4f8fa; font-size:clamp(16px,2vw,22px); letter-spacing:-.04em; }
+#page-phone .stps-hero p { max-width:470px; margin:0; color:#a1b1bd; font-size:9px; line-height:1.5; }
+#page-phone .stps-hero-stats { display:flex; gap:7px; }
+#page-phone .stps-hero-stats > div { min-width:54px; display:grid; gap:3px; padding:8px; border:1px solid #ffffff18; border-radius:9px; background:#07111b9c; text-align:center; }
+#page-phone .stps-hero-stats b { color:#f4f8fa; font-size:17px; font-variant-numeric:tabular-nums; }
+#page-phone .stps-hero-stats small { color:#8c9ba7; font-size:6px; font-weight:800; letter-spacing:.1em; }
+#page-phone .stps-section { display:grid; gap:8px; }
+#page-phone .stps-section-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+#page-phone .stps-section-heading h3 { margin:0; color:#e9f0f4; font-size:11px; }
+#page-phone .stps-section-heading > span { color:#7f919f; font-size:7px; font-weight:800; letter-spacing:.1em; }
+#page-phone .stps-invite-form { display:grid; grid-template-columns:1.25fr 1fr 1.2fr auto; align-items:end; gap:8px; padding:11px; border:1px solid #ffffff19; border-radius:12px; background:#111c27; }
+#page-phone .stps-invite-form label { min-width:0; display:grid; gap:5px; color:#aebbc5; font-size:8px; font-weight:750; }
+#page-phone .stps-invite-form select { width:100%; min-width:0; padding:8px; border:1px solid #ffffff22; border-radius:8px; outline:none; background:#0a141e; color:#e6edf2; font:inherit; font-size:8px; }
+#page-phone .stps-submit { min-height:34px; padding:7px 11px; border:0; border-radius:8px; background:#8ad1cd; color:#0b2529; font-size:8px; font-weight:900; cursor:pointer; }
+#page-phone .stps-invite-form > small { grid-column:1/-1; color:#82929e; font-size:7px; line-height:1.4; }
+#page-phone .stps-contact-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
+#page-phone .stps-contact { display:flex; gap:8px; min-width:0; padding:9px; border:1px solid #ffffff17; border-radius:11px; background:linear-gradient(140deg,#1a2631,#111923); }
+#page-phone .stps-avatar { width:31px; height:31px; flex:none; display:grid; place-items:center; border:1px solid #82c9cc45; border-radius:10px; background:#21434a; color:#a4e4e1; font-size:13px; font-weight:850; }
+#page-phone .stps-contact-body { flex:1; min-width:0; display:grid; gap:4px; }
+#page-phone .stps-contact-head { display:flex; align-items:center; justify-content:space-between; gap:6px; }
+#page-phone .stps-contact-head b { overflow:hidden; color:#ecf2f6; font-size:9px; text-overflow:ellipsis; white-space:nowrap; }
+#page-phone .stps-contact-head span { flex:none; color:#91c8c4; font-size:7px; font-weight:800; }
+#page-phone .stps-contact-body > small { color:#8899a6; font-size:7px; }
+#page-phone .stps-meter-row { display:flex; justify-content:space-between; color:#8999a6; font-size:7px; }
+#page-phone .stps-meter-row b { color:#c4d0d7; font-variant-numeric:tabular-nums; }
+#page-phone .stps-meter { height:4px; overflow:hidden; border-radius:5px; background:#34414d; }
+#page-phone .stps-meter i { display:block; height:100%; border-radius:5px; background:linear-gradient(90deg,#528a91,#9ad8cf); }
+#page-phone .stps-meter.trust i { background:linear-gradient(90deg,#60798c,#9fb9d2); }
+#page-phone .stps-contact-footer { display:flex; flex-wrap:wrap; align-items:center; gap:5px; margin-top:2px; }
+#page-phone .stps-contact-footer > small { flex:1; min-width:70px; color:#81919d; font-size:7px; }
+#page-phone .stps-contact-footer button { padding:5px 7px; font-size:7px; }
+#page-phone .stps-event-row { display:grid; grid-template-columns:70px minmax(0,1fr) auto; align-items:center; gap:9px; padding:9px; border:1px solid #ffffff16; border-radius:10px; background:#ffffff06; }
+#page-phone .stps-event-date { display:grid; gap:3px; }
+#page-phone .stps-event-date b { color:#b7dedd; font-size:9px; }
+#page-phone .stps-event-date small { color:#81919d; font-size:7px; }
+#page-phone .stps-event-row > div:nth-child(2) { min-width:0; display:grid; gap:4px; }
+#page-phone .stps-event-row > div:nth-child(2) b { color:#e1e9ee; font-size:8px; }
+#page-phone .stps-event-row > div:nth-child(2) small { overflow:hidden; color:#8d9da9; font-size:7px; line-height:1.4; text-overflow:ellipsis; }
+#page-phone .stps-status { padding:4px 6px; border:1px solid #ffffff1c; border-radius:6px; color:#9aa8b2; font-size:6px; font-weight:850; letter-spacing:.06em; white-space:nowrap; }
+#page-phone .stps-status.accepted { border-color:#7dcdb34a; color:#8ed5b8; }
+#page-phone .stps-status.completed { border-color:#88b5d34a; color:#a8c8e0; }
+#page-phone .stps-status.declined, #page-phone .stps-status.missed { border-color:#d3938b44; color:#d9a29a; }
+#page-phone .stps-scene-card { display:grid; gap:8px; padding:12px; border:1px solid #a88e5b66; border-radius:12px; background:radial-gradient(circle at 100% 0%,#6c58332b,transparent 55%),linear-gradient(140deg,#302b25,#171e26); }
+#page-phone .stps-scene-card h3 { margin:0; color:#f3ead9; font-size:12px; }
+#page-phone .stps-scene-card > p { margin:0; color:#b9b3a8; font-size:8px; line-height:1.5; }
+#page-phone .stps-choice-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+#page-phone .stps-choice { display:grid; gap:4px; padding:8px; border:1px solid #ffffff24; border-radius:9px; background:#ffffff09; color:#e9edf0; text-align:left; cursor:pointer; }
+#page-phone .stps-choice:hover { border-color:#c8b17b88; background:#ffffff12; }
+#page-phone .stps-choice b { font-size:8px; }
+#page-phone .stps-choice small { color:#9da7ad; font-size:7px; line-height:1.4; }
+#page-phone .stps-footnote { color:#9e998c; font-size:7px; line-height:1.45; }
+#page-phone .stps-empty { padding:14px; border:1px dashed #ffffff26; border-radius:10px; color:#91a0ab; font-size:8px; line-height:1.5; }
+@media(max-width:760px) {
+  #page-phone .stps-hero { align-items:flex-start; flex-direction:column; }
+  #page-phone .stps-invite-form { grid-template-columns:1fr 1fr; }
+  #page-phone .stps-invite-form > small { grid-column:1/-1; }
+}
+@media(max-width:500px) {
+  #page-phone .stps-contact-grid, #page-phone .stps-choice-list { grid-template-columns:1fr; }
+  #page-phone .stps-event-row { grid-template-columns:60px minmax(0,1fr); }
+  #page-phone .stps-event-row .stps-status { grid-column:2; justify-self:start; }
+}
+@media(prefers-reduced-motion:reduce) {
+  #page-phone .stps-choice { transition:none; }
+}
+
+
+#page-phone .stps-incoming-card { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px; border:1px solid #8dc8bb50; border-radius:12px; background:linear-gradient(125deg,#203d3a,#17232b 72%); }
+#page-phone .stps-incoming-card > div:first-child { min-width:0; display:grid; gap:4px; }
+#page-phone .stps-incoming-card > div:first-child > b { color:#e6f1eb; font-size:9px; }
+#page-phone .stps-incoming-card > div:first-child > small { color:#9aada9; font-size:7px; }
+#page-phone .stps-incoming-card p { margin:0; color:#b1c1bd; font-size:8px; line-height:1.4; }
+#page-phone .stps-incoming-actions { display:flex; flex:none; gap:5px; }
+#page-phone .stps-incoming-actions button { padding:7px 9px; border:1px solid #ffffff23; border-radius:7px; font-size:7px; font-weight:850; cursor:pointer; }
+#page-phone .stps-accept { background:#8ad1bd; color:#102a24; }
+#page-phone .stps-decline { background:#ffffff09; color:#c2cdd2; }
+@media(max-width:520px) {
+  #page-phone .stps-incoming-card { align-items:stretch; flex-direction:column; }
+  #page-phone .stps-incoming-actions { justify-content:flex-end; }
+}
