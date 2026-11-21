@@ -500,12 +500,37 @@
       '<p class="stph-footnote">Contacts are drawn from the founder’s relationship register, the studio employee roster and the shared social network. Virtual regional residents are not exposed as named contacts until the simulation materializes them.</p>';
   }
 
+  function renderVisibleSituations(contact) {
+    const decisions = window.StudioNPCDecisionConsequences;
+    if (!decisions || typeof decisions.observe !== 'function') return '';
+    let visible = [];
+    try {
+      visible = decisions.observe(campaign().date).filter(item =>
+        String(item.actorId) === String(contact.id) &&
+        item.status === 'open' &&
+        item.playerCanIntervene &&
+        Array.isArray(item.responseOptions) &&
+        item.responseOptions.length > 0
+      );
+    } catch (error) {
+      console.warn('[StudioOS communications] Could not read visible NPC situations:', error);
+      return '';
+    }
+    if (!visible.length) return '';
+    return '<section class="stpc-situations"><div class="stpc-situation-heading"><span class="stpc-overline">WORLD SIMULATION · PLAYER INTERVENTION</span><b>' + visible.length + ' situation' + (visible.length === 1 ? '' : 's') + ' involving this character</b></div>' +
+      visible.map(item => '<article class="stpc-situation-card"><div class="stpc-situation-meta">' + esc(item.type || 'Life event') + ' · ' + esc(item.date || '') + '</div><b>' + esc(item.title) + '</b><p>' + esc(item.description || '') + '</p><div class="stpc-response-list">' +
+        item.responseOptions.map(option => '<button type="button" class="stph-small-button" data-stph-action="char-intervene" data-situation="' + esc(item.id) + '" data-id="' + esc(option.id) + '">' + esc(option.label) + '</button>').join('') +
+      '</div><small>Choices may change the character’s needs and create delayed consequences in their life.</small></article>').join('') +
+      '</section>';
+  }
+
   function renderThread(s, contact) {
     const comms = ensureState(s);
     const thread = threadFor(s, contact.id, false) || threadFor(s, contact.id, true);
     markRead(s, contact.id);
     const messages = thread.messages || [];
     const relation = rapport(contact);
+    const situationPanel = renderVisibleSituations(contact);
     const quickReplies = [
       ['work', 'Ask how work is going', 'How is work going lately?'],
       ['personal', 'Check in personally', 'I wanted to check in. How have you been?'],
@@ -515,8 +540,9 @@
     ];
     return '<div class="stpc-thread">' +
       '<div class="stpc-thread-person"><button type="button" class="stpc-back" data-stph-action="char-back-messages">‹</button><div class="stpc-avatar">' + esc(String(contact.npc.name).slice(0, 1).toUpperCase()) + '</div><div><b>' + esc(contact.npc.name) + '</b><small>' + esc(contact.relationshipType) + ' · Closeness ' + relation.closeness.toFixed(0) + '</small></div><button type="button" class="stpc-profile-link" data-stph-action="char-view-contact" data-id="' + esc(contact.id) + '">PROFILE</button></div>' +
+      situationPanel +
       '<div class="stpc-thread-history">' +
-      (messages.length ? messages.slice(-60).map(message => '<div class="stpc-message-row ' + (message.from === 'PLAYER' ? 'outgoing' : 'incoming') + '"><div class="stpc-bubble">' + esc(message.text) + (message.type === 'call' ? '<small>CALL TRANSCRIPT</small>' : '') + '</div><span>' + esc(message.date) + '</span></div>').join('') : '<div class="stpc-first-message"><b>Start a conversation with ' + esc(contact.npc.name) + '</b><p>Your message will update the shared relationship graph and the character’s episodic memory.</p></div>') +
+      (messages.length ? messages.slice(-60).map(message => '<div class="stpc-message-row ' + (message.from === 'PLAYER' ? 'outgoing' : 'incoming') + '"><div class="stpc-bubble">' + esc(message.text) + (message.type === 'call' ? '<small>CALL TRANSCRIPT</small>' : message.type === 'decision' ? '<small>SIMULATION DECISION</small>' : '') + '</div><span>' + esc(message.date) + '</span></div>').join('') : '<div class="stpc-first-message"><b>Start a conversation with ' + esc(contact.npc.name) + '</b><p>Your message will update the shared relationship graph and the character’s episodic memory.</p></div>') +
       '</div>' +
       '<div class="stpc-quick-replies"><span>CONVERSATION STARTERS</span>' + quickReplies.map(item => '<button type="button" class="stph-small-button" data-stph-action="char-quick-reply" data-id="' + esc(contact.id) + '" data-text="' + esc(item[2]) + '">' + esc(item[1]) + '</button>').join('') + '</div>' +
       (contact.npc.alive === false || contact.npc.status === 'Deceased'
@@ -615,6 +641,33 @@
     if (typeof window.nav === 'function') window.nav('peopleintelligence');
   });
   handleAction('char-message', ({ id, openApp }) => actionOpenThread(id, openApp));
+  handleAction('char-intervene', ({ button, announce, render }) => {
+    const decisions = window.StudioNPCDecisionConsequences;
+    if (!decisions || typeof decisions.intervene !== 'function') throw new Error('The NPC decision engine is unavailable.');
+    const situationId = button.dataset.situation;
+    const responseId = button.dataset.id;
+    const situation = (decisions.observe(campaign().date) || []).find(item => item.id === situationId);
+    const result = decisions.intervene(situationId, responseId);
+    if (!result || !result.resolved) throw new Error('This situation is no longer open for intervention.');
+    const s = window.StudioOS.getState();
+    const contact = contactById(result.situation.actorId);
+    if (contact) {
+      const comms = ensureState(s);
+      const thread = threadFor(s, contact.id, true);
+      addMessage(s, thread, 'PLAYER', 'I chose to ' + String(result.situation.response.label || 'respond') + ' when this situation arose: ' + String(result.situation.title || 'an everyday event') + '.', 'decision', campaign().date);
+      const option = (decisions.responseStyles || []).find(item => item.id === responseId);
+      if (option) {
+        const socialKind = option.goodwill < -0.2 ? 'conflict' : option.kind === 'support' ? 'support' : option.goodwill > 0.35 ? 'positive' : 'neutral';
+        const edge = socialInteraction(contact, socialKind === 'neutral' ? 'personal' : socialKind, 'outgoing');
+        if (edge && relationFor(contact.id)) relationFor(contact.id).quality = edge.closeness;
+      }
+      comms.selectedContactId = contact.id;
+      persist();
+    }
+    const count = result.consequences ? result.consequences.length : 0;
+    announce('Decision recorded · ' + count + ' delayed consequence' + (count === 1 ? '' : 's') + ' scheduled.');
+    render();
+  });
   handleAction('char-call', ({ id, announce, openApp }) => handleCall(id, announce, openApp));
   handleAction('char-quick-reply', ({ button, id, announce, render }) => {
     const result = sendMessage(id, button.dataset.text);
