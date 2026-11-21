@@ -124,10 +124,8 @@
         if (typeof window.nav === 'function') window.nav('talent');
       }
     };
-    if (actions[action]) {
-      actions[action]();
-      closeDialog();
-    } else closeDialog();
+    closeDialog();
+    if (actions[action]) actions[action]();
   }
 
   function render() {
