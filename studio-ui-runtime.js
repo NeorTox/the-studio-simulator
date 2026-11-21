@@ -12,10 +12,25 @@
   ];
   const routeGroup = new Map();
   groups.forEach(g => g.routes.forEach(r => routeGroup.set(r,g.id)));
-  const nav = $('.nav'), shell = $('#app-shell'), side = $('#desktop-sidebar');
+  const nav = $('.nav'), shell = $('#app-shell'), side = $('#desktop-sidebar'), sideNavWrap = $('.side-nav-wrap', side);
   if (!nav || !shell || !side) return;
+  function mountPinnedSettings() {
+    const button = $(':scope > button[data-page="settings"]', nav);
+    if (!button || !sideNavWrap) return;
+    let dock = $('#studio-settings-dock', sideNavWrap);
+    if (!dock) {
+      dock = document.createElement('div');
+      dock.id = 'studio-settings-dock';
+      dock.className = 'nav-utility';
+      dock.setAttribute('aria-label','System settings');
+      nav.after(dock);
+    }
+    button.classList.add('settings-nav-button');
+    dock.append(button);
+  }
   function groupNavigation() {
-    const directButtons = $$(':scope > button[data-page]', nav);
+    mountPinnedSettings();
+    const directButtons = $(':scope > button[data-page]', nav);
     if (!nav.dataset.grouped) {
       nav.replaceChildren();
       groups.forEach(g => {
@@ -83,15 +98,30 @@
       $$('.page').forEach(p => p.classList.toggle('active', p === target));
     }
     const button = $('[data-page="' + route + '"]', nav);
-    $$('.nav button', nav).forEach(b => b.classList.toggle('active', b === button));
-    $$('.mobile-nav button[data-mobile-page]').forEach(b => b.classList.toggle('active', b.dataset.mobilePage === route));
+    $('.nav button', nav).forEach(b => b.classList.toggle('active', b === button));
+    const settingsActive = route === 'settings';
+    $('#studio-settings-dock [data-page="settings"]')?.classList.toggle('active', settingsActive);
+    $('#stui-settings-shortcut')?.classList.toggle('active', settingsActive);
+    $('.mobile-nav button[data-mobile-page]').forEach(b => b.classList.toggle('active', b.dataset.mobilePage === route));
     const crumb = $('#crumb');
-    if (crumb && button) crumb.textContent = button.textContent.trim().replace(/\s+/g,' ').toUpperCase();
+    if (crumb) crumb.textContent = button ? button.textContent.trim().replace(/\s+/g,' ').toUpperCase() : (settingsActive ? 'SETTINGS' : route.toUpperCase());
     closeDrawer();
     return true;
   }
   window.nav = activate;
-  $$('.mobile-nav button[data-mobile-page]').forEach(button => button.addEventListener('click', () => activate(button.dataset.mobilePage)));
+  const topRight = $('.topright');
+  if (topRight && !$('#stui-settings-shortcut')) {
+    const shortcut = document.createElement('button');
+    shortcut.type = 'button';
+    shortcut.id = 'stui-settings-shortcut';
+    shortcut.className = 'top-settings-button';
+    shortcut.setAttribute('aria-label','Open Settings centre');
+    shortcut.title = 'Settings centre';
+    shortcut.textContent = '⚙ SETTINGS';
+    shortcut.addEventListener('click',() => activate('settings'));
+    topRight.prepend(shortcut);
+  }
+  $('.mobile-nav button[data-mobile-page]').forEach(button => button.addEventListener('click', () => activate(button.dataset.mobilePage)));
   const saved = (() => {
     try {
       const items = JSON.parse(localStorage.getItem('the-studio-saves-v2') || '[]');
