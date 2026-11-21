@@ -96,12 +96,15 @@
   function openPhase5Action(id, action) {
     if (typeof window.nav === 'function') window.nav('projects');
     const phase5 = window.Phase5Production;
-    if (action === 'scriptRoom' && typeof phase5?.openScriptRoom === 'function') {
-      phase5.openScriptRoom(id);
-      return;
-    }
-    if (action === 'readiness' && typeof phase5?.openReadinessChecklist === 'function') {
-      phase5.openReadinessChecklist(id);
+    const methods = {
+      scriptRoom: 'openScriptRoom',
+      reviewScript: 'openScriptReview',
+      greenlight: 'openProjectGreenlight',
+      readiness: 'openReadinessChecklist'
+    };
+    const method = methods[action];
+    if (method && typeof phase5?.[method] === 'function') {
+      phase5[method](id);
       return;
     }
     if (typeof toast === 'function') toast('The Phase 5 development workspace is not available right now.');
@@ -114,8 +117,8 @@
     const actions = {
       advance: () => typeof advanceProject === 'function' && advanceProject(id),
       scriptRoom: () => openPhase5Action(id, 'scriptRoom'),
-      reviewScript: () => openPhase5Action(id, 'data-p5-review', 'p5Review'),
-      greenlight: () => openPhase5Action(id, 'data-p5-green', 'p5Green'),
+      reviewScript: () => openPhase5Action(id, 'reviewScript'),
+      greenlight: () => openPhase5Action(id, 'greenlight'),
       readiness: () => openPhase5Action(id, 'readiness'),
       crew: () => typeof hireCrew === 'function' && hireCrew(id),
       budget: () => typeof showProjectBudget === 'function' && showProjectBudget(id),
