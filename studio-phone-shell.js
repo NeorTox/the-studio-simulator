@@ -116,7 +116,10 @@
   function appTile(app, s) {
     const isInstalled = !app.platform || installed(s, app.platform);
     const label = app.platform ? ((s.platforms || []).find(p => p.id === app.platform) || {}).name || app.label : app.label;
-    const badge = app.id === 'notifications' && unreadCount(s) ? '<i class="stph-app-badge">' + unreadCount(s) + '</i>' : '';
+    const unreadMessages = (s.communications && s.communications.threads || []).reduce((total, thread) =>
+      total + (thread.messages || []).filter(message => message.from !== 'PLAYER' && !message.read).length, 0);
+    const badgeCount = app.id === 'notifications' ? unreadCount(s) : app.id === 'messages' ? unreadMessages : 0;
+    const badge = badgeCount ? '<i class="stph-app-badge">' + badgeCount + '</i>' : '';
     return '<button type="button" class="stph-app-tile" data-stph-action="open-app" data-app="' + esc(app.id) + '" aria-label="Open ' + esc(label) + '">' +
       '<span class="stph-app-icon ' + esc(app.tone) + '">' + badge + '<b>' + esc(app.glyph) + '</b></span>' +
       '<span class="stph-app-name">' + esc(label) + '</span>' +
@@ -326,7 +329,7 @@
         '<div class="stph-console-stats"><span><b>' + Number(s.metrics && s.metrics.activeUsers || 0).toLocaleString() + '</b>Daily users</span><span><b>' + Number(s.metrics && s.metrics.impressions || 0).toLocaleString() + '</b>Impressions</span></div>' +
       '</section>' +
       '<section class="stph-console-card"><div class="stph-console-heading"><span>QUICK ACCESS</span><b>OPEN AN APP</b></div><div class="stph-quick-grid">' +
-        ['weather', 'news', 'social', 'store', 'device', 'notifications'].map(id => '<button type="button" data-stph-action="open-app" data-app="' + id + '">' + esc(appById(id).glyph) + '<span>' + esc(appById(id).label) + '</span></button>').join('') +
+        ['weather', 'news', 'contacts', 'messages', 'calls', 'social', 'store', 'device', 'notifications'].map(id => '<button type="button" data-stph-action="open-app" data-app="' + id + '">' + esc(appById(id).glyph) + '<span>' + esc(appById(id).label) + '</span></button>').join('') +
       '</div></section>' +
       '<section class="stph-console-card"><div class="stph-console-heading"><span>WORLD PULSE</span><b>' + (forecast ? esc(forecast.region) : 'CAMPAIGN') + '</b></div>' +
         (forecast ? '<div class="stph-pulse-weather"><strong>' + esc(forecast.days[0].condition) + '</strong><b>' + forecast.days[0].temperatureC.toFixed(1) + '°C</b><small>Rain ' + forecast.days[0].precipitationProbability.toFixed(0) + '% · Wind ' + forecast.days[0].windKph.toFixed(0) + ' km/h</small></div>' : '<p class="stph-muted">World climate information will appear here when available.</p>') +
