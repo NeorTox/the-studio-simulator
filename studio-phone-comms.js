@@ -769,10 +769,30 @@
           id: 'studioos-communications',
           name: 'StudioOS contacts, messaging and simulated calls',
           deps: ['smartphone-media', 'npc-social-networks', 'npc-memory-reputation'],
-          owns: ['founder contact directory', 'persistent message threads', 'NPC-initiated messages', 'simulated call history'],
+          owns: ['founder contact directory', 'persistent message threads', 'NPC-initiated messages', 'simulated call history', 'player intervention through NPC decision consequences'],
           status: 'implemented'
         });
       } catch (_) {}
+    }
+    const integration = window.StudioPhaseIntegration;
+    if (integration && typeof integration.audit === 'function' && !integration.audit.__studioosCommunicationsWrapped) {
+      const priorAudit = integration.audit;
+      const wrappedAudit = function () {
+        const report = priorAudit.apply(this, arguments);
+        if (!report || !Array.isArray(report.tests)) return report;
+        const hasCampaign = !!window.StudioOS.getState();
+        const result = hasCampaign ? audit() : null;
+        report.tests.push({
+          name: 'StudioOS communications integrity',
+          ok: !result || result.failed === 0,
+          detail: result ? result.passed + ' passed / ' + result.failed + ' failed' : 'Skipped because no active campaign is loaded.'
+        });
+        report.passed = report.tests.filter(test => test.ok).length;
+        report.failed = report.tests.length - report.passed;
+        return report;
+      };
+      wrappedAudit.__studioosCommunicationsWrapped = true;
+      integration.audit = wrappedAudit;
     }
   }
 
