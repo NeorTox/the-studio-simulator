@@ -80,7 +80,7 @@
   }
   function mount(){
     const nav=document.querySelector(NAV),content=document.querySelector(CONTENT);if(!nav||!content)return false;
-    if(!nav.querySelector('[data-page="settings"]')){
+    if(!nav.querySelector('[data-page="settings"]')&&!document.querySelector('#studio-settings-dock [data-page="settings"]')){
       const button=document.createElement('button');button.dataset.page='settings';button.innerHTML='<span aria-hidden="true">⚙</span>Settings';button.setAttribute('aria-label','Open the Settings centre');button.addEventListener('click',()=>window.nav?.('settings'));nav.appendChild(button);
     }
     if(!document.getElementById('page-settings'))content.insertAdjacentHTML('beforeend',pageMarkup());
