@@ -25,14 +25,14 @@
   };
   function notify(message) {
     const toast = document.getElementById('toast');
-    if (toast) { toast.textContent = message; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2200); }
+    if (toast) { toast.textContent = message; toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, 2200); }
   }
   function apply() {
     const root = document.documentElement;
     root.dataset.uiDensity = preferences.density;
     root.dataset.uiContrast = preferences.contrast;
     root.dataset.uiMotion = preferences.reduceMotion ? 'reduced' : 'full';
-    root.style.setProperty('--ui-font-scale', String(preferences.fontScale));
+    root.style.fontSize = (16 * preferences.fontScale) + 'px';
     root.dataset.uiHints = preferences.showHints ? 'visible' : 'hidden';
   }
   function pageMarkup() {
