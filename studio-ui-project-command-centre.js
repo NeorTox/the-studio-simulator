@@ -93,13 +93,18 @@
     else dialog.setAttribute('open', '');
   }
 
-  function openPhase5Action(id, attribute, datasetKey) {
+  function openPhase5Action(id, action) {
     if (typeof window.nav === 'function') window.nav('projects');
-    if (window.Phase5Production && typeof window.Phase5Production.render === 'function') window.Phase5Production.render();
-    const host = $('#phase5-development') || $('#page-projects');
-    const target = all('[' + attribute + ']', host).find(node => String(node.dataset[datasetKey]) === String(id));
-    if (target) target.click();
-    else if (typeof toast === 'function') toast('The Phase 5 development workspace is not available right now.');
+    const phase5 = window.Phase5Production;
+    if (action === 'scriptRoom' && typeof phase5?.openScriptRoom === 'function') {
+      phase5.openScriptRoom(id);
+      return;
+    }
+    if (action === 'readiness' && typeof phase5?.openReadinessChecklist === 'function') {
+      phase5.openReadinessChecklist(id);
+      return;
+    }
+    if (typeof toast === 'function') toast('The Phase 5 development workspace is not available right now.');
   }
 
   function runAction(action) {
@@ -108,10 +113,10 @@
     if (!project) return;
     const actions = {
       advance: () => typeof advanceProject === 'function' && advanceProject(id),
-      scriptRoom: () => openPhase5Action(id, 'data-p5-edit', 'p5Edit'),
+      scriptRoom: () => openPhase5Action(id, 'scriptRoom'),
       reviewScript: () => openPhase5Action(id, 'data-p5-review', 'p5Review'),
       greenlight: () => openPhase5Action(id, 'data-p5-green', 'p5Green'),
-      readiness: () => openPhase5Action(id, 'data-p5-check', 'p5Check'),
+      readiness: () => openPhase5Action(id, 'readiness'),
       crew: () => typeof hireCrew === 'function' && hireCrew(id),
       budget: () => typeof showProjectBudget === 'function' && showProjectBudget(id),
       marketing: () => typeof planMarketing === 'function' && planMarketing(id),
