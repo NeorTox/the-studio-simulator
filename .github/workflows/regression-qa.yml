@@ -51,6 +51,7 @@ jobs:
         run: node --check studio-ui-runtime.js && node --check studio-world-atlas.js && node --check studio-ui-project-command-centre.js && node --check studio-visualization-runtime.js && node --check studio-ui-rebuild-browser-qa.js && node studio-ui-rebuild-browser-qa.js
       - name: Capture actual desktop and mobile UI preview
         timeout-minutes: 4
+        continue-on-error: true
         run: node --check studio-ui-preview-capture.js && node studio-ui-preview-capture.js
       - name: Upload desktop and mobile UI preview
         if: always()
