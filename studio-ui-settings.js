@@ -33,6 +33,7 @@
     root.dataset.uiContrast = preferences.contrast;
     root.dataset.uiMotion = preferences.reduceMotion ? 'reduced' : 'full';
     root.style.fontSize = (16 * preferences.fontScale) + 'px';
+    if (document.body) document.body.style.fontSize = (14 * preferences.fontScale) + 'px';
     root.dataset.uiHints = preferences.showHints ? 'visible' : 'hidden';
   }
   function pageMarkup() {
