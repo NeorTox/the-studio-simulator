@@ -183,12 +183,25 @@ const assert = require('node:assert/strict');
       const npc=active.world.population.npcs.find(n=>n.id==='NPC-CONVO-QA');
       const edge=active.world.socialNetwork.edges.find(e=>e.key.split('|').includes('NPC-CONVO-QA')&&e.key.split('|').includes('PLAYER'));
       const session=active.world.cinematicInteractions.sessions.find(s=>s.npcId==='NPC-CONVO-QA');
-      return {memories:npc.memory.memories.length,trust:edge?.trust||0,turns:session?.turns||0,lines:session?.lines?.length||0};
+      const decisions=active.world.npcDecisionConsequences;
+      const situation=decisions?.situations.find(item=>item.id===session?.lastSimulationOutcome?.situationId);
+      return {
+        memories:npc.memory.memories.length,trust:edge?.trust||0,turns:session?.turns||0,
+        lines:session?.lines?.length||0,
+        situationStatus:situation?.status||null,
+        response:situation?.response?.id||null,
+        pending:session?.lastSimulationOutcome?.consequences?.length||0,
+        decisionHistory:decisions?.history?.length||0
+      };
     });
     assert.equal(conversationResult.turns,1,'Dialogue choice advances the persistent conversation');
-    assert.equal(conversationResult.lines,3,'Player and NPC dialogue are recorded in the scene transcript');
+    assert.equal(conversationResult.lines,4,'Player dialogue, NPC reply and consequence narration are recorded');
     assert(conversationResult.memories>=1,'Conversation is written to the NPC long-term memory engine');
     assert(conversationResult.trust>35,'Conversation updates the authoritative relationship graph');
+    assert.equal(conversationResult.situationStatus,'resolved','Conversation creates and resolves a universal NPC situation');
+    assert.equal(conversationResult.response,'help-directly','Support dialogue maps to a real decision-engine response');
+    assert(conversationResult.pending>=1,'Dialogue creates delayed consequences rather than only cosmetic relationship changes');
+    assert(conversationResult.decisionHistory>=1,'Conversation decision is retained in the universal decision history');
     await page.locator('[data-end-conversation]').click();
     assert.match(await page.locator('.st-conversation-ended').innerText(),/CONVERSATION SAVED/,'Ending a conversation retains the thread');
 
