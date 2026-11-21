@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 const manifestPath = resolve('android/app/src/main/AndroidManifest.xml');
 let manifest = await readFile(manifestPath, 'utf8');
 
-const activityPattern = /(<activity\\b(?=[^>]*android:name="[^"]*MainActivity")[^>]*)(>)/s;
+const activityPattern = /(<activity\b(?=[^>]*android:name="[^"]*MainActivity")[^>]*)(>)/s;
 const match = manifest.match(activityPattern);
 if (!match) {
   throw new Error('Could not find the Capacitor MainActivity in AndroidManifest.xml');
