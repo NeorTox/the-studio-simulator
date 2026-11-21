@@ -41,7 +41,7 @@
 .settings-device-note p{margin:4px 0 0;color:var(--muted);font-size:10px;line-height:1.5}
 .settings-no-results{padding:28px;border:1px dashed var(--line);border-radius:10px;color:var(--muted);text-align:center;font-size:12px}
 .settings-panel[hidden],.settings-item[hidden]{display:none!important}
-.nav-utility{flex:0 0 auto;margin-top:8px;padding-top:9px;border-top:1px solid var(--line)}
+ .side-nav-wrap .nav{flex:1 1 auto;min-height:0}.nav-utility{flex:0 0 auto;margin-top:8px;padding-top:9px;border-top:1px solid var(--line)}
 .nav-utility button{display:flex;align-items:center;gap:11px;width:100%;min-height:42px;padding:9px 11px;border:1px solid rgba(201,168,121,.22);border-radius:8px;background:linear-gradient(90deg,rgba(201,168,121,.12),rgba(201,168,121,.025));color:#e6d4b7;text-align:left;font-size:11px;font-weight:750}
 .nav-utility button span{display:inline-grid;place-items:center;flex:0 0 20px;width:20px;color:var(--brass);font-size:15px}
 .nav-utility button:hover,.nav-utility button.active{border-color:rgba(201,168,121,.48);background:rgba(201,168,121,.16);color:#fff}
