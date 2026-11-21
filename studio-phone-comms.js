@@ -646,7 +646,6 @@
     if (!decisions || typeof decisions.intervene !== 'function') throw new Error('The NPC decision engine is unavailable.');
     const situationId = button.dataset.situation;
     const responseId = button.dataset.id;
-    const situation = (decisions.observe(campaign().date) || []).find(item => item.id === situationId);
     const result = decisions.intervene(situationId, responseId);
     if (!result || !result.resolved) throw new Error('This situation is no longer open for intervention.');
     const s = window.StudioOS.getState();
@@ -656,9 +655,9 @@
       const thread = threadFor(s, contact.id, true);
       addMessage(s, thread, 'PLAYER', 'I chose to ' + String(result.situation.response.label || 'respond') + ' when this situation arose: ' + String(result.situation.title || 'an everyday event') + '.', 'decision', campaign().date);
       const option = (decisions.responseStyles || []).find(item => item.id === responseId);
-      if (option) {
-        const socialKind = option.goodwill < -0.2 ? 'conflict' : option.kind === 'support' ? 'support' : option.goodwill > 0.35 ? 'positive' : 'neutral';
-        const edge = socialInteraction(contact, socialKind === 'neutral' ? 'personal' : socialKind, 'outgoing');
+      if (option && (option.goodwill < -0.2 || option.goodwill > 0.35)) {
+        const socialKind = option.goodwill < -0.2 ? 'conflict' : option.kind === 'support' ? 'support' : 'personal';
+        const edge = socialInteraction(contact, socialKind, 'outgoing');
         if (edge && relationFor(contact.id)) relationFor(contact.id).quality = edge.closeness;
       }
       comms.selectedContactId = contact.id;
