@@ -97,7 +97,6 @@
     const id = projectId;
     const project = projectById(id);
     if (!project) return;
-    closeDialog();
     const actions = {
       advance: () => typeof advanceProject === 'function' && advanceProject(id),
       crew: () => typeof hireCrew === 'function' && hireCrew(id),
@@ -113,7 +112,10 @@
         if (typeof window.nav === 'function') window.nav('talent');
       }
     };
-    if (actions[action]) actions[action]();
+    if (actions[action]) {
+      actions[action]();
+      closeDialog();
+    } else closeDialog();
   }
 
   function render() {
