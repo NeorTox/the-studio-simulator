@@ -95,6 +95,7 @@
 
   function openPhase5Action(id, attribute, datasetKey) {
     if (typeof window.nav === 'function') window.nav('projects');
+    if (window.Phase5Production && typeof window.Phase5Production.render === 'function') window.Phase5Production.render();
     const host = $('#phase5-development') || $('#page-projects');
     const target = all('[' + attribute + ']', host).find(node => String(node.dataset[datasetKey]) === String(id));
     if (target) target.click();
