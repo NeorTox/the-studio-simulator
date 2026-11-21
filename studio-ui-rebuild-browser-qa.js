@@ -160,6 +160,7 @@ const assert = require('node:assert/strict');
       active.productionContracts=[];
       window.StudioProductionWorkflow.refresh();
     });
+    await page.locator('.nav button[data-page="projects"]').click();
     await page.locator('#page-projects [data-production-wizard-trigger="true"]').click();
     assert.equal(await page.locator('#studio-production-wizard').evaluate(e=>e.open),true,'New production opens a native guided setup dialog');
     assert.equal(await page.locator('.production-wizard-steps button').count(),6,'Project creation is split into six understandable steps');
