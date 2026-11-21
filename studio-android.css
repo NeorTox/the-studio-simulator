@@ -1,0 +1,173 @@
+/* THE STUDIO — Android landscape viewport corrections
+   Short landscape screens must use the handheld layout even when the WebView
+   reports a desktop-class CSS width. Keep the management rail independently scrollable. */
+@media (orientation: landscape) and (max-height: 560px) {
+  html, body {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  .shell {
+    width: 100%;
+    height: 100dvh;
+    min-height: 0;
+    grid-template-columns: 168px minmax(0, 1fr);
+    overflow: hidden;
+  }
+  .side {
+    position: sticky;
+    top: 0;
+    width: 168px;
+    height: 100dvh;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 7px;
+    overflow: hidden;
+  }
+  .brand {
+    flex: 0 0 auto;
+    padding: 3px 6px 8px;
+  }
+  .brand b {
+    font-size: 13px;
+    letter-spacing: .14em;
+  }
+  .brand small {
+    margin-top: 3px;
+    font-size: 7px;
+    line-height: 1.35;
+  }
+  .side > div:nth-child(2) {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .navlabel {
+    display: block;
+    flex: 0 0 auto;
+    margin: 0 0 4px 5px;
+    padding: 0;
+    font-size: 7px;
+  }
+  .nav {
+    display: grid;
+    flex: 1 1 auto;
+    min-height: 0;
+    grid-auto-rows: minmax(27px, auto);
+    gap: 2px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 0 2px 4px 0;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav button {
+    width: 100%;
+    min-width: 0;
+    min-height: 27px;
+    padding: 4px 5px;
+    border-radius: 7px;
+    font-size: 9px;
+    line-height: 1.2;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .nav span {
+    display: inline-block;
+    width: 18px;
+    font-size: 11px;
+  }
+  .sidefoot {
+    display: none;
+  }
+  .main {
+    width: 100%;
+    height: 100dvh;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .top {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    height: 48px;
+    min-height: 48px;
+    padding: 0 10px;
+  }
+  .crumb {
+    overflow: hidden;
+    font-size: 8px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .topright {
+    flex: 0 0 auto;
+    gap: 4px;
+  }
+  .topright .pill {
+    max-width: 118px;
+    overflow: hidden;
+    padding: 4px 6px;
+    font-size: 7px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .topright .avatar {
+    width: 25px;
+    height: 25px;
+  }
+  .content {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    padding: 12px;
+    overflow: visible;
+  }
+  .hero {
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .h1 {
+    font-size: clamp(21px, 2.2vw, 29px);
+  }
+  .sub {
+    font-size: 10px;
+  }
+  .stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+  }
+  .stats .card, .card {
+    min-width: 0;
+    padding: 9px;
+  }
+  .statvalue {
+    font-size: 18px;
+  }
+  .grid {
+    gap: 8px;
+  }
+  .cols {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  }
+  .btn {
+    min-height: 30px;
+    padding: 6px 8px;
+    font-size: 9px;
+  }
+  .modalback {
+    max-height: 100dvh;
+    overflow-y: auto;
+  }
+}
