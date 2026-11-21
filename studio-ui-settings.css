@@ -23,7 +23,7 @@
 :root[data-ui-density="compact"] .page .hero{margin-bottom:13px}
 :root[data-ui-density="compact"] .workspace-tabs{margin-top:10px;margin-bottom:8px}
 :root[data-ui-contrast="high"]{--line:#52616b;--line-soft:rgba(225,236,242,.24);--muted:#c3cdd1;--dim:#a2b0b6}
-:root{font-size:calc(100% * var(--ui-font-scale,1))}
+
 :root[data-ui-motion="reduced"] *, :root[data-ui-motion="reduced"] *::before, :root[data-ui-motion="reduced"] *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 :root[data-ui-hints="hidden"] .hint{display:none!important}
 @media(max-width:760px){.settings-layout{grid-template-columns:1fr}.settings-panel{padding:16px}.settings-profile-panel{grid-column:auto}.settings-control{grid-template-columns:1fr;gap:9px}.settings-control select{max-width:100%}.settings-panel-head h2{font-size:17px}}
