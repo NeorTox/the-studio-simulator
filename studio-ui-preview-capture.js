@@ -76,6 +76,9 @@ async function prepareCampaign(page) {
     if (typeof window.StudioProductionWorkflow?.refresh === 'function') {
       window.StudioProductionWorkflow.refresh();
     }
+    if (typeof window.Phase7Smartphone?.processDay === 'function') {
+      window.Phase7Smartphone.processDay(active.date);
+    }
     if (typeof persist === 'function') persist();
   });
   await page.waitForTimeout(700);
@@ -115,6 +118,10 @@ async function screenshot(page, filename, fullPage = true) {
     }
     await desktop.locator('.nav button[data-page="finance"]').click();
     await screenshot(desktop, 'desktop-finance.png');
+    await desktop.evaluate(() => window.nav('phone'));
+    await screenshot(desktop, 'desktop-smartphone-home.png', false);
+    await desktop.locator('#page-phone [data-open-app="studiosphere"]').click();
+    await screenshot(desktop, 'desktop-smartphone-app.png', false);
 
     // Mobile: use the actual touch-sized layout and bottom navigation.
     const mobile = await browser.newPage({
@@ -130,6 +137,10 @@ async function screenshot(page, filename, fullPage = true) {
     await screenshot(mobile, 'mobile-productions.png');
     await mobile.locator('#mobile-nav [data-mobile-page="personal"]').click();
     await screenshot(mobile, 'mobile-life.png');
+    await mobile.evaluate(() => window.nav('phone'));
+    await screenshot(mobile, 'mobile-smartphone-home.png', false);
+    await mobile.locator('#page-phone [data-open-app="studiosphere"]').click();
+    await screenshot(mobile, 'mobile-smartphone-app.png', false);
     await mobile.close();
     await desktop.close();
   } finally {
