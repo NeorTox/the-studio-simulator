@@ -77,7 +77,7 @@
   function selectedPerson() { return findPerson(selectedId); }
   function selectedSession(id=selectedId) {
     const s=persistentState();
-    return s?.sessions.filter(item=>String(item.npcId)===String(id)).sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt)))[0]||null;
+    const matches=s?.sessions.filter(item=>String(item.npcId)===String(id))||[];return matches[matches.length-1]||null;
   }
   function playerLine(session, choice) {
     session.lines.push({speaker:'player',name:founderName(),text:choice.line,date:campaign().date});
@@ -95,7 +95,7 @@
     const person=findPerson(id),s=persistentState();
     if(!person||!s) return null;
     const topic=topics[topicKey]?topicKey:'work';
-    let session=s.sessions.filter(item=>String(item.npcId)===String(id)&&item.status==='ongoing').sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt)))[0];
+    let session=s.sessions.filter(item=>String(item.npcId)===String(id)&&item.status==='ongoing').slice(-1)[0];
     if(session) { session.topic=topic; session.updatedAt=campaign().date; return session; }
     const sessionId='SCENE-'+hash([campaign().id,id,campaign().date,s.sessions.length].join('|'));
     const edge=relationship(id);
@@ -242,6 +242,7 @@
       page.innerHTML='<div class="st-interaction-empty"><small>THE STUDIO / LIFE</small><h1>Conversations</h1><p>Create or load a campaign to meet the people in your world.</p></div>';
       return;
     }
+    if(!selectedId || !findPerson(selectedId)) selectedId=s.lastNpcId&&findPerson(s.lastNpcId)?s.lastNpcId:(people()[0]?.id||null);
     const list=contactListMarkup(),person=selectedPerson(),edge=person?relationship(person.id):null,session=person?selectedSession(person.id):null;
     page.innerHTML='<div class="st-interaction-heading"><div><div class="st-interaction-eyebrow">LIFE / PEOPLE / RELATIONSHIPS</div><h1>Conversations</h1><p>Meet the people behind the company. Listen, disagree, build trust and remember what was said.</p></div><div class="st-interaction-heading-meta"><span>WORLD DATE</span><b>'+esc(c.date||'—')+'</b><small>'+people().length.toLocaleString()+' people in your world</small></div></div>'+
       '<div class="st-conversation-layout"><aside class="st-contact-panel"><div class="st-contact-panel-head"><div><small>YOUR WORLD</small><h2>People</h2></div><span>'+list.count+'</span></div><label class="st-contact-search"><span>⌕</span><input id="st-contact-search" type="search" placeholder="Find someone…" value="'+esc(filter)+'" autocomplete="off"></label><div class="st-contact-filters"><button data-filter-tab="all" class="'+(activeTab==='all'?'active':'')+'">All people</button><button data-filter-tab="staff" class="'+(activeTab==='staff'?'active':'')+'">Your studio</button><button data-filter-tab="connected" class="'+(activeTab==='connected'?'active':'')+'">Connected</button></div><div class="st-contact-list">'+(list.html||'<div class="st-contact-none">No people match this view yet.</div>')+'</div><div class="st-contact-foot">CONTACTS ARE REAL SIMULATED PEOPLE</div></aside>'+
