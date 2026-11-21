@@ -285,11 +285,20 @@
       content.append(page);
     }
     if(!nav.querySelector('[data-page="interactions"]')) {
-      const group=document.createElement('section');
-      group.className='nav-group st-interactions-nav-group';
-      group.innerHTML='<div class="nav-group-heading">Life & people</div><button type="button" data-page="interactions"><span>◉</span>Conversations</button>';
-      nav.append(group);
-      group.querySelector('button').addEventListener('click',()=>window.nav?.('interactions'));
+      const button=document.createElement('button');
+      button.type='button';
+      button.dataset.page='interactions';
+      button.innerHTML='<span>◉</span>Conversations';
+      const lifeGroup=nav.querySelector('[data-nav-group="life"]');
+      if(lifeGroup) lifeGroup.append(button);
+      else {
+        const group=document.createElement('section');
+        group.className='nav-group st-interactions-nav-group';
+        group.innerHTML='<div class="nav-group-heading">Life & people</div>';
+        group.append(button);
+        nav.append(group);
+      }
+      button.addEventListener('click',()=>window.nav?.('interactions'));
     }
     const personal=$('#page-personal');
     if(personal&&!personal.querySelector('[data-open-conversations]')) {
