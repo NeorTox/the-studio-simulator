@@ -248,7 +248,7 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('#modal').isVisible(),true,'Stage review opens the original simulation approval modal');
     assert.equal(await page.locator('#stagego').isDisabled(),true,'Existing stage approval blocks advancement before the minimum time has elapsed');
     assert.match(await page.locator('#mbody').innerText(),/0 \/ 14 days/,'Existing approval dialog retains the simulation engine time check');
-    await page.evaluate(()=>closeModal());
+    await page.evaluate(()=>close());
     assert.equal(await page.locator('#modal').isVisible(),false,'Existing stage approval modal closes normally');
     await page.locator('#studio-production-pipeline [data-pipeline-open="PRJ-QA-001"]').click();
     await page.setViewportSize({width:390,height:844});
