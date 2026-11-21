@@ -33,6 +33,9 @@
 
   let selectedApp = 'home';
   let currentPage = null;
+  const extensionApps = new Map();
+  const extensionActions = new Map();
+  const extensionSubmits = new Map();
 
   function campaign() {
     try { return typeof active !== 'undefined' ? active : null; }
@@ -286,6 +289,8 @@
   }
 
   function renderAppBody(s, id) {
+    const extension = extensionApps.get(id);
+    if (extension) return extension.render(s, { openApp, home: goHome, refresh: render, announce });
     if (id === 'weather') return renderWeather(s);
     if (id === 'news') return renderNews(s);
     if (id === 'social' || id === 'reels') return renderSocial(s, id);
@@ -422,6 +427,8 @@
         if (typeof core.payMobileBill !== 'function') throw new Error('Billing is unavailable.');
         core.payMobileBill(id);
         announce('Mobile bill paid.');
+      } else if (extensionActions.has(action)) {
+        extensionActions.get(action)({ button, s, id, announce, render, openApp, goHome });
       }
     } catch (error) {
       announce(error && error.message ? error.message : 'The action could not be completed.');
@@ -466,12 +473,66 @@
         s.preferences.safeMode = data.get('safeMode') === 'on';
         persistSafely();
         announce('StudioOS preferences saved.');
+      } else if (extensionSubmits.has(type)) {
+        extensionSubmits.get(type)({ form, data, s, announce, render, openApp, goHome });
       }
     } catch (error) {
       announce(error && error.message ? error.message : 'The request could not be completed.');
     }
     render();
   }
+
+  function openApp(id) {
+    if (!APPS.some(app => app.id === id)) return false;
+    selectedApp = id;
+    render();
+    return true;
+  }
+
+  function goHome() {
+    selectedApp = 'home';
+    render();
+  }
+
+  function registerApp(definition) {
+    if (!definition || !/^[a-z][a-z0-9-]{1,30}$/.test(String(definition.id || '')) ||
+        typeof definition.render !== 'function') throw new Error('StudioOS app requires a valid id and render function.');
+    if (APPS.some(app => app.id === definition.id)) throw new Error('StudioOS app id already exists: ' + definition.id);
+    const app = {
+      id: String(definition.id),
+      label: String(definition.label || definition.id),
+      glyph: String(definition.glyph || '•'),
+      tone: String(definition.tone || 'device'),
+      detail: String(definition.detail || 'Application')
+    };
+    APPS.push(app);
+    extensionApps.set(app.id, definition);
+    render();
+    return app;
+  }
+
+  function registerAction(name, handler) {
+    if (!/^[a-z][a-z0-9-]{1,40}$/.test(String(name)) || typeof handler !== 'function')
+      throw new Error('StudioOS action requires a valid name and handler.');
+    extensionActions.set(name, handler);
+  }
+
+  function registerSubmit(name, handler) {
+    if (!/^[a-z][a-z0-9-]{1,40}$/.test(String(name)) || typeof handler !== 'function')
+      throw new Error('StudioOS form requires a valid name and handler.');
+    extensionSubmits.set(name, handler);
+  }
+
+  window.StudioOS = {
+    version: '1.1.0',
+    registerApp,
+    registerAction,
+    registerSubmit,
+    openApp,
+    goHome,
+    refresh: render,
+    getState: state
+  };
 
   function install() {
     const page = $('#page-phone');
