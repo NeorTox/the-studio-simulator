@@ -20,6 +20,9 @@
     { id: 'social', label: 'StudioSphere', glyph: '◎', tone: 'social', detail: 'Social network', platform: 'studiosphere' },
     { id: 'reels', label: 'ReelLoop', glyph: '▶', tone: 'reels', detail: 'Short video', platform: 'reelloop' },
     { id: 'creator', label: 'CreatorHub', glyph: '✦', tone: 'creator', detail: 'Creator studio', platform: 'creatorhub' },
+    { id: 'streamline', label: 'Streamline', glyph: '▶', tone: 'stream', detail: 'Streaming', platform: 'streamline' },
+    { id: 'soundwave', label: 'SoundWave', glyph: '♫', tone: 'music', detail: 'Music', platform: 'soundwave' },
+    { id: 'marketpulse', label: 'MarketPulse', glyph: '↗', tone: 'market', detail: 'Industry markets', platform: 'marketpulse' },
     { id: 'games', label: 'PlayGrid', glyph: '▣', tone: 'games', detail: 'Mobile games', platform: 'playgrid' },
     { id: 'store', label: 'App Store', glyph: 'A', tone: 'store', detail: 'Install applications' },
     { id: 'device', label: 'Device', glyph: '▤', tone: 'device', detail: 'Battery and data' },
@@ -293,6 +296,12 @@
     if (id === 'notifications') return renderNotifications(s);
     if (id === 'settings') return renderSettings(s);
     if (id === 'calendar') return renderCalendar(s);
+    if (id === 'streamline' || id === 'soundwave' || id === 'marketpulse') {
+      if (!installed(s, id)) return lockedApp(id);
+      const target = id === 'marketpulse' ? 'market' : id === 'soundwave' ? 'media' : 'distribution';
+      const workspace = id === 'marketpulse' ? 'Market' : id === 'soundwave' ? 'Media' : 'Distribution';
+      return '<div class="stph-empty-state"><span class="stph-empty-icon">' + esc(appById(id).glyph) + '</span><h3>' + esc(appById(id).label) + ' is installed</h3><p>This app is in the StudioOS catalog, but its standalone service screen is not connected yet. Open the existing ' + workspace + ' workspace for the supported management tools and data.</p><button type="button" class="stph-primary-button" data-stph-action="open-workspace" data-route="' + target + '">Open ' + workspace + ' workspace</button></div>';
+    }
     return '<div class="stph-empty-state"><h3>Application unavailable</h3><p>This StudioOS application is not part of the current device build.</p></div>';
   }
 
@@ -374,6 +383,13 @@
     try {
       if (action === 'home') selectedApp = 'home';
       else if (action === 'open-app') selectedApp = button.dataset.app || 'home';
+      else if (action === 'open-workspace') {
+        const route = button.dataset.route;
+        if (typeof window.nav !== 'function' || !route) throw new Error('Workspace navigation is unavailable.');
+        selectedApp = 'home';
+        window.nav(route);
+        return;
+      }
       else if (action === 'toggle-app') {
         const item = (s.platforms || []).find(p => p.id === id);
         if (!item) throw new Error('Application not found.');
