@@ -288,7 +288,7 @@
       Array.from({ length: 7 }, (_, index) => {
         const day = dateAdd(date, index);
         return '<article><span>' + (index === 0 ? 'TODAY' : esc(dateLabel(day, { weekday: 'short', timeZone: 'UTC' }).toUpperCase())) + '</span><b>' + esc(dateLabel(day, { day: 'numeric', timeZone: 'UTC' })) + '</b><small>' + esc(dateLabel(day, { month: 'short', year: 'numeric', timeZone: 'UTC' })) + '</small></article>';
-      }).join('') + '</div><p class="stph-footnote">This is the phone's date strip. Use the main Calendar workspace to manage production schedules and company events.</p>';
+      }).join('') + '</div><p class="stph-footnote">This is the in-game date strip. Use the main Calendar workspace to manage production schedules and company events.</p>';
   }
 
   function renderAppBody(s, id) {
