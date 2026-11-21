@@ -96,18 +96,24 @@
   function openPhase5Action(id, action) {
     if (typeof window.nav === 'function') window.nav('projects');
     const phase5 = window.Phase5Production;
-    const methods = {
-      scriptRoom: 'openScriptRoom',
-      reviewScript: 'openScriptReview',
-      greenlight: 'openProjectGreenlight',
-      readiness: 'openReadinessChecklist'
+    const controls = {
+      scriptRoom: ['data-p5-edit'],
+      reviewScript: ['data-p5-review'],
+      greenlight: ['data-p5-green'],
+      readiness: ['data-p5-check']
     };
-    const method = methods[action];
-    if (method && typeof phase5?.[method] === 'function') {
-      phase5[method](id);
+    const [attribute] = controls[action] || [];
+    if (!phase5 || !attribute) {
+      if (typeof toast === 'function') toast('The Phase 5 development workspace is not available right now.');
       return;
     }
-    if (typeof toast === 'function') toast('The Phase 5 development workspace is not available right now.');
+    if (typeof phase5.render === 'function') phase5.render();
+    const control = all('[' + attribute + ']').find(element => element.getAttribute(attribute) === String(id));
+    if (control) {
+      control.click();
+      return;
+    }
+    if (typeof toast === 'function') toast('The requested Phase 5 action could not be opened.');
   }
 
   function runAction(action) {
