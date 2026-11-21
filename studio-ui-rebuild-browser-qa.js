@@ -220,6 +220,15 @@ const assert = require('node:assert/strict');
     assert.match(await page.locator('[data-project-content]').innerText(),/2027-08-18/,'Release workspace shows the target release date');
     await page.locator('[data-project-tab="command"]').click();
     await page.locator('[data-project-action="advance"]').click();
+    const stageActionDebug=await page.evaluate(()=>({
+      advanceFunction:typeof advanceProject,
+      windowAdvanceFunction:typeof window.advanceProject,
+      activeCampaign:!!active,
+      projectStage:active?.projects?.find(p=>p.id==='PRJ-QA-001')?.stage,
+      legacyModalDisplay:getComputedStyle(document.querySelector('#modal')).display,
+      legacyModalText:document.querySelector('#mbody').innerText
+    }));
+    console.log('PROJECT_CENTRE_STAGE_ACTION_DEBUG '+JSON.stringify(stageActionDebug));
     assert.equal(await page.locator('#studio-project-command-centre').evaluate(e=>e.open),false,'Stage approval action exits the command centre before opening the existing approval flow');
     assert.equal(await page.locator('#stagego').isDisabled(),true,'Existing stage approval blocks advancement before the minimum time has elapsed');
     assert.match(await page.locator('#mbody').innerText(),/0 \/ 14 days/,'Existing approval dialog retains the simulation engine time check');
