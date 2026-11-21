@@ -56,6 +56,9 @@ body.stui-next #page-phone.stph-phone-page { min-width: 0; }
 .stph-app-icon.social { background:linear-gradient(145deg,#6a83d9,#4b459d); }
 .stph-app-icon.reels { background:linear-gradient(145deg,#d861a5,#63358e); }
 .stph-app-icon.creator { background:linear-gradient(145deg,#e6b46d,#9d613c); }
+.stph-app-icon.stream { background:linear-gradient(145deg,#7d80e9,#3e3b84); }
+.stph-app-icon.music { background:linear-gradient(145deg,#e681a8,#88416d); }
+.stph-app-icon.market { background:linear-gradient(145deg,#71c79a,#286d5b); }
 .stph-app-icon.games { background:linear-gradient(145deg,#4ebd9a,#236d68); }
 .stph-app-icon.store { background:linear-gradient(145deg,#64bde2,#3265a2); }
 .stph-app-icon.device { background:linear-gradient(145deg,#778b9e,#384d60); }
