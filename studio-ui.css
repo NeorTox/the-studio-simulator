@@ -392,3 +392,14 @@
  .studio-operational-workspace-heading{align-items:flex-start;flex-direction:column;gap:8px}
  .studio-operational-workspace-body{gap:10px}
 }
+
+
+/* Facilities: separate estate value, recurring obligations and property records. */
+.facility-portfolio-stats,.facility-cost-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0}
+.facility-portfolio-stats>.card,.facility-cost-stats>.card{min-width:0;min-height:112px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+.facility-portfolio-stats .statvalue,.facility-cost-stats .statvalue{font-size:clamp(19px,2.3vw,27px);overflow-wrap:anywhere}
+.facility-portfolio-stats .tiny,.facility-cost-stats .tiny{color:#879792;font-size:9px}
+@media(max-width:520px){
+ .facility-portfolio-stats,.facility-cost-stats{grid-template-columns:minmax(0,1fr)}
+ .facility-portfolio-stats>.card,.facility-cost-stats>.card{min-height:92px}
+}

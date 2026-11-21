@@ -304,7 +304,15 @@
         {key:'contracts',label:'Casting agreements',nodes:[contracts]}
       ],':scope > .talent-metric-rail');
     }
-        const campaigns = $('#page-campaign');
+        const facilities = $('#page-facilities');
+    if (facilities) {
+      installWorkspaceTabs('page-facilities',[
+        {key:'portfolio',label:'Estate portfolio',nodes:[$('#facility-portfolio-workspace')]},
+        {key:'costs',label:'Operating commitments',nodes:[$('#facility-costs-workspace')]},
+        {key:'register',label:'Property register',nodes:[$('#facility-register-workspace')]}
+      ],':scope > .hero');
+    }
+    const campaigns = $('#page-campaign');
     if (campaigns) {
       installWorkspaceTabs('page-campaign',[
         {key:'library',label:'Save library',nodes:[$('#campaign-library-workspace')]},
