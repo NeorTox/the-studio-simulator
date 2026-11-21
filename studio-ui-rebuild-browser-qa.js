@@ -190,6 +190,14 @@ const assert = require('node:assert/strict');
           financingApproach:'Company-funded',productionBase:'Mumbai, India',productionApproach:'Hybrid',
           plannedStartDate:'2026-12-01',targetCompletionDate:'2027-06-01',
           intendedReleaseRoute:'Streaming license',targetReleaseDate:'2027-08-18',targetTerritories:'Worldwide'
+        },
+        development:{
+          logline:'A crew discovers an impossible signal.',
+          synopsis:'A deep-space discovery changes the course of an expedition.',
+          scriptDraft:'FADE IN: EXT. DEEP SPACE — A research vessel drifts beyond the mapped frontier. A signal repeats from the dark. The crew prepares to investigate.',
+          scriptStatus:'Not started',revisions:[],notes:[],greenlight:null,
+          checklist:{director:false,producer:false,budget:false,cast:false,locations:false,schedule:false},
+          quality:{script:0,originality:0,feasibility:0}
         }
       }];
       active.productionContracts=[{
