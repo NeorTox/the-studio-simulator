@@ -2,7 +2,7 @@
   'use strict';
   const STAGES=['Concept','Development','Pre-production','Principal photography','Post-production','Marketing & distribution','Released'];
   const MIN_DAYS=[14,60,30,45,90,30];
-  const $=(selector,root=document)=>root.querySelector(selector);
+  const $=(selector,root=document)=>root.querySelector(selector),$=(selector,root=document)=>Array.from(root.querySelectorAll(selector));
   const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   let dialog=null,step=0,state={};
   const plusDays=(date,days)=>{const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);};
@@ -165,8 +165,6 @@
     renderPipeline();bindPipeline();
     const list=$('#projectlist');
     if(list){const observer=new MutationObserver(()=>renderPipeline());observer.observe(list,{childList:true,subtree:true});}
-    const pageObserver=new MutationObserver(()=>{renderPipeline();bindPipeline();});
-    pageObserver.observe(page,{childList:true,subtree:true});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
   window.StudioProductionWorkflow={open:openWizard,refresh:renderPipeline,stages:STAGES.slice()};
