@@ -52,7 +52,7 @@
   function ensureState(s) {
     if (!s) return null;
     let comms = s.communications;
-    if (!comms || typeof comms !== 'object' || Array.isArray(comms) || comms.version !== VERSION) {
+    if (!comms || typeof comms !== 'object' || Array.isArray(comms)) {
       comms = s.communications = {
         version: VERSION,
         threads: [],
@@ -61,6 +61,8 @@
         metrics: { messagesSent: 0, messagesReceived: 0, callsPlaced: 0, callsReceived: 0 }
       };
     }
+    // Preserve campaign conversations if the communications schema version advances.
+    comms.version = VERSION;
     comms.threads = Array.isArray(comms.threads) ? comms.threads : [];
     comms.calls = Array.isArray(comms.calls) ? comms.calls : [];
     comms.metrics = comms.metrics || { messagesSent: 0, messagesReceived: 0, callsPlaced: 0, callsReceived: 0 };
@@ -239,9 +241,9 @@
     if (/\b(sorry|apolog|support|help|tough|difficult|stress|worried|concerned|rough time)\b/.test(value)) return 'support';
     if (/\b(argument|angry|upset with|unfair|disappointed|betray|lie|furious|fight)\b/.test(value)) return 'conflict';
     if (/\b(meet|meeting|coffee|lunch|dinner|visit|catch up|hang out|come over)\b/.test(value)) return 'meeting';
+    if (/\b(studio update|company update|announcement|release|premiere|launch|business)\b/.test(value)) return 'studio';
     if (/\b(film|project|production|script|budget|cast|crew|studio|work|job|career|office|deadline)\b/.test(value)) return 'work';
     if (/\b(family|home|health|life|personal|feeling|doing|how are you|weekend)\b/.test(value)) return 'personal';
-    if (/\b(studio update|company update|announcement|release|premiere|launch|business)\b/.test(value)) return 'studio';
     return 'general';
   }
 
@@ -430,7 +432,7 @@
     if (!contact || contact.npc.alive === false || contact.npc.status === 'Deceased')
       throw new Error('This character is no longer available for a call.');
     const date = campaign().date;
-    const selector = hash(contact.id + '|' + date + '|' + comms.calls.length + '|call');
+    const selector = hash(contact.id + '|' + date + '|' + comms.metrics.callsPlaced + '|call');
     const duration = 1 + (selector % 7);
     const topic = 'personal';
     const transcript = responseText(contact, topic, 'call|' + selector);
@@ -471,7 +473,7 @@
       '<div class="stpc-memory-block"><span class="stpc-overline">REMEMBERED EXPERIENCES</span>' +
       (memories.length ? memories.map(item => '<div class="stpc-memory"><b>' + esc(item.date) + '</b><span>' + esc(item.content) + '</span></div>').join('') : '<p>No shared memories have been recorded yet. Start a conversation to build this history.</p>') + '</div>' +
       '<div class="stpc-actions">' +
-      '<button type="button" class="stph-primary-button" data-stph-action="char-open-thread" data-id="' + esc(contact.id) + '">Message</button>' +
+      '<button type="button" class="stph-primary-button" data-stph-action="char-open-thread" data-id="' + esc(contact.id) + '" ' + (!alive ? 'disabled' : '') + '>Message</button>' +
       '<button type="button" class="stph-small-button" data-stph-action="char-call" data-id="' + esc(contact.id) + '" ' + (!alive ? 'disabled' : '') + '>Call</button>' +
       '<button type="button" class="stph-small-button" data-stph-action="char-back-contacts">All contacts</button></div>' +
       (edge ? '<p class="stpc-note">Relationship changes are stored in the shared NPC social graph. Conversations are also recorded in this character’s episodic memory.</p>' : '') +
@@ -517,7 +519,9 @@
       (messages.length ? messages.slice(-60).map(message => '<div class="stpc-message-row ' + (message.from === 'PLAYER' ? 'outgoing' : 'incoming') + '"><div class="stpc-bubble">' + esc(message.text) + (message.type === 'call' ? '<small>CALL TRANSCRIPT</small>' : '') + '</div><span>' + esc(message.date) + '</span></div>').join('') : '<div class="stpc-first-message"><b>Start a conversation with ' + esc(contact.npc.name) + '</b><p>Your message will update the shared relationship graph and the character’s episodic memory.</p></div>') +
       '</div>' +
       '<div class="stpc-quick-replies"><span>CONVERSATION STARTERS</span>' + quickReplies.map(item => '<button type="button" class="stph-small-button" data-stph-action="char-quick-reply" data-id="' + esc(contact.id) + '" data-text="' + esc(item[2]) + '">' + esc(item[1]) + '</button>').join('') + '</div>' +
-      '<form class="stpc-compose" data-stph-form="char-send-message" data-contact="' + esc(contact.id) + '"><input name="message" maxlength="500" minlength="1" required placeholder="Write a message…" autocomplete="off" aria-label="Write a message"><button type="submit" aria-label="Send message">➤</button></form>' +
+      (contact.npc.alive === false || contact.npc.status === 'Deceased'
+        ? '<div class="stpc-readonly">This character has died. Their profile and existing conversation history remain available as a read-only record.</div>'
+        : '<form class="stpc-compose" data-stph-form="char-send-message" data-contact="' + esc(contact.id) + '"><input name="message" maxlength="500" minlength="1" required placeholder="Write a message…" autocomplete="off" aria-label="Write a message"><button type="submit" aria-label="Send message">➤</button></form>') +
       '<p class="stph-footnote">Replies are procedural, using character status, personality, relationship values and the message topic. They are not generated by a language model.</p>' +
       '</div>';
   }
@@ -666,6 +670,7 @@
   function audit() {
     const s = window.StudioOS.getState();
     const comms = ensureState(s);
+    if (!comms) return { passed: 0, failed: 1, tests: [{ name: 'Communication state exists', ok: false, detail: 'No active smartphone campaign.' }] };
     const tests = [];
     const add = (name, ok, detail) => tests.push({ name, ok: !!ok, detail: String(detail || '') });
     const ids = comms.threads.map(thread => thread.id);
