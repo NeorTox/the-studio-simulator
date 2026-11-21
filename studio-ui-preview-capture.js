@@ -120,7 +120,7 @@ async function screenshot(page, filename, fullPage = true) {
     await screenshot(desktop, 'desktop-finance.png');
     await desktop.evaluate(() => window.nav('phone'));
     await screenshot(desktop, 'desktop-smartphone-home.png', false);
-    await desktop.locator('#page-phone [data-open-app="studiosphere"]').click();
+    await desktop.evaluate(() => document.querySelector('#page-phone [data-open-app="studiosphere"]')?.click());
     await screenshot(desktop, 'desktop-smartphone-app.png', false);
 
     // Mobile: use the actual touch-sized layout and bottom navigation.
@@ -139,7 +139,7 @@ async function screenshot(page, filename, fullPage = true) {
     await screenshot(mobile, 'mobile-life.png');
     await mobile.evaluate(() => window.nav('phone'));
     await screenshot(mobile, 'mobile-smartphone-home.png', false);
-    await mobile.locator('#page-phone [data-open-app="studiosphere"]').click();
+    await mobile.evaluate(() => document.querySelector('#page-phone [data-open-app="studiosphere"]')?.click());
     await screenshot(mobile, 'mobile-smartphone-app.png', false);
     await mobile.close();
     await desktop.close();
