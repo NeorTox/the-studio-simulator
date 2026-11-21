@@ -225,8 +225,12 @@ const assert = require('node:assert/strict');
       windowAdvanceFunction:typeof window.advanceProject,
       activeCampaign:!!active,
       projectStage:active?.projects?.find(p=>p.id==='PRJ-QA-001')?.stage,
+      showFunction:typeof show,
       legacyModalDisplay:getComputedStyle(document.querySelector('#modal')).display,
-      legacyModalText:document.querySelector('#mbody').innerText
+      legacyModalClass:document.querySelector('#modal').className,
+      legacyModalText:document.querySelector('#mbody').innerText,
+      toast:document.querySelector('#toast').innerText,
+      pageErrors:errors.slice()
     }));
     console.log('PROJECT_CENTRE_STAGE_ACTION_DEBUG '+JSON.stringify(stageActionDebug));
     assert.equal(await page.locator('#studio-project-command-centre').evaluate(e=>e.open),false,'Stage approval action exits the command centre before opening the existing approval flow');
