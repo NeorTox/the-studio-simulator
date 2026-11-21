@@ -110,7 +110,7 @@ async function screenshot(page, filename, fullPage = true) {
       await openProject.click();
       await desktop.locator('#studio-project-command-centre').waitFor({ state: 'visible' });
       await screenshot(desktop, 'desktop-project-command-centre.png', false);
-      await desktop.locator('#studio-project-command-centre [data-project-close]').click();
+      await desktop.locator('#studio-project-command-centre [data-project-close]').first().click();
       await desktop.locator('#studio-project-command-centre').waitFor({ state: 'hidden' });
     }
     await desktop.locator('.nav button[data-page="finance"]').click();
