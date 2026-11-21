@@ -30,7 +30,7 @@
   }
   function groupNavigation() {
     mountPinnedSettings();
-    const directButtons = $(':scope > button[data-page]', nav);
+    const directButtons = Array.from(nav.querySelectorAll(':scope > button[data-page]'));
     if (!nav.dataset.grouped) {
       nav.replaceChildren();
       groups.forEach(g => {
@@ -98,11 +98,11 @@
       $$('.page').forEach(p => p.classList.toggle('active', p === target));
     }
     const button = $('[data-page="' + route + '"]', nav);
-    $('.nav button', nav).forEach(b => b.classList.toggle('active', b === button));
+    Array.from(nav.querySelectorAll('.nav button')).forEach(b => b.classList.toggle('active', b === button));
     const settingsActive = route === 'settings';
     $('#studio-settings-dock [data-page="settings"]')?.classList.toggle('active', settingsActive);
     $('#stui-settings-shortcut')?.classList.toggle('active', settingsActive);
-    $('.mobile-nav button[data-mobile-page]').forEach(b => b.classList.toggle('active', b.dataset.mobilePage === route));
+    Array.from(document.querySelectorAll('.mobile-nav button[data-mobile-page]')).forEach(b => b.classList.toggle('active', b.dataset.mobilePage === route));
     const crumb = $('#crumb');
     if (crumb) crumb.textContent = button ? button.textContent.trim().replace(/\s+/g,' ').toUpperCase() : (settingsActive ? 'SETTINGS' : route.toUpperCase());
     closeDrawer();
@@ -121,7 +121,7 @@
     shortcut.addEventListener('click',() => activate('settings'));
     topRight.prepend(shortcut);
   }
-  $('.mobile-nav button[data-mobile-page]').forEach(button => button.addEventListener('click', () => activate(button.dataset.mobilePage)));
+  Array.from(document.querySelectorAll('.mobile-nav button[data-mobile-page]')).forEach(button => button.addEventListener('click', () => activate(button.dataset.mobilePage)));
   const saved = (() => {
     try {
       const items = JSON.parse(localStorage.getItem('the-studio-saves-v2') || '[]');
