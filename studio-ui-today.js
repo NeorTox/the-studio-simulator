@@ -59,7 +59,7 @@
     const button = event.target.closest('[data-today-go]');
     if (button) go(button.dataset.todayGo);
   });
-  const originalNav = window.nav;
+  const originalRender = window.render;\n  if (typeof originalRender === 'function' && !originalRender.__todayRefresh) {\n    const wrappedRender = function() { const result = originalRender.apply(this, arguments); render(); return result; };\n    wrappedRender.__todayRefresh = true;\n    window.render = wrappedRender;\n  }\n  const originalNav = window.nav;
   if (typeof originalNav === 'function' && !originalNav.__todayRefresh) {
     const wrapped = function(route) { const result = originalNav.apply(this, arguments); if (route === 'overview') render(); return result; };
     wrapped.__todayRefresh = true;
