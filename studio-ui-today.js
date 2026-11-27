@@ -53,13 +53,19 @@
       (projectRows || '<p class="today-empty">No productions have been created in this campaign yet.</p>')+
       '</section><aside class="today-side"><section class="today-panel"><div class="today-panel-head"><div><div class="eyebrow">CAMPAIGN CHRONICLE</div><h3>Recent activity</h3></div><button type="button" class="today-text-action" data-today-go="calendar">Full history ↗</button></div>'+
       (eventRows ? '<ul class="today-event-list">'+eventRows+'</ul>' : '<p class="today-empty">Campaign events will appear here as your world develops.</p>')+
-      '</section><section class="today-panel today-actions"><div class="eyebrow">QUICK ACCESS</div><h3>Where to next?</h3><div class="today-action-grid"><button data-today-go="personal">♡ <span>Personal life</span></button><button data-today-go="geography">◎ <span>Explore world</span></button><button data-today-go="interactions">◌ <span>Conversations</span></button><button data-today-go="market">⌁ <span>Industry</span></button></div></section></aside></div>';
+      '</section><section class="today-panel today-actions"><div class="eyebrow">QUICK ACCESS</div><h3>Where to next?</h3><div class="today-action-grid"><button data-today-go="personal">♡ <span>Personal life</span></button><button data-today-go="world">◎ <span>Explore world</span></button><button data-today-go="digital">◌ <span>Conversations</span></button><button data-today-go="market">⌁ <span>Industry</span></button></div></section></aside></div>';
   }
   document.addEventListener('click', event => {
     const button = event.target.closest('[data-today-go]');
     if (button) go(button.dataset.todayGo);
   });
-  const originalRender = window.render;\n  if (typeof originalRender === 'function' && !originalRender.__todayRefresh) {\n    const wrappedRender = function() { const result = originalRender.apply(this, arguments); render(); return result; };\n    wrappedRender.__todayRefresh = true;\n    window.render = wrappedRender;\n  }\n  const originalNav = window.nav;
+  const originalRender = window.render;
+  if (typeof originalRender === 'function' && !originalRender.__todayRefresh) {
+    const wrappedRender = function() { const result = originalRender.apply(this, arguments); render(); return result; };
+    wrappedRender.__todayRefresh = true;
+    window.render = wrappedRender;
+  }
+  const originalNav = window.nav;
   if (typeof originalNav === 'function' && !originalNav.__todayRefresh) {
     const wrapped = function(route) { const result = originalNav.apply(this, arguments); if (route === 'overview') render(); return result; };
     wrapped.__todayRefresh = true;
@@ -68,7 +74,4 @@
   document.addEventListener('DOMContentLoaded', render);
   if (document.readyState !== 'loading') render();
   window.StudioToday = {render};
-  const observer = new MutationObserver(() => { if ($('#page-overview')?.classList.contains('active')) render(); });
-  const overview = $('#page-overview');
-  if (overview) observer.observe(overview,{childList:true,subtree:true});
 })();
